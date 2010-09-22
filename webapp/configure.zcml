@@ -1,0 +1,17 @@
+<configure xmlns="http://namespaces.repoze.org/bfg">
+
+  <renderer
+    name="better_json"
+    factory="webapp.renderers.json_renderer_factory"
+    />
+
+  <static
+     name="webapp.static"
+     path="static"
+     />
+
+   <scan package="."/>
+
+
+
+</configure>
