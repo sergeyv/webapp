@@ -12,6 +12,12 @@
 
    <scan package="."/>
 
+    <route
+        name="form-loader"
+        path="/forms/:id"
+        view=".views.form_loader"
+        renderer="string"
+    />
 
 
 </configure>

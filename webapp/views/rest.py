@@ -12,7 +12,8 @@ import validatish as v
 import crud
 
 from webapp import DBSession
-
+from webapp.rest import IRestRootSection
+from webapp.forms import get_form
 
 
 @bfg_view(context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json", xhr=True, accept="application/json")
@@ -78,10 +79,9 @@ def json_rest_get(context, request):
     print "JSON_REST_GET"
 
     item = context.model
-    #try:
-    schema = context.data_formats[format_name]
-    #except AttributeError:
-    #    print "CONTEXT: %s" % context
+
+    form_name = context.data_formats[format_name]
+    schema = get_form(form_name).structure
 
     result = {}
 

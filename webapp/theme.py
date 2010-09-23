@@ -1,16 +1,29 @@
 # -*- coding: utf-8 -*-
 
 
-from crud.views.theme import Theme as BasicTheme
+#from crud.views.theme import Theme as BasicTheme
 
-class Theme(BasicTheme):
+#class Theme(BasicTheme):
 
-    def __init__(self, context, request, page_title=None, registry=None):
-        self.context = context
-        self.request = request
-        self.page_title = page_title
-        self.registry = registry
+    #def __init__(self, context, request, page_title=None, registry=None):
+        #self.context = context
+        #self.request = request
+        #self.page_title = page_title
+        #self.registry = registry
 
+
+
+_theme_registry = {}
+
+def set_theme(name, theme):
+    _theme_registry[name] = theme
+
+def get_theme(name):
+    return _theme_registry[name]
+
+
+
+from repoze.bfg.security import authenticated_userid
 
 
 class ResourceRegistry(object):
@@ -93,4 +106,16 @@ class ResourceRegistry(object):
 
     def add_css_resource(self, r):
         self.css_resources.append(r)
+
+    def remove_js_resource(self, r):
+        try:
+            self.js_resources.remove(r)
+        except ValueError:
+            pass
+
+    def remove_css_resource(self, r):
+        try:
+            self.css_resources.remove(r)
+        except ValueError:
+            pass
 

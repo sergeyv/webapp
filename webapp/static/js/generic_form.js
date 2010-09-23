@@ -1,18 +1,17 @@
 
     /* Options are:
     identifier
-    load_from
     rest_service_root
     redirect_after_add
     redirect_after_edit
     */
     function GenericForm(options){
-        this.options = options;
-        //alert(identifier);
-        this.add_form_title = "Add Item";
-        this.edit_form_title = "Edit Item";
-        this.add_button_title = "Add Item";
-        this.edit_button_title = "Save Changes";
+        this.options = $.extend({
+            add_form_title: "Add Item",
+            edit_form_title: "Edit Item",
+            add_button_title: "Add Item",
+            edit_button_title: "Save Changes"
+        }, options);
     };
 
 
@@ -20,26 +19,37 @@
          /// this is called _before_ the view is loaded (as the view is loaded on demand)
          /// so the html stuff is not available yet
          var self = this;
-         self.view = $( "#"+self.identifier+"-form-container" );
-         /// TODO: Create and append a node if not found?
+         self.view = $( "#"+self.options.identifier+"-form-container" );
+         if (!self.view.length)
+         {
+            /// Create and append a node if not found
+            var $node = ($('<div id="'+self.options.identifier+'-form-container" class="contentView">'))
+            .append($('<h1><span class="formTitle">###</span></h1>'))
+            .append($('<div class="formPlaceholder"></div>'));
+
+            $("#content-views").append($node);
+            self.view = $( "#"+self.options.identifier+"-form-container" );
+        }
+
+
 
     };
 
 
     GenericForm.prototype.bindFormControls = function() {
         var self = this;
-        self.form = $( "#"+self.identifier );
+        self.form = $( "#"+self.options.identifier );
         self.controls = {}
 
         var items = self.form.serializeArray();
         $.each(items, function() {
-                self.controls[this.name] = $("#"+self.identifier+"-"+this.name);
+                self.controls[this.name] = $("#"+self.options.identifier+"-"+this.name);
             });
     };
 
     GenericForm.prototype.setValidationRules = function() {
         var self = this;
-        var rules = window.application.getValidationRules(self.identifier)
+        var rules = window.application.getValidationRules(self.options.identifier)
         self.form.validate( { rules: rules,
             submitHandler: function(form) {
                 self.submitForm();
@@ -50,7 +60,15 @@
 
     GenericForm.prototype.showViewFirstTime = function( parameters ) {
         self = this;
-        self.view.find(".formPlaceholder").load(self.load_from, function() {
+        load_from = "/forms/"+self.options.identifier;
+
+        var $placeholder = self.view.find(".formPlaceholder");
+        if (! $placeholder.length) {
+            alert("Can't find form placeholder for " + self.options.identifier);
+        }
+        $placeholder.load(load_from, function() {
+
+            self.genericAugmentForm();
 
             /// Form is loaded, we can now adjust form's look
             self.augmentForm();
@@ -70,6 +88,46 @@
 
     };
 
+
+    GenericForm.prototype.genericAugmentForm = function() {
+        /// Do stuff we want on every form
+        self = this;
+
+        /// TODO: Add option/condition "add_cancel_link"?
+        self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
+
+        /// convert the "fake" fields which are marked with
+        /// 'section_title' class into titles
+        this.view.find(".section_title").each( function () {
+            var text = "";
+            var t = $(this).children("label");
+            var st = $(this).children("span.description");
+            if (t.length) { text = "<h2>"+t.html()+"</h2>"; }
+            if (st.length) { text += '<p class="description">'+st.html()+'</p>'; }
+
+            $(this).replaceWith(text);
+        });
+
+    }
+
+    GenericForm.prototype.augmentForm = function() {
+        /*
+        Modify the form appearance after it is loaded
+        */
+
+        /// do nothing, override in subclasses
+    }
+
+    GenericForm.prototype.setHandlers = function() {
+        /*
+        Attach form handlers which respond to changes in the form_data
+        (i.e. to implement dependent controls etc.)
+        */
+
+        /// do nothing, override in subclasses
+    }
+
+
     // I get called when the view needs to be shown.
     GenericForm.prototype.showView = function( parameters ){
         var self = this;
@@ -79,11 +137,11 @@
         self.item_id = parameters.id;
         /// Change the form's title depending on whether we're adding or editing
         if (self.item_id) {
-            self.view.find(".formTitle").text(self.edit_form_title);
-            self.view.find("#"+self.identifier+"-action").val(self.edit_button_title);
+            self.view.find(".formTitle").text(self.options.edit_form_title);
+            self.view.find("#"+self.options.identifier+"-action").val(self.options.edit_button_title);
         } else {
-            self.view.find(".formTitle").text(self.add_form_title);
-            self.view.find("#"+self.identifier+"-action").val(self.add_button_title);
+            self.view.find(".formTitle").text(self.options.add_form_title);
+            self.view.find("#"+self.options.identifier+"-action").val(self.options.add_button_title);
         }
         /// if it's the first showing, DOM does not exist at this point yet
         self.populateForm(self.item_id);
@@ -94,7 +152,7 @@
     // ----------------------------------------------------------------------- //
 
 
-    // I diable the form.
+    // I disable the form.
     GenericForm.prototype.disableForm = function(){
         // Disable the fields.
         /*this.fields.name.attr( "disabled", true );
@@ -139,10 +197,11 @@
         self.disableForm();
         if (! item_id) { return; }
 
-        $.Read(self.rest_service_root+"/"+item_id, function(data) {
+        /// TODO: format support - +"?format="+self.options.identifier etc.
+        $.Read(self.options.rest_service_root+"/"+item_id, function(data) {
             window.application.log("TADA");
             $.each(data, function(name, value) {
-                var id = '#' + self.identifier + '-' + name;
+                var id = '#' + self.options.identifier + '-' + name;
                 var elem = $(id);
                 window.application.log(id + " ===> " + elem);
                 $(id).val(value);
@@ -160,17 +219,17 @@
         if (! self.item_id)
         {
             /// It's an "Add user" form
-            $.Create(self.rest_service_root+"/", form_data,
+            $.Create(self.options.rest_service_root+"/", form_data,
                 function(data) {
                     // go back to the users listing (this re-queries the listing from the server)
-                    window.application.relocateTo(self.redirect_after_add);
+                    window.application.relocateTo(self.options.redirect_after_add);
                 });
         } else {
             /// It's an "Edit user" form
-            $.Update(self.rest_service_root+"/"+self.item_id, form_data,
+            $.Update(self.options.rest_service_root+"/"+self.item_id, form_data,
                 function(data) {
                     // go back to the users listing (this re-queries the listing from the server)
-                    window.application.relocateTo(self.redirect_after_edit);
+                    window.application.relocateTo(self.options.redirect_after_edit);
                 });
         }
         return false;
