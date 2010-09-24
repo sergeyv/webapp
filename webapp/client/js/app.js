@@ -34,7 +34,7 @@
         };
 
         /// a "Page not found" view - displayed when a page is not found
-        this.pageNotFoundView = new GenericView("#404-view");
+        self.pageNotFoundView = new GenericView({identifier:"404"});
 
 		this.isRunning = false;
 
@@ -64,6 +64,9 @@
             });
 
             /// initialize the dialog
+
+            // TODO: Extract this somewhere
+            /*
             self.dialog = $("#add-vocab-value-dialog");
             self.dialog.dialog({autoOpen:false,
                                 modal: true,
@@ -76,6 +79,7 @@
                                     }
                                 }
                         });
+            */
 
         });
 
@@ -253,7 +257,7 @@
 
 
 	// I am utility method used to create new DOM elements from templates.
-	Application.prototype.getFromTemplate = function( template, model ){
+	/*Application.prototype.getFromTemplate = function( template, model ){
 		// Get the raw HTML from the template.
 		var templateData = template.html();
 
@@ -276,7 +280,7 @@
 		// Create the new node, store the model data internall, and return
 		// the new node.
 		return( $( templateData ).data( "model", model ) );
-	};
+	};*/
 
 
 	// I return an instance of the class with the given name.
@@ -346,6 +350,9 @@
                 }
             }
         );
+
+        self.pageNotFoundView.init();
+
 
 	};
 

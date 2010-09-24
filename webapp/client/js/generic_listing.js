@@ -1,32 +1,28 @@
 
 // Add view to the application.
 
-window.application.addView("ProvidersListing", (function( $, application ){
+    function GenericListing(options){
 
-	function ProvidersListing(){
-		this.view = null;
-		this.listing = null;
-		this.staffTemplate = null;
-	};
+        /* options are:
+        - rest_service_root
+        */
+        this.options = $.extend({
+        }, options);
+    };
 
-
-	ProvidersListing.prototype.init = function(){
-		var self = this;
-		this.view = $( "#providers-listing-view" );
-
-	};
+    GenericListing.prototype = new GenericView();
 
 
-    ProvidersListing.prototype.showViewFirstTime = function( parameters ) {
+
+    GenericListing.prototype.showViewFirstTime = function( parameters ) {
 
         var self = this;
-        self.listing = $("#providers-listing-container > tbody");
+        self.listing = self.view.find("table.listingTable > tbody");
 
-        /*self.populateFilters( function() {
-        });*/
 
-        self.showView( parameters );
-
+        self.populateFilters( function() {
+            self.showView( parameters );
+        });
 
         /*
 
@@ -39,10 +35,10 @@ window.application.addView("ProvidersListing", (function( $, application ){
         */
     };
 
-    ProvidersListing.prototype.populateFilters = function(continue_fn) {
+    GenericListing.prototype.populateFilters = function(continue_fn) {
 
         var self = this;
-        var service_url = "/rest/providers/filters";
+        var service_url = this.options.rest_service_root + "/filters";
 
         $.Read(service_url, function(data) {
 
@@ -61,27 +57,27 @@ window.application.addView("ProvidersListing", (function( $, application ){
             });
         });
 
-        $("#projects-client-filter").autocomplete({
-                source: "/rest/clients/incremental",
+        self.view.find(".incrementalSearch").autocomplete({
+                source: this.options.rest_service_root + "/incremental",
                 select: function(event, ui) {
-                    self.selectClientByName(ui.item.label);
+                    self.selectItemByName(ui.item.label);
                     return true;
                 }
 
         });
     }
 
-    ProvidersListing.prototype.selectClientByName = function(name) {
+    GenericListing.prototype.selectItemByName = function(name) {
 
         var self = this;
-        var service_url = "/rest/clients/incremental?get_id_for="+name;
+        var service_url = this.options.rest_service_root + "/incremental?get_id_for=" + name;
         $.Read(service_url, function(data) {
-                self.filters.client = data.id;
+                self.filters.id = data.id;
                 window.application.relocateTo("#/filter/"+self.calculateFilterString());
         });
     }
 
-    ProvidersListing.prototype.calculateFilterString = function() {
+    GenericListing.prototype.calculateFilterString = function() {
         var self = this;
         var filter_parts = [];
 
@@ -95,25 +91,32 @@ window.application.addView("ProvidersListing", (function( $, application ){
         return filter_parts.join("|");
     }
 
-    ProvidersListing.prototype.showView = function( parameters ){
+    GenericListing.prototype.showView = function( parameters ){
 
         var self = this;
 
         // Show the view.
         this.view.addClass( "activeContentView" );
 
-        var sort_params = parameters.sort.split(":");
+        if (parameters&&parameters.sort) {
+            var sort_params = parameters.sort.split(":");
 
-        this.sort_on = sort_params[0];
-        this.sort_order = sort_params[1];
+            this.sort_on = sort_params[0];
+            this.sort_order = sort_params[1];
+        } else {
+            this.sort_on="";
+            this.sort_order="";
+        }
 
         this.filters = {};
 
-        var filter_params = parameters.filter.split("|");
-        $.each(filter_params, function(idx, f) {
-            var pair = f.split(":");
-            self.filters[pair[0]] = pair[1];
-        });
+        if (parameters&&parameters.filter) {
+            var filter_params = parameters.filter.split("|");
+            $.each(filter_params, function(idx, f) {
+                var pair = f.split(":");
+                self.filters[pair[0]] = pair[1];
+            });
+        }
         self.filter_string = self.calculateFilterString();
 
 
@@ -123,16 +126,15 @@ window.application.addView("ProvidersListing", (function( $, application ){
 
     };
 
-	// ----------------------------------------------------------------------- //
-	// ----------------------------------------------------------------------- //
+    // ----------------------------------------------------------------------- //
+    // ----------------------------------------------------------------------- //
 
-    ProvidersListing.prototype.adjustSortLinks = function() {
+    GenericListing.prototype.adjustSortLinks = function() {
         var self = this;
         var links = $(".sortLink");
         links.removeClass("sortedAsc").removeClass("sortedDesc");
 
         $.each(links, function(idx, l) {
-            //alert(l);
             var link = $(l);
             var url = link.attr("href");
             var url_parts = url.split("/");
@@ -162,16 +164,16 @@ window.application.addView("ProvidersListing", (function( $, application ){
         });
     };
 
-    ProvidersListing.prototype.adjustFilters = function() {
+    GenericListing.prototype.adjustFilters = function() {
 
         var self = this;
         /*$.each(self.filters, function(name, value) {
             var $f = $("#projects-"+name+"-filter");
             $f.val(value);
         });*/
-        $("#project-status-filter").find("a").removeClass("current");
-        var status_id = self.filters.status;
-        $("#project-status-filter").find("a.option"+status_id).addClass("current");
+//         $("#project-status-filter").find("a").removeClass("current");
+//         var status_id = self.filters.status;
+//         $("#project-status-filter").find("a.option"+status_id).addClass("current");
 
         /*var statuses = self.filter_vocabularies['project-status-filter'];
 
@@ -183,20 +185,20 @@ window.application.addView("ProvidersListing", (function( $, application ){
 
     };
 
-	// I clear the contact list.
-	ProvidersListing.prototype.clearList = function(){
+    // I clear the contact list.
+    GenericListing.prototype.clearList = function(){
         this.listing.children().remove();
-	};
+    };
 
 
-	// I get called when the view needs to be hidden.
-	ProvidersListing.prototype.hideView = function(){
-		this.view.removeClass( "activeContentView" );
-	};
+    // I get called when the view needs to be hidden.
+    GenericListing.prototype.hideView = function(){
+        this.view.removeClass( "activeContentView" );
+    };
 
 
-	ProvidersListing.prototype.populateList = function(next_batch_start){
-		var self = this;
+    GenericListing.prototype.populateList = function(next_batch_start){
+        var self = this;
 
         var sort_on = this.sort_on;
         var sort_order = this.sort_order;
@@ -225,20 +227,18 @@ window.application.addView("ProvidersListing", (function( $, application ){
         })
 
 
-        var service_url = "/rest/projects/";
-
-        if (qry) service_url = service_url+ "?"+qry;
-
+        var service_url = this.options.rest_service_root
+        if (qry) service_url = service_url+"?"+qry;
 
         $.Read(service_url, function(data) {
 
             // Show the total number of records found
-            $("#project-listing-stats").find("span.projectCount").html(data.total_count);
+            self.view.find("span.itemsCount").html(data.total_count);
 
             if (need_clearing) {
                 self.clearList();
             } else {
-                $("#more-link").replaceWith($('<hr />'));
+                self.view.find(".moreLink").replaceWith($('<hr />'));
             }
 
             /// Convert categories which are passed as numerical IDs
@@ -257,17 +257,16 @@ window.application.addView("ProvidersListing", (function( $, application ){
             });*/
             /// End modifying categories
 
-            var template = $('#project-listing-template');
+            var template = $('#'+self.options.identifier+'-row-template');
             if (!template.length) { alert("Template not found!"); }
             var output = template.jqote(data.items);
-            self.listing.append(output);
 
+            self.listing.append(output);
             if (data.has_more) {
-                var more_link = '<tr><td colspan="99"><a id="more-link" class="moreLink" href="#">Show More</a></td></tr>';
+                var more_link = '<tr><td colspan="99"><a class="moreLink" href="#">Show More</a></td></tr>';
                 var next_batch_start = data.next_batch_start;
 
-                self.listing.append($(more_link));
-                $("#more-link").click(function() {
+                self.listing.append($(more_link)).click(function() {
                     self.populateList(next_batch_start);
                     return false;
                 });
@@ -275,12 +274,4 @@ window.application.addView("ProvidersListing", (function( $, application ){
 
         });
 
-	};
-
-
-	// ----------------------------------------------------------------------- //
-
-	// Return a new view class singleton instance.
-	return( new ProvidersListing() );
-
-})( jQuery, window.application ));
+    };

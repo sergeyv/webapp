@@ -14,25 +14,16 @@
         }, options);
     };
 
+    GenericForm.prototype = new GenericView();
 
-    GenericForm.prototype.init = function(){
-         /// this is called _before_ the view is loaded (as the view is loaded on demand)
-         /// so the html stuff is not available yet
+    GenericForm.prototype.decorateView = function(){
+         /// this is called by GenericView.init and allows us to
+         /// insert arbitrary content into the newly-created
+         /// <div class="contentView" />
+         /// This happens before the content is loaded
          var self = this;
-         self.view = $( "#"+self.options.identifier+"-form-container" );
-         if (!self.view.length)
-         {
-            /// Create and append a node if not found
-            var $node = ($('<div id="'+self.options.identifier+'-form-container" class="contentView">'))
-            .append($('<h1><span class="formTitle">###</span></h1>'))
+         self.view.append($('<h1><span class="formTitle">###</span></h1>'))
             .append($('<div class="formPlaceholder"></div>'));
-
-            $("#content-views").append($node);
-            self.view = $( "#"+self.options.identifier+"-form-container" );
-        }
-
-
-
     };
 
 
@@ -170,10 +161,6 @@
     };
 
 
-    // I get called when the view needs to be hidden.
-    GenericForm.prototype.hideView = function(){
-        this.view.removeClass( "activeContentView" );
-    };
 
 
     // I reset the contact form.
