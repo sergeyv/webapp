@@ -6,8 +6,8 @@
     />
 
   <static
-     name="webapp.static"
-     path="static"
+     name="webapp.client"
+     path="client"
      />
 
    <scan package="."/>

@@ -32,43 +32,43 @@ class ResourceRegistry(object):
     """
 
     core_js_resources = (
-    "/webapp.static/core_js/jquery-1.4.2.js",
+    "/webapp.client/core_js/jquery-1.4.2.js",
 
     # REST support
     # from http://plugins.jquery.com/project/Rest
-    "/webapp.static/core_js/json2.js",
-    "/webapp.static/core_js/jquery.rest.js",
+    "/webapp.client/core_js/json2.js",
+    "/webapp.client/core_js/jquery.rest.js",
 
     # Client-side templates
     # from http://github.com/aefxx/jQote2
-    "/webapp.static/core_js/jquery.jqote2.js",
+    "/webapp.client/core_js/jquery.jqote2.js",
 
     # from http://flowplayer.org/tools/
 
     # Address plugin which deals with the hash part of the url
     # from http://www.asual.com/jquery/address/
-    "/webapp.static/core_js/jquery.address-1.2.js",
+    "/webapp.client/core_js/jquery.address-1.2.js",
 
     # Full JQuery UI from http://jqueryui.com/download
-    "/webapp.static/core_js/jquery-ui-1.8.1.custom.min.js",
+    "/webapp.client/core_js/jquery-ui-1.8.1.custom.min.js",
     # Time picker from http://bililite.com/blog/2009/07/09/updating-timepickr/
-    "/webapp.static/core_js/jquery.timepickr.js",
+    "/webapp.client/core_js/jquery.timepickr.js",
 
     # http://bassistance.de/jquery-plugins/jquery-plugin-validation/
-    "/webapp.static/core_js/jquery.validate.js",
-    "/webapp.static/core_js/additional-methods.js",
+    "/webapp.client/core_js/jquery.validate.js",
+    "/webapp.client/core_js/additional-methods.js",
 
     # Our framework stuff
-    "/webapp.static/js/generic_view.js",
-    "/webapp.static/js/generic_form.js",
-    "/webapp.static/js/app.js",
+    "/webapp.client/js/generic_view.js",
+    "/webapp.client/js/generic_form.js",
+    "/webapp.client/js/app.js",
     )
 
 
     core_css_resources = (
     "/crud_static/default.css",
-    "/webapp.static/css/jquery-ui-1.8.1.custom.css",
-    "/webapp.static/css/webapp.css",
+    "/webapp.client/css/jquery-ui-1.8.1.custom.css",
+    "/webapp.client/css/webapp.css",
     )
 
     def __init__(self, css_resources=None, js_resources=None):
