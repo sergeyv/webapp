@@ -8,3 +8,6 @@ from theme import ResourceRegistry
 
 
 from forms import loadable_form, LoadableForm, get_form
+
+
+from rest import RestSection, RestProxy, VocabSection, IRestRootSection

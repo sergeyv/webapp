@@ -22,7 +22,7 @@ class WebappBase(object):
     """
 
 
-    def __repr__(self):
+    def __str__(self):
         if hasattr(self, 'name') and self.name:
             return str(self.name)
 
@@ -32,7 +32,7 @@ class WebappBase(object):
         if hasattr(self, 'id') and self.id:
             return "%s #%s" % (self.__class__.__name__, self.id)
 
-        return super(WebappBase, self).__repr__()
+        return super(WebappBase, self).__str__()
 
 
     @classmethod
@@ -40,7 +40,7 @@ class WebappBase(object):
         """
         returns a list of all items of a given class suitable for a listbox dropdown
         """
-        return [ (item.id, repr(item)) for item in DBSession.query(classobj).all() ]
+        return [ (item.id, str(item)) for item in DBSession.query(classobj).all() ]
 
 
 Base = declarative_base(cls=WebappBase)

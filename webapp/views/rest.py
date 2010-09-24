@@ -24,6 +24,40 @@ def json_rest_list(context, request, permission=""):
     return result
 
 
+@bfg_view(name="filters", context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json")
+def json_rest_filters(context, request):
+    """
+    Returns a list of possible filters for the current section
+
+    TODO: Is it restful or not?
+    """
+    print "JSON_REST_FILTERS: request body %s" % (request.body)
+
+    fn =  getattr(context, 'get_filters', None)
+    if fn is not None:
+        result = fn(request)
+        return result
+
+    return {'result':"HELLO! No filters found!"}
+
+@bfg_view(name="incremental", context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json")
+def json_rest_incremental(context, request):
+    """
+    Returns a list of items which match a search string
+    Should return just id:title pairs, not full objects
+
+    TODO: Is it restful or not?
+    """
+    print "JSON_REST_INCREMENTAL: request body %s" % (request.body)
+
+    fn =  getattr(context, 'get_incremental', None)
+    if fn is not None:
+        result = fn(request)
+        return result
+
+    return {'result':"HELLO! Nothing found!"}
+
+
 @bfg_view(context=crud.ISection, containment=IRestRootSection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
 def json_rest_create(context, request):
     """
