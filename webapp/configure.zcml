@@ -1,4 +1,5 @@
-<configure xmlns="http://namespaces.repoze.org/bfg">
+<configure xmlns="http://namespaces.repoze.org/bfg"
+    xmlns:crud="http://namespaces.mooball.com/crud">
 
   <renderer
     name="better_json"
@@ -11,6 +12,13 @@
      />
 
    <scan package="."/>
+
+
+    <crud:section
+        slug="templates"
+        title="Templates Root"
+        section=".templates.TemplatesSection"
+    />
 
     <route
         name="form-loader"

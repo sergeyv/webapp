@@ -38,6 +38,23 @@
 
 		this.isRunning = false;
 
+
+        this.showMessage = function(msg, title) {
+            /*
+            Displays a message - a nicer replacement for
+            alert function
+            */
+            $('<div></div>').html(msg).dialog({
+                modal: true,
+                title:title,
+                buttons: {
+                    Ok: function() {
+                        $(this).dialog('close');
+                    }
+                }
+            });
+        }
+
         /* The code above is executed before the DOM is loaded so we need to
            postpone registering the error handlers until later
         */
@@ -254,33 +271,6 @@
 
 		}
 	};
-
-
-	// I am utility method used to create new DOM elements from templates.
-	/*Application.prototype.getFromTemplate = function( template, model ){
-		// Get the raw HTML from the template.
-		var templateData = template.html();
-
-		// Replace any data place holders with model data.
-		templateData = templateData.replace(
-			new RegExp( "\\$\\{([^\\}]+)\\}", "gi" ),
-			function( $0, $1 ){
-				// Check to see if the place holder corresponds to a model property.
-				// If it does, replace it in.
-				if ($1 in model){
-					// Replace with model property.
-					return( model[ $1 ] );
-				} else {
-					// Model property not found - just return what was already there.
-					return( $0 )
-				}
-			}
-		);
-
-		// Create the new node, store the model data internall, and return
-		// the new node.
-		return( $( templateData ).data( "model", model ) );
-	};*/
 
 
 	// I return an instance of the class with the given name.
@@ -603,14 +593,6 @@
 	// ----------------------------------------------------------------------- //
 	// ----------------------------------------------------------------------- //
 
-    Application.prototype.FormView = function(){
-        // ...
-    };
-
-    Application.prototype.FormView.prototype = {
-        hello: function() { alert("Hello!"); }
-    };
-
 	// I am the prototype for the application controllers. This is so they
 	// can leverage some binding magic without the overhead of the implimentation.
 	Application.prototype.Controller = function(){
@@ -623,6 +605,13 @@
 
 		// I route the given pseudo location to the given controller method.
 		route: function( path, view, default_parameters ){
+
+            // Do not allow to add an undefined view:
+            if (!view) {
+                window.application.showMessage("Undefined view for path "+path,
+                                               "Invalid Route");
+            }
+
 			// Strip of any trailing and leading slashes.
 			path = application.normalizeHash( path );
 

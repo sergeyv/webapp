@@ -5,7 +5,8 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import IntegrityError
+#from sqlalchemy.exc import IntegrityError, InvalidRequestError
+from sqlalchemy.exceptions import InvalidRequestError
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
@@ -22,7 +23,7 @@ class WebappBase(object):
     """
 
 
-    def __str__(self):
+    def __unicode__(self):
         if hasattr(self, 'name') and self.name:
             return str(self.name)
 
@@ -32,15 +33,48 @@ class WebappBase(object):
         if hasattr(self, 'id') and self.id:
             return "%s #%s" % (self.__class__.__name__, self.id)
 
-        return super(WebappBase, self).__str__()
+        return repr(self)
+
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
 
 
     @classmethod
-    def vocab(classobj, filter=None):
+    def by_id(cls, object_id):
         """
-        returns a list of all items of a given class suitable for a listbox dropdown
+        Returns a single object by its ID, may return None
         """
-        return [ (item.id, str(item)) for item in DBSession.query(classobj).all() ]
+
+        if object_id is None:
+            return None
+
+        try:
+            result = DBSession.query(cls).filter(cls.id==object_id).one()
+        except InvalidRequestError:
+            # If an object doesn't exist for this ID - return None
+            return None
+
+        return result
+
+
+    @classmethod
+    def from_list_of_ids(cls, ids):
+        """
+        Returns a list of objects which IDs match the list
+        passed to the function
+
+        NOTE: Doesn't preserve order!
+        """
+
+        try:
+            result = DBSession.query(cls).filter(cls.id.in_(ids)).all()
+        except InvalidRequestError:
+            # If nothing found - return an empty list
+            # (though I'm not sure we need this here)
+            return []
+
+        return result
 
 
 Base = declarative_base(cls=WebappBase)

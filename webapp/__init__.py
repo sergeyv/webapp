@@ -11,3 +11,5 @@ from forms import loadable_form, LoadableForm, get_form
 
 
 from rest import RestSection, RestProxy, VocabSection, IRestRootSection
+
+from templates import ITemplatesSection

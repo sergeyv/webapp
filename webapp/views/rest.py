@@ -74,12 +74,31 @@ def json_rest_create(context, request):
     # base class of our context
 
     # TODO: Add validation here
-    new_item = context.create_subitem()
-    for (k,v) in params.items():
-        if v: # Do not set empty fields
-            setattr(new_item, k, v)
+    new_item = context.create_subitem(params=params)
 
     DBSession.add(new_item)
+    return {'result':"HELLO FROM THE SERVER"}
+
+@bfg_view(context=crud.ISection, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+def json_rest_delete(context, request):
+    """
+    """
+    print "JSON_REST_DELETE: request body %s" % (request.body)
+
+    params = json.loads(request.body)
+    print "JSON_REST_DELETE: %s" % (params)
+
+    context.delete_subitems(ids=params['id'])
+    #if hasattr(context, 'create_new_item'):
+        #return context.create_new_item(params)
+
+    ## TODO: A generic case which probably should be moved to the
+    ## base class of our context
+
+    ## TODO: Add validation here
+    #new_item = context.create_subitem(params=params)
+
+    #DBSession.add(new_item)
     return {'result':"HELLO FROM THE SERVER"}
 
 

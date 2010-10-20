@@ -134,6 +134,8 @@
             self.view.find(".formTitle").text(self.options.add_form_title);
             self.view.find("#"+self.options.identifier+"-action").val(self.options.add_button_title);
         }
+
+        self.populateLoadables(1);//self.item_id);
         /// if it's the first showing, DOM does not exist at this point yet
         self.populateForm(self.item_id);
 
@@ -191,9 +193,54 @@
                 var id = '#' + self.options.identifier + '-' + name;
                 var elem = $(id);
                 window.application.log(id + " ===> " + elem);
-                $(id).val(value);
+                /// support read-only fields
+                if (elem[0].tagName.toLowerCase() == 'div')
+                {
+                    elem.html(value || '&mdash;')
+                } else {
+                    elem.val(value);
+                }
             });
         });
+    };
+
+    GenericForm.prototype.populateLoadables = function(item_id) {
+
+        var self = this;
+        // Reset the form.
+
+
+        //if (! item_id) { return; }
+
+        self.form.find('div.loadableListbox').each(function(idx) {
+            //$(this).css('border', '2px solid red');
+            var $select = $(this).find('select');
+            $select.children().remove();
+            var from = $select.attr("href");
+            $.Read(from, function(data) {
+            $.each(data.items, function(idx, value) {
+                window.application.log("Name:" + idx);
+                window.application.log("Value:" +value);
+                $("<option />").val(value[0]).html(value[1]).appendTo($select);
+            });
+        });
+        });
+
+        /*$.Read(, function(data) {
+            window.application.log("TADA");
+            $.each(data, function(name, value) {
+                var id = '#' + self.options.identifier + '-' + name;
+                var elem = $(id);
+                window.application.log(id + " ===> " + elem);
+                /// support read-only fields
+                if (elem[0].tagName.toLowerCase() == 'div')
+                {
+                    elem.html(value || '&mdash;')
+                } else {
+                    elem.val(value);
+                }
+            });
+        });*/
     };
 
     // I submit the form.

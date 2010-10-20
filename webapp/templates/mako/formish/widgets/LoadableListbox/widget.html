@@ -1,0 +1,18 @@
+<%page args="field" />
+<%!
+from formish import util
+%>
+
+<div class="loadableListbox">
+
+<select id="${field.cssname}" type="text" name="${field.name}"
+% if classes:
+${util.classes_from_vars(classes)|n}
+% endif
+
+href="${field.widget.load_from}"
+>
+<option>Dummy</option>
+</select>
+
+</div>

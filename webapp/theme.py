@@ -61,6 +61,7 @@ class ResourceRegistry(object):
     # Our framework stuff
     "/webapp.client/js/generic_view.js",
     "/webapp.client/js/generic_form.js",
+    "/webapp.client/js/templated_view.js",
     "/webapp.client/js/generic_listing.js",
     "/webapp.client/js/app.js",
     )

@@ -23,11 +23,25 @@ class RestSection(crud.Section):
 
     def get_items_listing(self, request):
 
+
+
+        format = request.GET.get('format', 'listing')
+
+        ### 'vocab' format is a special (simplified) case
+        ### - returns {'items': [(id, name), (id, name), ...]}
+        if format=='vocab':
+            items = self.get_items(order_by="name", wrap=False)
+            result = [ (item.id, str(item)) for item in items ]
+            return {'items':result}
+
+
         data = {}
         batch_start = int(request.GET.get('from', 0))
 
         model_class = self.subitems_source
         query = DBSession.query(model_class)
+
+
 
         #query = DBSession.query(Project).options(sa.orm.eagerload('client'))
 
@@ -74,8 +88,6 @@ class RestSection(crud.Section):
 
         # wrap SA objects
         items = [self.wrap_child(model=model, name=str(model.id)) for model in items]
-
-        format = request.GET.get('format', 'listing')
 
         for item in items:
             i = item.get_data(format=format)
@@ -144,8 +156,16 @@ class RestProxy(crud.ModelProxy):
     def get_data(self, format='default'):
         """
         """
+
+        form_name = self.data_formats.get(format, None)
+        if form_name is None:
+            raise ValueError("Format '%s' is not registered for %s" % (format, self.__class__))
+
         form = get_form(self.data_formats[format])
 
+        if form is None:
+            raise ValueError("%s form is not registered, but is listed as the"\
+            " '%s' format for %s class" % (form_name, format, self.__class__) )
         structure = form.structure
 
         data = {}
@@ -168,6 +188,7 @@ class RestProxy(crud.ModelProxy):
 
 
 class VocabSection(crud.Section):
+
 
     def get_items_listing(self, request=None):
         """

@@ -5,6 +5,9 @@ import formish
 import schemaish as sc
 import validatish as v
 
+
+from pkg_resources import resource_filename
+
 from zope.component import getGlobalSiteManager
 gsm = getGlobalSiteManager()
 
@@ -49,6 +52,9 @@ def get_form(name):
 class LoadableForm(formish.Form):
 
     implements(ILoadableForm)
+
+
+    renderer = formish.renderer.Renderer([resource_filename('webapp', 'templates/mako')])
 
     def get_js_validation_rules(self):
         """

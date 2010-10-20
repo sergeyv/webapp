@@ -8,21 +8,57 @@
         */
         this.options = $.extend({
         }, options);
+
     };
 
     GenericListing.prototype = new GenericView();
 
 
-
     GenericListing.prototype.showViewFirstTime = function( parameters ) {
 
-        var self = this;
-        self.listing = self.view.find("table.listingTable > tbody");
+        self = this;
+        var load_from = "/templates/"+self.options.identifier;
+
+        //alert("Loading from: "+load_from);
+        /*var $placeholder = self.view.find(".formPlaceholder");
+        if (! $placeholder.length) {
+            alert("Can't find form placeholder for " + self.options.identifier);
+        }*/
+
+        self.view.load(load_from, function() {
+
+            //self.genericAugmentForm();
+
+            /// Form is loaded, we can now adjust form's look
+            //self.augmentForm();
+
+            // and bind stuff
+            //self.bindFormControls();
+
+            // Set validation
+            //self.setValidationRules();
+
+            // attach event handlers
+            //self.setHandlers();
+
+            /// finally we can show the form
+            //self.showView( parameters );
 
 
-        self.populateFilters( function() {
-            self.showView( parameters );
+            self.listing = self.view.find("table.listingTable > tbody");
+
+            if (self.options.after_template_loaded) {
+                self.options.after_template_loaded(self);
+            }
+
+            self.populateFilters( function() {
+                self.showView( parameters );
+            });
+
         });
+
+
+        //var self = this;
 
         /*
 
@@ -257,7 +293,8 @@
             });*/
             /// End modifying categories
 
-            var template = $('#'+self.options.identifier+'-row-template');
+            /*var templ_id = '#'+self.options.identifier+'-row-template';*/
+            var template = self.view.find("script.rowTemplate");
             if (!template.length) { alert("Template not found!"); }
             var output = template.jqote(data.items);
 
@@ -266,7 +303,7 @@
                 var more_link = '<tr><td colspan="99"><a class="moreLink" href="#">Show More</a></td></tr>';
                 var next_batch_start = data.next_batch_start;
 
-                self.listing.append($(more_link)).click(function() {
+                $(more_link).appendTo(self.listing).click(function() {
                     self.populateList(next_batch_start);
                     return false;
                 });
