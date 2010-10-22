@@ -87,6 +87,8 @@
         /// TODO: Add option/condition "add_cancel_link"?
         self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
 
+        self.cancelLink = self.view.find("a.formCancelLink");
+
         /// convert the "fake" fields which are marked with
         /// 'section_title' class into titles
         this.view.find(".section_title").each( function () {
@@ -123,6 +125,9 @@
     GenericForm.prototype.showView = function( parameters ){
         var self = this;
 
+        /// Cancel link points to the page we came from
+        self.cancelLink.attr('href', "#/"+window.application.previousPageUrl());
+
         // Show the view.
         self.view.addClass( "activeContentView" );
         self.item_id = parameters.id;
@@ -134,6 +139,7 @@
             self.view.find(".formTitle").text(self.options.add_form_title);
             self.view.find("#"+self.options.identifier+"-action").val(self.options.add_button_title);
         }
+
 
         self.populateLoadables(1);//self.item_id);
         /// if it's the first showing, DOM does not exist at this point yet
@@ -255,19 +261,23 @@
             /// It's an "Add user" form
             $.Create(self.options.rest_service_root+"/", form_data,
                 function(data) {
-                    // go back to the users listing (this re-queries the listing from the server)
-                    window.application.relocateTo(self.options.redirect_after_add);
+                    var url = self.options.redirect_after_edit || window.application.previousPageUrl();
+                    window.application.relocateTo(url);
                 });
         } else {
             /// It's an "Edit user" form
             $.Update(self.options.rest_service_root+"/"+self.item_id, form_data,
                 function(data) {
-                    // go back to the users listing (this re-queries the listing from the server)
-                    window.application.relocateTo(self.options.redirect_after_edit);
+                    var url = self.options.redirect_after_edit || window.application.previousPageUrl();
+                    window.application.relocateTo(url);
+
                 });
         }
         return false;
     };
+
+    GenericForm.prototype.getReturnUrl = function () {
+    }
 
     /// VOCABULARY STUFF
     /// (not really sure it belongs here)

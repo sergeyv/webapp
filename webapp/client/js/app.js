@@ -38,6 +38,7 @@
 
 		this.isRunning = false;
 
+        this.visitedUrlsLog = [];
 
         this.showMessage = function(msg, title) {
             /*
@@ -79,24 +80,6 @@
                         }
                     });
             });
-
-            /// initialize the dialog
-
-            // TODO: Extract this somewhere
-            /*
-            self.dialog = $("#add-vocab-value-dialog");
-            self.dialog.dialog({autoOpen:false,
-                                modal: true,
-                                buttons: {
-                                    Cancel: function() {
-                                        $(this).dialog('close');
-                                    },
-                                    Add: function() {
-                                        $(this).dialog('close');
-                                    }
-                                }
-                        });
-            */
 
         });
 
@@ -442,6 +425,8 @@
 
         var hash = self.normalizeHash(event.value);
 
+        // remember the url
+        self.visitedUrlsLog.push(hash);
 
         // Define the default event context.
         var eventContext = {
@@ -515,7 +500,7 @@
 	});
 
 
-	// I create a proxy for the callback so that given callback executes in the
+/*	// I create a proxy for the callback so that given callback executes in the
 	// context of the application object, overriding any context provided by the
 	// calling context.
 	Application.prototype.proxyCallback = function( callback ){
@@ -528,15 +513,37 @@
 			}
 		);
 	}
+*/
 
+    /*
+     * Relocates the application to the given location.
+     * Don't do anything explicitly -
+     * let the location monitoring handle the change implicitly.
+     * (hint: location may change without calling this function,
+     * for example by clicking on a link
+     */
 
-	// I relocate the application to the given location. You can also pass through
-	// a hash of any additional parameters that you wanted added to the location
-	// event that gets triggers.
-	Application.prototype.relocateTo = function( newLocation, parameters ){
-		this.setLocation( newLocation, parameters );
+	Application.prototype.relocateTo = function( location ){
+
+        // Clear the location.
+        location = this.normalizeHash( location );
+
+        // Change the location
+        window.location.hash = ("#/" + location );
+
 	};
 
+    // uses window.application.visitedUrlsLog
+    // to return the previous page url
+    Application.prototype.previousPageUrl = function() {
+        var l = this.visitedUrlsLog;
+        var result = "";
+        if (l.length > 1) {
+            result = l[l.length - 2];
+        }
+        window.application.log("PREV PAGE: "+ result);
+        return result;
+    };
 
 	// I start the application.
 	Application.prototype.run = function(){
@@ -558,36 +565,6 @@
 		// Flag that the application is running.
 		this.isRunning = true;
 	};
-
-
-	// I set the location of the application. I don't do anything explicitly -
-	// I let the location monitoring handle this change implicitly. You can also
-	// pass through additional parameters that will be added to the location event
-	// that gets triggered.
-	Application.prototype.setLocation = function( location, parameters ){
-		// Clearn the location.
-		location = this.normalizeHash( location );
-
-		// Create variables to hold the new and old hashes.
-		var oldLocation = this.currentLocation;
-		var newLocation = location;
-
-		// Store the new location.
-		this.currentLocation = location;
-
-		// Make sure the hash is the same as the location (this way, we don't
-		// get circular logic as the monitor keeps pinging the hash).
-		window.location.hash = ("#/" + location );
-
-		// The location has changed - trigger the change event on the application
-		// object so that anyone monitoring it can react.
-		$( this ).trigger({
-			type: "locationchange",
-			toLocation: newLocation,
-			parameters: parameters
-		});
-	};
-
 
 
 	// ----------------------------------------------------------------------- //
