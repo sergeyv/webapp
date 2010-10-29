@@ -7,6 +7,7 @@
     */
     function GenericForm(options){
         this.options = $.extend({
+            data_format: "default",
             add_form_title: "Add Item",
             edit_form_title: "Edit Item",
             add_button_title: "Add Item",
@@ -193,18 +194,22 @@
         if (! item_id) { return; }
 
         /// TODO: format support - +"?format="+self.options.identifier etc.
-        $.Read(self.options.rest_service_root+"/"+item_id, function(data) {
-            window.application.log("TADA");
+        $.Read(self.options.rest_service_root+"/"+item_id+"?format="+self.options.data_format, function(data) {
             $.each(data, function(name, value) {
                 var id = '#' + self.options.identifier + '-' + name;
                 var elem = $(id);
                 window.application.log(id + " ===> " + elem);
-                /// support read-only fields
-                if (elem[0].tagName.toLowerCase() == 'div')
+                if (elem.length)
                 {
-                    elem.html(value || '&mdash;')
+                    /// support read-only fields
+                    if (elem[0].tagName.toLowerCase() == 'div')
+                    {
+                        elem.html(value || '&mdash;')
+                    } else {
+                        elem.val(value);
+                    }
                 } else {
-                    elem.val(value);
+                    window.application.log("NOT FOUND: " +id);
                 }
             });
         });
