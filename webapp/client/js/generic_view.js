@@ -7,6 +7,30 @@ function GenericView(options){
 };
 
 
+GenericView.prototype.getRestServiceUrl = function() {
+    /*
+     * Finds and replaces placeholders in the rest_service_root
+     * options parameters with the actual values from the 'parameters' dict
+     * so if we have a view registered at /companies/:company_id/staff/:person_id, and its rest_service_root is
+     * /rest/companies/:company_id/:person_id, the view will load its data from /rest/companies/123/456
+     */
+    var self = this;
+    var root = self.options.rest_service_root;
+
+    var url = root.replace(
+        new RegExp( "(/):([^/]+)", "gi" ),
+        function( $0, $1, $2 ){
+            var repl = self.parameters[$2];
+            if (repl) {
+                return "/"+repl;
+            }
+            return "";
+        }
+        );
+    return url;
+}
+
+
 GenericView.prototype.init = function(){
     /// this is called _before_ the view is loaded
     /// (as the view is loaded on demand)

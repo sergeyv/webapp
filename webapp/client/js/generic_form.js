@@ -17,6 +17,16 @@
 
     GenericForm.prototype = new GenericView();
 
+
+    GenericForm.prototype.isAddForm = function(){
+        /*
+         * Check if we either have 'adding' hint passed to the route
+         * or 'adding' parameter specified in the options
+         */
+        if (self.parameters.adding ||
+            self.options.adding) { return true; }
+        return false;
+    }
     GenericForm.prototype.decorateView = function(){
          /// this is called by GenericView.init and allows us to
          /// insert arbitrary content into the newly-created
@@ -131,20 +141,23 @@
 
         // Show the view.
         self.view.addClass( "activeContentView" );
-        self.item_id = parameters.id;
+
+        self.parameters = parameters;
+
         /// Change the form's title depending on whether we're adding or editing
-        if (self.item_id) {
-            self.view.find(".formTitle").text(self.options.edit_form_title);
-            self.view.find("#"+self.options.identifier+"-action").val(self.options.edit_button_title);
-        } else {
+
+        if (self.isAddForm()) {
             self.view.find(".formTitle").text(self.options.add_form_title);
             self.view.find("#"+self.options.identifier+"-action").val(self.options.add_button_title);
+        } else {
+            self.view.find(".formTitle").text(self.options.edit_form_title);
+            self.view.find("#"+self.options.identifier+"-action").val(self.options.edit_button_title);
         }
 
 
-        self.populateLoadables(1);//self.item_id);
+        self.populateLoadables();
         /// if it's the first showing, DOM does not exist at this point yet
-        self.populateForm(self.item_id);
+        self.populateForm();
 
     };
 
@@ -155,18 +168,12 @@
     // I disable the form.
     GenericForm.prototype.disableForm = function(){
         // Disable the fields.
-        /*this.fields.name.attr( "disabled", true );
-        this.fields.phone.attr( "disabled", true );
-        this.fields.email.attr( "disabled", true );*/
     };
 
 
     // I enable the form.
     GenericForm.prototype.enableForm = function(){
         // Enable the fields.
-        /*this.fields.name.removeAttr( "disabled" );
-        this.fields.phone.removeAttr( "disabled" );
-        this.fields.email.removeAttr( "disabled" );*/
     };
 
 
@@ -184,17 +191,20 @@
 
 
 
-    GenericForm.prototype.populateForm = function(item_id) {
+    GenericForm.prototype.populateForm = function() {
 
         var self = this;
         // Reset the form.
         self.resetForm();
 
-        self.disableForm();
-        if (! item_id) { return; }
+        if (self.isAddForm())
+        {
+            return;
+        }
 
-        /// TODO: format support - +"?format="+self.options.identifier etc.
-        $.Read(self.options.rest_service_root+"/"+item_id+"?format="+self.options.data_format, function(data) {
+        self.disableForm();
+
+        $.Read(self.getRestServiceUrl() + "?format="+self.options.data_format, function(data) {
             $.each(data, function(name, value) {
                 var id = '#' + self.options.identifier + '-' + name;
                 var elem = $(id);
@@ -215,13 +225,10 @@
         });
     };
 
-    GenericForm.prototype.populateLoadables = function(item_id) {
+    GenericForm.prototype.populateLoadables = function() {
 
         var self = this;
         // Reset the form.
-
-
-        //if (! item_id) { return; }
 
         self.form.find('div.loadableListbox').each(function(idx) {
             //$(this).css('border', '2px solid red');
@@ -258,20 +265,19 @@
     GenericForm.prototype.submitForm = function(){
         var self = this;
 
-        //alert("Submit!");
 
         var form_data = self.form.serializeObject();
-        if (! self.item_id)
+        if (self.isAddForm())
         {
-            /// It's an "Add user" form
-            $.Create(self.options.rest_service_root+"/", form_data,
+            /// It's an Add form
+            $.Create(self.getRestServiceUrl(), form_data,
                 function(data) {
                     var url = self.options.redirect_after_edit || window.application.previousPageUrl();
                     window.application.relocateTo(url);
                 });
         } else {
-            /// It's an "Edit user" form
-            $.Update(self.options.rest_service_root+"/"+self.item_id, form_data,
+            /// It's an Edit form
+            $.Update(self.getRestServiceUrl(), form_data,
                 function(data) {
                     var url = self.options.redirect_after_edit || window.application.previousPageUrl();
                     window.application.relocateTo(url);
@@ -281,8 +287,6 @@
         return false;
     };
 
-    GenericForm.prototype.getReturnUrl = function () {
-    }
 
     /// VOCABULARY STUFF
     /// (not really sure it belongs here)

@@ -71,9 +71,9 @@
 
     TemplatedView.prototype.populateView = function(){
         var self = this;
-        var service_url = this.itemRestURL();
+        //var service_url = this.itemRestURL();
 
-        $.Read(service_url, function(data) {
+        $.Read(self.getRestServiceUrl(), function(data) {
             var template = self.template;
             if (!self.template.length) { alert("Template not found!"); }
             var output = self.template.jqote({data:data, view:self});
@@ -86,6 +86,3 @@
 
     };
 
-    TemplatedView.prototype.itemRestURL = function() {
-        return this.options.rest_service_root +"/"+this.parameters.id;
-    };
