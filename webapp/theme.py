@@ -58,6 +58,12 @@ class ResourceRegistry(object):
     "/webapp.client/core_js/jquery.validate.js",
     "/webapp.client/core_js/additional-methods.js",
 
+    # Jquery.cookie plugin - not directly used by the webapp
+    # but we need this for doing the auth with orbited
+    # from http://plugins.jquery.com/node/1386/release
+    "/webapp.client/core_js/jquery.cookie.js",
+
+
     # Our framework stuff
     "/webapp.client/js/generic_view.js",
     "/webapp.client/js/generic_form.js",
