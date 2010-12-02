@@ -48,11 +48,11 @@ class WebappBase(object):
 
         if object_id is None:
             return None
-
         try:
             result = DBSession.query(cls).filter(cls.id==object_id).one()
         except InvalidRequestError:
             # If an object doesn't exist for this ID - return None
+            raise
             return None
 
         return result

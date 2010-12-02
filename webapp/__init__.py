@@ -7,7 +7,7 @@ from theme import set_theme, get_theme
 from theme import ResourceRegistry
 
 
-from forms import loadable_form, LoadableForm, get_form
+from forms import loadable, loadable_form, LoadableForm, get_form
 
 
 from rest import RestSection, RestProxy, VocabSection, IRestRootSection

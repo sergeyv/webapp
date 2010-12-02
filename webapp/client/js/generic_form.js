@@ -237,8 +237,8 @@
             var from = $select.attr("href");
             $.Read(from, function(data) {
             $.each(data.items, function(idx, value) {
-                window.application.log("Name:" + idx);
-                window.application.log("Value:" +value);
+                //window.application.log("Name:" + idx);
+                //window.application.log("Value:" +value);
                 $("<option />").val(value[0]).html(value[1]).appendTo($select);
             });
         });

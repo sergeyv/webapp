@@ -39,10 +39,36 @@ class loadable_form(object):
         self.name = name
 
     def __call__(self, f):
+        print "DEPRECATED: loadable_form decorator is deprecated"
         form = f()
         form.name = self.name
         gsm.registerUtility(form, ILoadableForm, self.name)
         return form
+
+
+def loadable(cls):
+    """
+    Registers a formish structure class as a loadable form
+
+    @loadable
+    class TestForm(schemaish.Structure):
+        attr1 = sc.String(title="Attribute 1")
+        attr2 = sc.String(title="Attribute 2")
+
+        def augment_form(self, form):
+            form['client'].widget = webapp.widgets.FieldsetSwitcher(options=(("1", "One"), ("2", "Two")))
+
+    Then the template can be loaded from /forms/ClassName
+    """
+    name = cls.__name__
+    schema = cls()
+    form = LoadableForm(schema)
+    form.name = name
+    if hasattr(cls, 'augment_form'):
+        schema.augment_form(form)
+    gsm.registerUtility(form, ILoadableForm, name)
+    print "Registered loadable form %s" % name
+    return cls
 
 
 def get_form(name):

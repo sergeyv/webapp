@@ -1,0 +1,31 @@
+<%page args="field" />
+
+<select id="${field.cssname}" name="${field.name}">
+%for option in field.widget.get_options(field):
+  <option value="${option[0]}" ${field.widget.selected(option,field)|n}>${option[1]}</option>
+%endfor
+</select>
+
+<script type="text/javascript">
+    $(function() {
+        var adjust_visibility = function() {
+            var all = [
+            %for option in field.widget.get_options(field):
+                "${option[0]}",
+            %endfor
+            ],
+            formName = "${field.cssname}".split("-")[0],
+            to_show = $("#${field.cssname}").val();
+
+            $.each(all, function() {
+                $("#"+formName+"-"+this+"--field").hide();
+            });
+
+            $("#"+formName+"-"+to_show+"--field").show();
+        }
+        $("select#${field.cssname}").change(function() {
+            adjust_visibility();
+        })
+        adjust_visibility();
+    });
+</script>

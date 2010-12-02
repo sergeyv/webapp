@@ -30,7 +30,8 @@ class RestSection(crud.Section):
         ### 'vocab' format is a special (simplified) case
         ### - returns {'items': [(id, name), (id, name), ...]}
         if format=='vocab':
-            items = self.get_items(order_by="name", wrap=False)
+            order_by = request.GET.get('order_by', 'name')
+            items = self.get_items(order_by=order_by, wrap=False)
             result = [ (item.id, str(item)) for item in items ]
             return {'items':result}
 
