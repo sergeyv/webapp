@@ -6,6 +6,7 @@
         /* options are:
         -identifier
         - rest_service_root
+        - data_format
         - after_data_loaded (function)
         */
         this.options = $.extend({
@@ -71,18 +72,45 @@
 
     TemplatedView.prototype.populateView = function(){
         var self = this;
-        //var service_url = this.itemRestURL();
-
-        $.Read(self.getRestServiceUrl(), function(data) {
+        var service_url = self.getRestServiceUrl();
+        if (self.options.data_format) {
+            service_url += "?format="+self.options.data_format;
+        }
+        $.Read(service_url, function(data) {
             var template = self.template;
             if (!self.template.length) { alert("Template not found!"); }
             var output = self.template.jqote({data:data, view:self});
             self.view.html(output);
+
+            self.augmentView();
 
             if (self.options.after_data_loaded) {
                 self.options.after_data_loaded(self);
             }
         });
 
+    };
+
+    TemplatedView.prototype.augmentView = function() {
+        var self = this;
+        var service_url = self.getRestServiceUrl();
+
+        /// Every link marked with webappAsyncAction class will
+        /// invoke an async task (well, it can be used to ping
+        /// any URL, but the result is discarded, so it's only
+        /// useful for async tasks
+        self.view.find("a.webappAsyncAction").click(function() {
+            var $link = $(this);
+            $.Read(service_url + '/' + $link.attr('href'));
+            return false;
+        });
+        /// Every link marked with webappInvokeOnLoad class will
+        /// be 'clicked' programmatically when the view is loaded
+        /// (in the same manner webappAsyncAction links are invoked when clicked). You can hide the link using css if it's not needed in the UI
+        self.view.find("a.webappInvokeOnLoad").each(function(idx, elem) {
+            var $link = $(elem);
+            $.Read(service_url + '/' + $link.attr('href'));
+            return false;
+        });
     };
 

@@ -27,6 +27,7 @@ GenericView.prototype.getRestServiceUrl = function() {
             return "";
         }
         );
+
     return url;
 }
 
