@@ -136,7 +136,8 @@
         /// (in the same manner webappAsyncAction links are invoked when clicked). You can hide the link using css if it's not needed in the UI
         self.view.find("a.webappInvokeOnLoad").each(function(idx, elem) {
             var $link = $(elem);
-            return invoke_async_action($link);
+            invoke_async_action($link);
+            return undefined; // if we return false the iteration stops
         });
     };
 
