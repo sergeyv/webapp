@@ -13,17 +13,10 @@ def json_renderer_factory(name):
         def default(self, obj):
             if isinstance(obj, datetime.datetime):
                 return "%s-%s-%s" % (obj.year, obj.month, obj.day)
-                #return '**new Date(%i,%i,%i,%i,%i,%i)' % (obj.year,
-                #                                        obj.month-1,
-                #                                        obj.day,
-                #                                        obj.hour,
-                #                                        obj.minute,
-                #                                        obj.second)
+
             if isinstance(obj, datetime.date):
                 return "%s-%s-%s" % (obj.year, obj.month, obj.day)
-                #return '**new Date(%i,%i,%i)' % (obj.year,
-                #                                obj.month-1,
-                #                                obj.day)
+
             return json.JSONEncoder.default(self, obj)
 
 
@@ -45,6 +38,5 @@ def json_renderer_factory(name):
         if request is not None:
             if not hasattr(request, 'response_content_type'):
                 request.response_content_type = 'application/json'
-        print "Custom json renderer!"
         return _dumps(value)
     return _render

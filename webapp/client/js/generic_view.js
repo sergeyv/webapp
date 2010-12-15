@@ -17,6 +17,9 @@ GenericView.prototype.getRestServiceUrl = function() {
     var self = this;
     var root = self.options.rest_service_root;
 
+    /* Not every view needs to load data */
+    if (! root) { return "" };
+
     var url = root.replace(
         new RegExp( "(/):([^/]+)", "gi" ),
         function( $0, $1, $2 ){
@@ -62,6 +65,9 @@ GenericView.prototype.showView = function(){
 };
 
 
+/*
+ * RedirectView - redirects to another url when invoked
+ */
 
 function RedirectView(target_url){
     this.target_url = target_url;

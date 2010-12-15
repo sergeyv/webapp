@@ -27,6 +27,7 @@
             self.options.adding) { return true; }
         return false;
     }
+    
     GenericForm.prototype.decorateView = function(){
          /// this is called by GenericView.init and allows us to
          /// insert arbitrary content into the newly-created

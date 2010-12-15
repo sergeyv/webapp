@@ -1,13 +1,6 @@
-h1 {
-font-family: sans-serif;
-color: #006000;
-}
 
 
-#users-listing {
-    width:100%;
-    border-collapse: collapse;
-}
+
 .listingEntry {
     border-bottom: 1px solid #D0D0D0;
 }

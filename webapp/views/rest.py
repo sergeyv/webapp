@@ -128,7 +128,14 @@ def json_rest_get(context, request):
 
     item = context.model
 
-    form_name = context.data_formats[format_name]
+    try:
+        form_name = context.data_formats[format_name]
+    except KeyError:
+        from repoze.bfg.exceptions import ExceptionResponse
+        e = ExceptionResponse("Data format '%s' is not registered for %s" % (format_name, context.__class__.__name__))
+        e.status = '444 Data Format Not Found'
+        raise e
+
     schema = get_form(form_name).structure
 
     result = {}

@@ -17,33 +17,9 @@
     GenericListing.prototype.showViewFirstTime = function( parameters ) {
 
         self = this;
-        var load_from = "/templates/"+self.options.identifier;
-
-        //alert("Loading from: "+load_from);
-        /*var $placeholder = self.view.find(".formPlaceholder");
-        if (! $placeholder.length) {
-            alert("Can't find form placeholder for " + self.options.identifier);
-        }*/
+        var load_from = "/t/"+self.options.identifier+".html";
 
         self.view.load(load_from, function() {
-
-            //self.genericAugmentForm();
-
-            /// Form is loaded, we can now adjust form's look
-            //self.augmentForm();
-
-            // and bind stuff
-            //self.bindFormControls();
-
-            // Set validation
-            //self.setValidationRules();
-
-            // attach event handlers
-            //self.setHandlers();
-
-            /// finally we can show the form
-            //self.showView( parameters );
-
 
             self.listing = self.view.find("table.listingTable > tbody");
 
@@ -57,18 +33,6 @@
 
         });
 
-
-        //var self = this;
-
-        /*
-
-        $("#projects-listing-container div.moreContactsLink a")
-            .live('click', function() {
-                var $link = $(this);
-                $link.parent().parent().children("ul").children("li").show("slow");
-                $link.parent().remove();
-        });
-        */
     };
 
     GenericListing.prototype.populateFilters = function(continue_fn) {
@@ -201,24 +165,7 @@
     };
 
     GenericListing.prototype.adjustFilters = function() {
-
         var self = this;
-        /*$.each(self.filters, function(name, value) {
-            var $f = $("#projects-"+name+"-filter");
-            $f.val(value);
-        });*/
-//         $("#project-status-filter").find("a").removeClass("current");
-//         var status_id = self.filters.status;
-//         $("#project-status-filter").find("a.option"+status_id).addClass("current");
-
-        /*var statuses = self.filter_vocabularies['project-status-filter'];
-
-        $.each(statuses, function(idx, status) {
-            if (status.id == status_id) {
-                $("#project-listing-stats").find("span.projectStatus").html(status.name);
-            }
-        });*/
-
     };
 
     // I clear the contact list.
@@ -239,8 +186,6 @@
         var sort_on = this.sort_on;
         var sort_order = this.sort_order;
 
-        //var status = self.statusFilter.val();
-        //var user_type = self.userTypeFilter.val();
         var qry = "";
         var need_clearing = true;
 
@@ -256,6 +201,10 @@
             qry += "&sort_order="+sort_order;
         }
 
+        if (this.options.data_format) {
+            qry += "&format="+this.options.data_format;
+        }
+
         $.each(self.filters, function(name,value) {
             if (name) {
                 qry += '&'+name+'='+value;
@@ -269,7 +218,7 @@
         $.Read(service_url, function(data) {
 
             // Show the total number of records found
-            self.view.find("span.itemsCount").html(data.total_count);
+            //self.view.find("span.itemsCount").html(data.total_count);
 
             if (need_clearing) {
                 self.clearList();
@@ -293,7 +242,6 @@
             });*/
             /// End modifying categories
 
-            /*var templ_id = '#'+self.options.identifier+'-row-template';*/
             var template = self.view.find("script.rowTemplate");
             if (!template.length) { alert("Template not found!"); }
             var output = template.jqote(data.items);

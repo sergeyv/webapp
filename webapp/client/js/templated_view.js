@@ -53,7 +53,7 @@
     TemplatedView.prototype.showViewFirstTime = function( parameters ) {
 
         self = this;
-        var load_from = "/templates/"+self.options.identifier;
+        var load_from = "/t/"+self.options.identifier+".html";
 
         self.template.load(load_from, function() {
             self.showView( parameters );
@@ -95,13 +95,40 @@
         var self = this;
         var service_url = self.getRestServiceUrl();
 
+        var invoke_async_action = function($link) {
+            $.Read(service_url + '/' + $link.attr('href'));
+            return false;
+        }
         /// Every link marked with webappAsyncAction class will
         /// invoke an async task (well, it can be used to ping
         /// any URL, but the result is discarded, so it's only
         /// useful for async tasks
         self.view.find("a.webappAsyncAction").click(function() {
             var $link = $(this);
-            $.Read(service_url + '/' + $link.attr('href'));
+            /// if the link also has 'webappConfirmDialog' class,
+            /// we show a confirmation dialog and only invoke
+            // the action if the user clicks OK
+            if ($link.hasClass("webappConfirmDialog")) {
+                $('<div></div>').text($link.attr('title')).dialog({
+                    modal: true,
+                    title: "Confirm",
+                    buttons: {
+                        Cancel: function() {
+                            $(this).dialog('close');
+                        },
+                        OK: function() {
+                            invoke_async_action($link);
+                            $(this).dialog('close');
+                        }
+                    }
+
+                });
+
+            } else {
+                /// if there's no webappConfirmDialog class then
+                /// we invoke the method directly
+                invoke_async_action($link);
+            }
             return false;
         });
         /// Every link marked with webappInvokeOnLoad class will
@@ -109,8 +136,7 @@
         /// (in the same manner webappAsyncAction links are invoked when clicked). You can hide the link using css if it's not needed in the UI
         self.view.find("a.webappInvokeOnLoad").each(function(idx, elem) {
             var $link = $(elem);
-            $.Read(service_url + '/' + $link.attr('href'));
-            return false;
+            return invoke_async_action($link);
         });
     };
 
