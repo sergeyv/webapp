@@ -343,12 +343,12 @@
 		} else {
 
 			// Output the page using P tags.
-			$.each(
+			/*$.each(
 				arguments,
 				function( index, value ){
 					$( document.body ).append( "<p>" + value.toString() + "</p>" );
 				}
-			);
+			);*/
 
 		}
 	};
