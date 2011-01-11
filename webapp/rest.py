@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import schemaish as sc
+
 import crud
 
 from webapp.db import DBSession
@@ -90,13 +92,17 @@ class RestSection(crud.Section):
         # wrap SA objects
         items = [self.wrap_child(model=model, name=str(model.id)) for model in items]
 
-        for item in items:
-            i = item.get_data(format=format)
+        try:
+            for item in items:
+                i = item.get_data(format=format)
 
-            #i['id'] = item.id
-            #i['title'] = item.title
+                #i['id'] = item.id
+                #i['title'] = item.title
 
-            result.append(i)
+                result.append(i)
+        except AttributeError, e:
+            raise
+            #raise AttributeError("%s \n ===> Have you forgotten to register your ModelProxy in the .zcml file?" % e.message)
 
         data['items'] = result
         return data
@@ -167,24 +173,42 @@ class RestProxy(crud.ModelProxy):
         if form is None:
             raise ValueError("%s form is not registered, but is listed as the"\
             " '%s' format for %s class" % (form_name, format, self.__class__) )
-        structure = form.structure
+        structure = form.structure.attr
 
+        return self._extract_data_from_item(self.model, structure)
+
+
+    def _extract_data_from_item(self, item, structure):
         data = {}
         # structure.attrs is a list of (name,field) tuples
         fieldnames = [ i[0] for i in structure.attrs ]
         default = object()
 
         for name in fieldnames:
-            value = getattr(self.model, name, default)
+            value = getattr(item, name, default)
+            structure_field = getattr(structure, name, default)
+
             if value is not default:
-                # We need to prevent classes and other
-                # non-serializable stuff from trying to sneak
-                # into the JSON serializer.
-                # So we convert everything except Nones to str
-                # which probably is not right
-                if value is not None:
-                    value = str(value)
-                data[name] =value
+
+                # Recursively serialize lists of subitems
+                if isinstance(structure_field, sc.Tuple):
+                    #import pdb; pdb.set_trace()
+
+                    subitems_schema = structure_field.attrs[0]
+                    subitems = []
+                    for item in value:
+                        subitems.append(self._extract_data_from_item(item, subitems_schema))
+                    data[name] = subitems
+
+                else:
+                    # We need to prevent classes and other
+                    # non-serializable stuff from trying to sneak
+                    # into the JSON serializer.
+                    # So we convert everything except Nones to str
+                    # which probably is not right
+                    if value is not None:
+                        value = str(value)
+                    data[name] =value
         return data
 
 
