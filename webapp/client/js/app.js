@@ -109,6 +109,7 @@
 	};
 
 
+    /*
 	// I add a given class to the given cache or class repository.
 	Application.prototype.addClass = function( target, value ){
 		// Get the constructor of our value class.
@@ -149,6 +150,7 @@
 
 		}
 	};
+    */
 
 
 	// I add the given controller to the collection of controllers.

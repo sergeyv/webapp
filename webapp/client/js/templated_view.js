@@ -91,12 +91,43 @@
 
     };
 
+    /*
+     * TemplatedView allows links to have some special classes
+     * which modify their behaviour:
+     * - webappAsyncAction - clicking on the link pings the target URL without the page being reloaded. The server response is discarded
+     * - webappInvokeOnLoad - the URL will be pinged when the view is shown
+     * - webappConfirmDialog - shows a confirmation dialog, only pings the URL if the user chooses OK. The link's title tag is used for the dialog's message text
+     * - webappMethodDelete - uses DELETE instead of POST (otherwise it's GET) - We can add more methods when needed though it's not yet
+     * clear how to send any data in a POST or PUT request.
+     */
     TemplatedView.prototype.augmentView = function() {
+
         var self = this;
         var service_url = self.getRestServiceUrl();
 
         var invoke_async_action = function($link) {
-            $.Read(service_url + '/' + $link.attr('href'));
+            var meth = $.Read;
+            var callback = function() {
+
+                /// find all classes which start with webappOnSuccess
+                /// if found, it expects it to be in a form webappOnSuccess-methodName.
+                /// If the view has such method, it is invoked when the call succeeds
+                $($link.attr('class').split(' ')).each(function(idx, val) {
+                    var parts = val.split('-');
+                    if (parts.length===2 &&
+                        parts[0]==="webappOnSuccess" &&
+                        self[parts[1]])
+                    {
+                        self[parts[1]]();
+                    }
+                });
+            };
+
+            if ($link.hasClass("webappMethodDelete")) {
+                meth = $.Delete;
+            }
+
+            meth(service_url + '/' + $link.attr('href'), callback);
             return false;
         }
         /// Every link marked with webappAsyncAction class will

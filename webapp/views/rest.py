@@ -84,17 +84,33 @@ def json_rest_create(context, request):
 
     return {'result':"HELLO FROM THE SERVER"}
 
+
+
 @bfg_view(context=crud.ISection, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
-def json_rest_delete(context, request):
+def json_rest_delete_subitems(context, request):
     """
-    """
-    print "JSON_REST_DELETE: request body %s" % (request.body)
+    When a DELETE request is sent to a Section,
+    it expects its body to be a JSON dictionary of ids
 
+    """
+    print "JSON_REST_DELETE_SUBITEMS: request body %s" % (request.body)
     params = json.loads(request.body)
-    print "JSON_REST_DELETE: %s" % (params)
-
     context.delete_subitems(ids=params['id'])
-    return {'result':"HELLO FROM THE SERVER"}
+    return {'result':"OK"}
+
+
+
+@bfg_view(context=crud.IModel, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+def json_rest_delete_item(context, request):
+    """
+    When a DELETE request is sent to a ModelProxy,
+    it attempts to delete the item itself
+    """
+    print "JSON_REST_DELETE_ITEM"
+    context.delete_item()
+    return {'result':"OK"}
+
+
 
 
 @bfg_view(context=crud.IModel, containment=IRestRootSection, permission="rest.update", request_method="PUT", renderer="better_json", accept="text/plain")
