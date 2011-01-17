@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-#import rest
-
 
 def form_loader(context, request):
     """
