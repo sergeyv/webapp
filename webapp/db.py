@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 #from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlalchemy.exceptions import InvalidRequestError
+from sqlalchemy.orm.exc import NoResultFound
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
@@ -52,7 +53,11 @@ class WebappBase(object):
             result = DBSession.query(cls).filter(cls.id==object_id).one()
         except InvalidRequestError:
             # If an object doesn't exist for this ID - return None
-            raise
+            #raise
+            return None
+        except NoResultFound:
+            ## Hmm... now SA raises NoResultFound...
+            ##raise
             return None
 
         return result

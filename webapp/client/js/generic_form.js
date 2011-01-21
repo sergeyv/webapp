@@ -13,6 +13,8 @@
             add_button_title: "Add Item",
             edit_button_title: "Save Changes"
         }, options);
+
+        /*this.dependent_fields = {};*/
     };
 
     GenericForm.prototype = new GenericView();
@@ -27,7 +29,7 @@
             self.options.adding) { return true; }
         return false;
     }
-    
+
     GenericForm.prototype.decorateView = function(){
          /// this is called by GenericView.init and allows us to
          /// insert arbitrary content into the newly-created
@@ -226,40 +228,85 @@
         });
     };
 
+    GenericForm.prototype._mangle_url = function(path, $elem) {
+        /*
+         *  The method takes a URL which contains some placeholders, such as
+         *  /providers/:provider_id/datacentres, prepends the form's name to it
+         *  and finds a form element which
+         *  matches (i.e. with id="ZopeAddForm-provider_id"). Then it replaces
+         *  the placeholder with the value of the control.
+         *  If the 'master' control's value evaluates to false
+         *  (i.e. when it's contents is not loaded) the method returns
+         *  an empty string, which indicates that we should not load just now.
+         *
+         *  The method also adds a change handler to the 'master' control so the
+         *  dependent control is refreshed each time master is changed.
+         */
+
+        var url = path.replace(
+            new RegExp( "(/):([^/]+)", "gi" ),
+            function( $0, $1, $2 ){
+                /// here $0 is the whole match,
+                /// $1 is the slash
+                /// $2 is the id of the 'master field'
+
+                var id = self.options.identifier + "-"+$2;
+
+                var $master_elem = $("#" + id);
+                // we mark the dependent element with a class to
+                // avoid setting the change() handler more than once for
+                // any dependent element
+                if (! $elem.hasClass('dependent') ) {
+                    $master_elem.change(function() {
+                        self.reloadLoadable($elem);
+                    })
+                    $elem.addClass('dependent');
+                }
+
+                /// if the master select has no value, this means it's
+                /// not loaded - anyway, it makes no sense to attempt to
+                /// load from, say, /providers/undefined/hosts, so we inject
+                /// a marker into the URL so later we can say if we need to skip
+                /// loading altogether
+                if ($master_elem.val()) {
+                    return $1 + $master_elem.val();
+                } else {
+                    return "MASTER_NOT_LOADED";
+                }
+            });
+        if (url.indexOf("MASTER_NOT_LOADED") == -1) {
+            return url;
+        } else {
+            return "";
+        }
+    };
+
+
     GenericForm.prototype.populateLoadables = function() {
 
         var self = this;
         // Reset the form.
 
         self.form.find('div.loadableListbox').each(function(idx) {
-            //$(this).css('border', '2px solid red');
             var $select = $(this).find('select');
-            $select.children().remove();
-            var from = $select.attr("href");
-            $.Read(from, function(data) {
-            $.each(data.items, function(idx, value) {
-                //window.application.log("Name:" + idx);
-                //window.application.log("Value:" +value);
-                $("<option />").val(value[0]).html(value[1]).appendTo($select);
-            });
+            self.reloadLoadable($select);
         });
-        });
+    };
 
-        /*$.Read(, function(data) {
-            window.application.log("TADA");
-            $.each(data, function(name, value) {
-                var id = '#' + self.options.identifier + '-' + name;
-                var elem = $(id);
-                window.application.log(id + " ===> " + elem);
-                /// support read-only fields
-                if (elem[0].tagName.toLowerCase() == 'div')
-                {
-                    elem.html(value || '&mdash;')
-                } else {
-                    elem.val(value);
-                }
+    GenericForm.prototype.reloadLoadable = function($select) {
+        var self = this;
+        var from = self._mangle_url($select.attr("href"), $select);
+        /// empty 'from' url signals that we shouldn't attempt to load the data
+        /// just yet (i.e. a master listbox was not loaded yet)
+        if (from) {
+            $.Read(from, function(data) {
+                $select.children().remove();
+                $.each(data.items, function(idx, value) {
+                    $("<option/>").val(value[0]).html(value[1]).appendTo($select);
+                });
+                $select.change();
             });
-        });*/
+        }
     };
 
     // I submit the form.

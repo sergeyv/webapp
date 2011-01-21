@@ -94,11 +94,23 @@
     /*
      * TemplatedView allows links to have some special classes
      * which modify their behaviour:
-     * - webappAsyncAction - clicking on the link pings the target URL without the page being reloaded. The server response is discarded
+     *
+     * - webappAsyncAction - clicking on the link pings the target URL
+     *   without the page being reloaded. The server response is discarded
+     *
      * - webappInvokeOnLoad - the URL will be pinged when the view is shown
-     * - webappConfirmDialog - shows a confirmation dialog, only pings the URL if the user chooses OK. The link's title tag is used for the dialog's message text
-     * - webappMethodDelete - uses DELETE instead of POST (otherwise it's GET) - We can add more methods when needed though it's not yet
-     * clear how to send any data in a POST or PUT request.
+     *
+     * - webappConfirmDialog - shows a confirmation dialog, only pings the URL
+     *   if the user chooses OK. The link's title tag is used for
+     *   the dialog's message text
+     *
+     * - webappMethodDelete - uses DELETE instead of POST (otherwise it's GET)
+     *   We can add more methods when needed though it's not yet
+     *   clear how to send any data in a POST or PUT request.
+     *
+     * - webappGoBack - after the async action has been invoked,
+     *   redirect to the previous page
+     *
      */
     TemplatedView.prototype.augmentView = function() {
 
@@ -128,6 +140,10 @@
             }
 
             meth(service_url + '/' + $link.attr('href'), callback);
+
+            if ($link.hasClass("webappGoBack")) {
+                window.application.relocateTo(window.application.previousPageUrl());
+            }
             return false;
         }
         /// Every link marked with webappAsyncAction class will

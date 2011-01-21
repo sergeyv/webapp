@@ -107,8 +107,7 @@ def json_rest_delete_item(context, request):
     it attempts to delete the item itself
     """
     print "JSON_REST_DELETE_ITEM"
-    context.delete_item()
-    return {'result':"OK"}
+    return context.delete_item(request) # returns task_id
 
 
 
@@ -142,7 +141,7 @@ def json_rest_get(context, request):
 
     print "JSON_REST_GET"
 
-    item = context.model
+    #item = context.model
 
     try:
         form_name = context.data_formats[format_name]
@@ -152,15 +151,16 @@ def json_rest_get(context, request):
         e.status = '444 Data Format Not Found'
         raise e
 
-    schema = get_form(form_name).structure
+    return context.get_data(format=format_name)
+    #schema = get_form(form_name).structure
 
-    result = {}
+    #result = {}
 
-    for (field_name, field) in schema.attrs:
-        print "Checking %s" % field_name,
-        if hasattr(item, field_name):
-            print "... yep."
-            result[field_name] = getattr(item, field_name)
+    #for (field_name, field) in schema.attrs:
+        #print "Checking %s" % field_name,
+        #if hasattr(item, field_name):
+            #print "... yep."
+            #result[field_name] = getattr(item, field_name)
 
-    return result
+    #return result
 

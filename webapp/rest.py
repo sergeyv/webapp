@@ -23,7 +23,9 @@ class RestSection(crud.Section):
     RECORDS_PER_BATCH = 10
     LIMIT_INCREMENTAL_RESULTS = 25
 
-    def get_items_listing(self, request):
+    filter_condition = None
+
+    def get_items_listing(self, request, filter_condition=None):
 
 
 
@@ -44,7 +46,14 @@ class RestSection(crud.Section):
         model_class = self.subitems_source
         query = DBSession.query(model_class)
 
+        # A descendant class can define a class variable 'filter_condition'
+        # which defines an additional filter condition
+        if self.filter_condition is not None:
+            query = query.filter(self.filter_condition)
 
+        # We can also pass a condition to the method on a per-call basis
+        if filter_condition is not None:
+            query = query.filter(filter_condition)
 
         #query = DBSession.query(Project).options(sa.orm.eagerload('client'))
 

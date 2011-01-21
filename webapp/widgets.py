@@ -27,6 +27,7 @@ class LoadableListbox(Widget):
 
     def __init__(self, **k):
         self.load_from = k.pop('load_from', '')
+
         Widget.__init__(self, **k)
         #if not self.converter_options.has_key('delimiter'):
         #    self.converter_options['delimiter'] = ','

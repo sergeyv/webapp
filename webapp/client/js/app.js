@@ -175,9 +175,9 @@
 
 	// I add the given model class or instance to the model class library. Any classes
 	// that are passed in AS instances will be cached and act as singletons.
-	Application.prototype.addModel = function( model ){
+	/*Application.prototype.addModel = function( model ){
 		this.addClass( this.models, model );
-	};
+	};*/
 
 
 	// I add the given view class or instance to the view class library. Any classes
@@ -259,9 +259,9 @@
 
 
 	// I return an instance of the class with the given name.
-	Application.prototype.getModel = function( className, initArguments ){
+	/*Application.prototype.getModel = function( className, initArguments ){
 		return( this.getClass( this.models, className, initArguments ) );
-	};
+	};*/
 
 
 	// I return an instance of the class with the given name.
