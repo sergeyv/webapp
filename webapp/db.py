@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy import create_engine
 #from sqlalchemy.exc import IntegrityError, InvalidRequestError
-from sqlalchemy.exceptions import InvalidRequestError
+from sqlalchemy.exceptions import InvalidRequestError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
@@ -86,13 +86,14 @@ Base = declarative_base(cls=WebappBase)
 
 
 
-def initialize_sql(db_string, db_echo):
+def initialize_sql(db_string, db_echo, populate_fn=None):
     engine = create_engine(db_string, echo=db_echo)
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
-    #try:
-    #    populate()
-    #except IntegrityError:
-    #    pass
+    if populate_fn is not None:
+        try:
+            populate_fn()
+        except IntegrityError:
+            pass
 
