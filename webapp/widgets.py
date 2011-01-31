@@ -19,7 +19,7 @@ from formish.widgets import Widget, SelectChoice
 
 class LoadableListbox(Widget):
     """
-    A listbox which loads its data from external resource as json
+    A listbox which loads its data from an external URL as json
     """
 
     type = 'LoadableListbox'

@@ -2,7 +2,7 @@
 
 import json
 
-from repoze.bfg.view import bfg_view
+from pyramid.view import bfg_view
 from webob import Response
 
 import formish
@@ -146,7 +146,7 @@ def json_rest_get(context, request):
     try:
         form_name = context.data_formats[format_name]
     except KeyError:
-        from repoze.bfg.exceptions import ExceptionResponse
+        from pyramid.exceptions import ExceptionResponse
         e = ExceptionResponse("Data format '%s' is not registered for %s" % (format_name, context.__class__.__name__))
         e.status = '444 Data Format Not Found'
         raise e

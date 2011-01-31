@@ -23,15 +23,15 @@ def get_theme(name):
 
 
 
-from repoze.bfg.security import authenticated_userid
+from pyramid.security import authenticated_userid
 
 
-class ResourceRegistry(object):
+class AssetRegistry(object):
     """
     Add custom stuff to the standard theme
     """
 
-    core_js_resources = (
+    core_js_assets = (
     "/webapp.client/core_js/jquery-1.4.2.js",
 
     # REST support
@@ -73,57 +73,57 @@ class ResourceRegistry(object):
     )
 
 
-    core_css_resources = (
+    core_css_assets = (
     "/crud_static/default.css",
     "/webapp.client/css/jquery-ui-1.8.1.custom.css",
     "/webapp.client/css/webapp.css",
     )
 
-    def __init__(self, css_resources=None, js_resources=None):
+    def __init__(self, css_assets=None, js_assets=None):
 
 
-        self.js_resources = [r for r in self.core_js_resources]
-        if js_resources is not None:
-            for r in js_resources:
-                self.js_resources.append(r)
+        self.js_assets = [r for r in self.core_js_assets]
+        if js_assets is not None:
+            for r in js_assets:
+                self.js_assets.append(r)
 
 
-        self.css_resources = [r for r in self.core_css_resources]
-        if css_resources is not None:
-            for r in css_resources:
-                self.css_resources.append(r)
+        self.css_assets = [r for r in self.core_css_assets]
+        if css_assets is not None:
+            for r in css_assets:
+                self.css_assets.append(r)
 
 
-    def render_javascript_resources(self):
-        lines = ["<!-- JS resources -->"]
-        for r in self.js_resources:
+    def render_javascript_assets(self):
+        lines = ["<!-- JS assets -->"]
+        for r in self.js_assets:
             line = """<script language="javascript" src="%s"></script>""" % r
             lines.append(line)
 
         return "\n".join(lines)
 
-    def render_css_resources(self):
-        lines = ["<!-- CSS resources -->"]
-        for r in self.css_resources:
+    def render_css_assets(self):
+        lines = ["<!-- CSS assets -->"]
+        for r in self.css_assets:
             line = """<link rel="stylesheet" href="%s" />""" % r
             lines.append(line)
         return "\n".join(lines)
 
-    def add_js_resource(self, r):
-        self.js_resources.append(r)
+    def add_js_asset(self, r):
+        self.js_assets.append(r)
 
-    def add_css_resource(self, r):
-        self.css_resources.append(r)
+    def add_css_asset(self, r):
+        self.css_asset.append(r)
 
-    def remove_js_resource(self, r):
+    def remove_js_asset(self, r):
         try:
-            self.js_resources.remove(r)
+            self.js_assets.remove(r)
         except ValueError:
             pass
 
-    def remove_css_resource(self, r):
+    def remove_css_asset(self, r):
         try:
-            self.css_resources.remove(r)
+            self.css_assets.remove(r)
         except ValueError:
             pass
 
