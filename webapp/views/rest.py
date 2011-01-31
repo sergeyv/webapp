@@ -2,7 +2,7 @@
 
 import json
 
-from pyramid.view import bfg_view
+from pyramid.view import view_config
 from webob import Response
 
 import formish
@@ -16,7 +16,7 @@ from webapp.rest import IRestRootSection
 from webapp.forms import get_form
 
 
-@bfg_view(context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json", xhr=True, accept="application/json")
+@view_config(context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json", xhr=True, accept="application/json")
 def json_rest_list(context, request, permission=""):
     """
     """
@@ -24,7 +24,7 @@ def json_rest_list(context, request, permission=""):
     return result
 
 
-@bfg_view(name="filters", context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json")
+@view_config(name="filters", context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json")
 def json_rest_filters(context, request):
     """
     Returns a list of possible filters for the current section
@@ -40,7 +40,7 @@ def json_rest_filters(context, request):
 
     return {'result':"HELLO! No filters found!"}
 
-@bfg_view(name="incremental", context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json")
+@view_config(name="incremental", context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json")
 def json_rest_incremental(context, request):
     """
     Returns a list of items which match a search string
@@ -58,7 +58,7 @@ def json_rest_incremental(context, request):
     return {'result':"HELLO! Nothing found!"}
 
 
-@bfg_view(context=crud.ISection, containment=IRestRootSection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
+@view_config(context=crud.ISection, containment=IRestRootSection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
 def json_rest_create(context, request):
     """
     """
@@ -86,7 +86,7 @@ def json_rest_create(context, request):
 
 
 
-@bfg_view(context=crud.ISection, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+@view_config(context=crud.ISection, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
 def json_rest_delete_subitems(context, request):
     """
     When a DELETE request is sent to a Section,
@@ -100,7 +100,7 @@ def json_rest_delete_subitems(context, request):
 
 
 
-@bfg_view(context=crud.IModel, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IModel, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
 def json_rest_delete_item(context, request):
     """
     When a DELETE request is sent to a ModelProxy,
@@ -112,7 +112,7 @@ def json_rest_delete_item(context, request):
 
 
 
-@bfg_view(context=crud.IModel, containment=IRestRootSection, permission="rest.update", request_method="PUT", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IModel, containment=IRestRootSection, permission="rest.update", request_method="PUT", renderer="better_json", accept="text/plain")
 def json_rest_update(context, request):
     """
     """
@@ -132,7 +132,7 @@ def json_rest_update(context, request):
     return {'result':"HELLO FROM THE SERVER"}
 
 
-@bfg_view(context=crud.IModel, containment=IRestRootSection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IModel, containment=IRestRootSection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
 def json_rest_get(context, request):
     """
     """
