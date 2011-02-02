@@ -109,50 +109,6 @@
 	};
 
 
-    /*
-	// I add a given class to the given cache or class repository.
-	Application.prototype.addClass = function( target, value ){
-		// Get the constructor of our value class.
-		var constructor = value.constructor;
-
-		// Check to see if this constructor is the Function object. If it is,
-		// then this is just a class, not an instance.
-		if (constructor == Function){
-
-			// This value object is a class, not an instance. Therefore, we need
-			// to get the name of the class from the function itself.
-			var className = value.toString().match( new RegExp( "^function\\s+([^\\s\\(]+)", "i" ) )[ 1 ];
-
-			// Cache the class constructor.
-			target.classes[ className ] = value;
-
-            this.log("1. Caching "+className);
-		} else {
-
-			// This value object is an actual instance of the given class. Therefore,
-			// we need to get the name of the class from its constructor function.
-			var className = value.constructor.toString().match( new RegExp( "^function\\s+([^\\s\\(]+)", "i" ) )[ 1 ];
-
-
-			// Cache the class constructor.
-			target.classes[ className ] = value.constructor;
-
-            this.log("2. Caching "+className+" = "+value.constructor);
-			// In addition to caching the class constructor, let's cache this instance
-			// of the given class itself (as it will act as a singleton).
-			target.cache[ className ] = value;
-
-			// Check to see if the application is running. If it is, then we need to initialize
-			// the singleton instance.
-			if (this.isRunning){
-				this.initClass( value );
-			}
-
-		}
-	};
-    */
-
-
 	// I add the given controller to the collection of controllers.
 	Application.prototype.addController = function( controller ){
 		// Add the controller.
@@ -173,12 +129,6 @@
         return this.validation_rules[name];
     }
 
-	// I add the given model class or instance to the model class library. Any classes
-	// that are passed in AS instances will be cached and act as singletons.
-	/*Application.prototype.addModel = function( model ){
-		this.addClass( this.models, model );
-	};*/
-
 
 	// I add the given view class or instance to the view class library. Any classes
 	// that are passed in AS instances will be cached and act as singletons.
@@ -188,6 +138,9 @@
         this.views[name] = view;
 	};
 
+    Application.prototype.registerMenu = function( menu_id, tabs ) {
+        
+    }
 
 	// I provide an AJAX gateway to the server.
 	Application.prototype.ajax = function( options ){
@@ -568,6 +521,10 @@
 		this.isRunning = true;
 	};
 
+    Application.prototype.renderMenu = function(id, data) {
+        var output = $(id+"-template").jqote(data);
+        $(id).html(output);
+    };
 
 	// ----------------------------------------------------------------------- //
 	// ----------------------------------------------------------------------- //
@@ -646,7 +603,6 @@
             /// Allows us, say, to load the view contents on demand
             if (!view.alreadyInitialized && view.showViewFirstTime)
             {
-                window.application.log("Before fist showing!")
                 view.showViewFirstTime(parameters);
                 view.alreadyInitialized = true;
             } else {
@@ -662,15 +618,18 @@
             if (parameters)
             {
                 $.each(parameters, function(idx, value) {
-                    window.application.log("PARAMETER: "+idx+"->"+value);
+                    application.log("PARAMETER: "+idx+"->"+value);
                 });
             }
 
-
-
             // TODO: reflect the change in the navigation
-        }
-
+            if (this.$menu) {
+                this.$menu.find("a.current").removeClass("current");
+                if (parameters && parameters.menu_tab) {
+                    $("#" + this.$menu.attr('id') + "-" + parameters.menu_tab).addClass("current");
+                }
+            }
+        },
 
 	};
 
@@ -692,47 +651,3 @@
 
 })( jQuery );
 
-/*
- // http://www.crockford.com/javascript/inheritance.html
-
-Function.prototype.method = function (name, func) {
-    this.prototype[name] = func;
-    return this;
-};
-
-Function.method('inherits', function (parent) {
-    var d = {}, p = (this.prototype = new parent());
-    this.method('uber', function uber(name) {
-        if (!(name in d)) {
-            d[name] = 0;
-        }
-        var f, r, t = d[name], v = parent.prototype;
-        if (t) {
-            while (t) {
-                v = v.constructor.prototype;
-                t -= 1;
-            }
-            f = v[name];
-        } else {
-            f = p[name];
-            if (f == this[name]) {
-                f = v[name];
-            }
-        }
-        d[name] += 1;
-        r = f.apply(this, Array.prototype.slice.apply(arguments, [1]));
-        d[name] -= 1;
-        return r;
-    });
-    return this;
-});
-
-Function.method('swiss', function (parent) {
-    for (var i = 1; i < arguments.length; i += 1) {
-        var name = arguments[i];
-        this.prototype[name] = parent.prototype[name];
-    }
-    return this;
-});
-
-*/

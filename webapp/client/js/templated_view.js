@@ -17,9 +17,7 @@
     TemplatedView.prototype = new GenericView();
 
     TemplatedView.prototype.init = function(){
-        /// this is called _before_ the view is loaded
-        /// (as the view is loaded on demand)
-        /// so the html stuff is not available yet
+        /// this is called when the view is first shown
         var self = this;
 
         /// find or create the view container
@@ -53,6 +51,9 @@
     TemplatedView.prototype.showViewFirstTime = function( parameters ) {
 
         var self = this;
+
+        self.init();
+        
         var load_from = "/t/"+self.options.identifier+".html";
 
         self.template.load(load_from, function() {
@@ -180,7 +181,7 @@
         });
         /// Every link marked with webappInvokeOnLoad class will
         /// be 'clicked' programmatically when the view is loaded
-        /// (in the same manner webappAsyncAction links are invoked when clicked). You can hide the link using css if it's not needed in the UI
+        /// (in the same manner webappAsyncAction links are invoked when clicked). You can hide the link using css if it should not be displayed in the UI
         self.view.find("a.webappInvokeOnLoad").each(function(idx, elem) {
             var $link = $(elem);
             invoke_async_action($link);

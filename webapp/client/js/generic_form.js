@@ -65,6 +65,9 @@
 
     GenericForm.prototype.showViewFirstTime = function( parameters ) {
         self = this;
+
+        self.init();
+        
         load_from = "/forms/"+self.options.identifier;
 
         var $placeholder = self.view.find(".formPlaceholder");
