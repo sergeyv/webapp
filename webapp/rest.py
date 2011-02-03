@@ -210,6 +210,14 @@ class RestProxy(crud.ModelProxy):
                     data[name] = subitems
 
                 else:
+                    # if it's a callable then call it
+                    # (using @property to imitate an attribute
+                    # is not cool because it swallows any exceptions and just hides the property)
+
+                    if callable(value):
+                        value = value()
+                    
+                    
                     # We need to prevent classes and other
                     # non-serializable stuff from trying to sneak
                     # into the JSON serializer.
