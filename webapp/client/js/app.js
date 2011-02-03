@@ -622,7 +622,7 @@
                 });
             }
 
-            // TODO: reflect the change in the navigation
+            // reflect the change in the navigation
             if (this.$menu) {
                 this.$menu.find("a.current").removeClass("current");
                 if (parameters && parameters.menu_tab) {
