@@ -10,4 +10,7 @@ def form_loader(context, request):
     formid = request.matchdict['id']
     print "Loadable form: %s" % formid
     form = webapp.get_form(formid)
-    return form.get_html()
+    if form is not None:
+        return form.get_html()
+
+    return "<p>Form %s is not found</p>" % formid
