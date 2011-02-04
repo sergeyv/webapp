@@ -64,6 +64,22 @@ def loadable(cls):
     schema = cls()
     form = LoadableForm(schema)
     form.name = name
+
+    # Find any subforms and call their
+    # augment_form methods so we can set up widgets etc.
+    for key in dir(schema):
+        if key.startswith('_'):
+            continue
+        print "FORM KEY: %s" % key
+        schema_field =  getattr(schema, key)
+        if isinstance(schema_field, sc.Structure):
+            subschema = schema_field
+            subform = form[key]
+            if hasattr(subschema, 'augment_form'):
+                subschema.augment_form(subform)
+
+    # Augment the form itself. We can override
+    # any changes made in
     if hasattr(cls, 'augment_form'):
         schema.augment_form(form)
     gsm.registerUtility(form, ILoadableForm, name)

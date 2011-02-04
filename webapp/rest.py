@@ -208,7 +208,9 @@ class RestProxy(crud.ModelProxy):
                     for item in value:
                         subitems.append(self._extract_data_from_item(item, subitems_schema))
                     data[name] = subitems
-
+                elif isinstance(structure_field, sc.Structure):
+                    subitems_schema = structure_field
+                    data[name] = self._extract_data_from_item(value, subitems_schema)
                 else:
                     # if it's a callable then call it
                     # (using @property to imitate an attribute

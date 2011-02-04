@@ -8,6 +8,7 @@ from webob import Response
 import formish
 import schemaish as sc
 import validatish as v
+import dottedish
 
 import crud
 
@@ -74,6 +75,10 @@ def json_rest_create(context, request):
     # TODO: A generic case which probably should be moved to the
     # base class of our context
 
+    # Formish uses dotted syntax to deal with nested structures
+    # we need to unflatten it
+    params = dottedish.api.unflatten(params.items())
+    
     # TODO: Add validation here
     new_item = context.create_subitem(params=params, request=request)
 
