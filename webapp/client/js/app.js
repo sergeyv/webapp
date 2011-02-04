@@ -451,7 +451,7 @@
         }
 
         /// If we arrived here then no route was found; display a 404 message
-        self.controllers[0].showView(self.pageNotFoundView);
+        self.controllers[0].showView(self.pageNotFoundView, eventContext);
 	});
 
 
@@ -622,12 +622,40 @@
                 });
             }
 
+            if (event) {
+                $.each(event, function(idx, value) {
+                    application.log("EVENT: "+idx+"->"+value);
+                });
+            }
+
             // reflect the change in the navigation
+
+            /// A controller can declare this.$menu, which is a jquery
+            /// object pointing to a menu. It supposed to have some sub-elements
+            /// with ids like #<menu_id>-<tab_id>.
+            
             if (this.$menu) {
+                /// Hide the current tab
                 this.$menu.find("a.current").removeClass("current");
-                if (parameters && parameters.menu_tab) {
-                    $("#" + this.$menu.attr('id') + "-" + parameters.menu_tab).addClass("current");
+
+                /// in route options we may provide a hint as to what
+                /// menu tab to display: { menu_tab: 'megatab' } - then
+                /// the element #<menu_id>-megatab will be displayed
+                var tab_name = parameters && parameters.menu_tab;
+                /// if there's no menu_tab hint, we use the first part of
+                /// the view's location, so /clients/123/orders/325 will toggle
+                /// #<menu_id>-clients
+                if (tab_name === undefined) {
+                    tab_name = event.toLocation.split('/')[0];
+                    if (!tab_name) {
+                        /// if the toLocation was empty (as in case of http://mysite.com/ or http://mysite.com/#/ path)
+                        /// then the tab name is 'default' 
+                        tab_name = 'default';
+                    }
                 }
+                //if (parameters && parameters.menu_tab) {
+                $("#" + this.$menu.attr('id') + "-" + tab_name).addClass("current");
+                //}
             }
         },
 
