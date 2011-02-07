@@ -97,10 +97,19 @@ def json_rest_delete_subitems(context, request):
     When a DELETE request is sent to a Section,
     it expects its body to be a JSON dictionary of ids
 
+    If there's no dictionary, we assume that the Section is a scalar
+    and attempt to delete the item itself
+
     """
     print "JSON_REST_DELETE_SUBITEMS: request body %s" % (request.body)
-    params = json.loads(request.body)
-    context.delete_subitems(ids=params['id'])
+    try:
+        params = json.loads(request.body)
+        ids=params['id']
+    except ValueError:
+        ids=None
+        
+    context.delete_subitems(ids)
+    
     return {'result':"OK"}
 
 

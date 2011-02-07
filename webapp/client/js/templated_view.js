@@ -112,11 +112,16 @@
      * - webappGoBack - after the async action has been invoked,
      *   redirect to the previous page
      *
+     * - webappOnSuccess-<method_name> - invoke a specified method
+     *   of the view object after the call succeeds,
+     *   i.e. webappOnSuccess-populateView will reload
+     *   the data from the server and re-render the template with that data.
+     *
      */
     TemplatedView.prototype.augmentView = function() {
 
         var self = this;
-        var service_url = self.getRestServiceUrl();
+        //var service_url = self.getRestServiceUrl();
 
         var invoke_async_action = function($link) {
             var meth = $.Read;
@@ -140,7 +145,11 @@
                 meth = $.Delete;
             }
 
-            meth(service_url + '/' + $link.attr('href'), callback);
+
+/*            var href = $link.attr('href');
+            if href[0] != '/':
+                href = service_url + '/' + href;*/
+            meth($link.attr('href'), callback);
 
             if ($link.hasClass("webappGoBack")) {
                 window.application.relocateTo(window.application.previousPageUrl());
