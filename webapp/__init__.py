@@ -10,6 +10,6 @@ from theme import AssetRegistry
 from forms import loadable, loadable_form, LoadableForm, get_form
 
 
-from rest import RestSection, RestProxy, VocabSection, IRestRootSection
+from rest import RestSection, RestResource, VocabSection, IRestRootSection
 
 from templates import ITemplatesSection

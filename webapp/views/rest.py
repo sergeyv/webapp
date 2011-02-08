@@ -114,10 +114,10 @@ def json_rest_delete_subitems(context, request):
 
 
 
-@view_config(context=crud.IModel, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
 def json_rest_delete_item(context, request):
     """
-    When a DELETE request is sent to a ModelProxy,
+    When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
     print "JSON_REST_DELETE_ITEM"
@@ -126,7 +126,7 @@ def json_rest_delete_item(context, request):
 
 
 
-@view_config(context=crud.IModel, containment=IRestRootSection, permission="rest.update", request_method="PUT", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource, containment=IRestRootSection, permission="rest.update", request_method="PUT", renderer="better_json", accept="text/plain")
 def json_rest_update(context, request):
     """
     """
@@ -146,7 +146,7 @@ def json_rest_update(context, request):
     return {'result':"HELLO FROM THE SERVER"}
 
 
-@view_config(context=crud.IModel, containment=IRestRootSection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource, containment=IRestRootSection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
 def json_rest_get(context, request):
     """
     """

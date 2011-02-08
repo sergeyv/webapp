@@ -111,7 +111,7 @@ class RestSection(crud.Section):
                 result.append(i)
         except AttributeError, e:
             raise
-            #raise AttributeError("%s \n ===> Have you forgotten to register your ModelProxy in the .zcml file?" % e.message)
+            #raise AttributeError("%s \n ===> Have you forgotten to register your Resource in the .zcml file?" % e.message)
 
         data['items'] = result
         return data
@@ -164,7 +164,7 @@ class RestSection(crud.Section):
 
 
 
-class RestProxy(crud.ModelProxy):
+class RestResource(crud.Resource):
     """
     Some additional methods for formatting
     """
