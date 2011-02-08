@@ -16,7 +16,10 @@
 
     GenericListing.prototype.showViewFirstTime = function( parameters ) {
 
-        self = this;
+        var self = this;
+
+        self.init();
+        
         var load_from = "/t/"+self.options.identifier+".html";
 
         self.view.load(load_from, function() {

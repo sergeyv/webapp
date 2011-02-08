@@ -68,10 +68,6 @@ def json_rest_create(context, request):
     params = json.loads(request.body)
     print "JSON_REST_CREATE: %s" % (params)
 
-    # TODO: This is uncool. VocabCollection uses that.
-    if hasattr(context, 'create_new_item'):
-        return context.create_new_item(params, request)
-
     # TODO: A generic case which probably should be moved to the
     # base class of our context
 

@@ -10,6 +10,5 @@ from theme import AssetRegistry
 from forms import loadable, loadable_form, LoadableForm, get_form
 
 
-from rest import RestCollection, RestResource, VocabCollection, IRestRootCollection
+from rest import RestCollection, RestResource, IRestRootCollection
 
-from templates import ITemplatesCollection

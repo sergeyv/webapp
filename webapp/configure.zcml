@@ -13,13 +13,6 @@
 
    <scan package="."/>
 
-
-    <crud:section
-        slug="templates"
-        title="Templates Root"
-        section=".templates.TemplatesCollection"
-    />
-
     <route
         name="form-loader"
         path="/forms/:id"
