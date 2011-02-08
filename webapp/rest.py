@@ -7,13 +7,13 @@ import crud
 from webapp.db import DBSession
 from webapp.forms import get_form
 
-class IRestRootSection(crud.ISection):
+class IRestRootCollection(crud.ICollection):
     pass
 
 
-class RestSection(crud.Section):
+class RestCollection(crud.Collection):
     """
-    Just like a normal crud.Section but
+    Just like a normal crud.Collection but
     has some additional methods expected by rest views
 
     rest sections need to subclass this
@@ -231,7 +231,7 @@ class RestResource(crud.Resource):
         return data
 
 
-class VocabSection(crud.Section):
+class VocabCollection(crud.Collection):
 
 
     def get_items_listing(self, request=None):

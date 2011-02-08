@@ -7,15 +7,15 @@ import crud
 from webapp.db import DBSession
 from webapp.forms import get_form
 
-class ITemplatesSection(crud.ISection):
+class ITemplatesCollection(crud.ICollection):
     pass
 
 
-class TemplatesSection(crud.Section):
+class TemplatesCollection(crud.Collection):
     """
     A section to serve client-side templates (jquote etc.)
-    Application can register views for ITemplatesSection
+    Application can register views for ITemplatesCollection
     and load them from /templates/templateid
     """
 
-    implements(ITemplatesSection)
+    implements(ITemplatesCollection)

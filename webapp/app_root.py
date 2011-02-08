@@ -4,12 +4,12 @@ from zope.interface import implements
 
 import crud
 
-class IRootSection(crud.ISection):
+class IRootCollection(crud.ICollection):
     """
     A marker interface
     """
 
 
-class RootSection(crud.Section):
-    implements(IRootSection)
+class RootCollection(crud.Collection):
+    implements(IRootCollection)
 

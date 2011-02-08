@@ -17,7 +17,7 @@
     <crud:section
         slug="templates"
         title="Templates Root"
-        section=".templates.TemplatesSection"
+        section=".templates.TemplatesCollection"
     />
 
     <route

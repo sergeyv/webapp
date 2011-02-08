@@ -13,11 +13,11 @@ import dottedish
 import crud
 
 from webapp import DBSession
-from webapp.rest import IRestRootSection
+from webapp.rest import IRestRootCollection
 from webapp.forms import get_form
 
 
-@view_config(context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json", xhr=True, accept="application/json")
+@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json", xhr=True, accept="application/json")
 def json_rest_list(context, request, permission=""):
     """
     """
@@ -25,7 +25,7 @@ def json_rest_list(context, request, permission=""):
     return result
 
 
-@view_config(name="filters", context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json")
+@view_config(name="filters", context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json")
 def json_rest_filters(context, request):
     """
     Returns a list of possible filters for the current section
@@ -41,7 +41,7 @@ def json_rest_filters(context, request):
 
     return {'result':"HELLO! No filters found!"}
 
-@view_config(name="incremental", context=crud.ISection, containment=IRestRootSection, permission="rest.list", request_method="GET", renderer="better_json")
+@view_config(name="incremental", context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json")
 def json_rest_incremental(context, request):
     """
     Returns a list of items which match a search string
@@ -59,7 +59,7 @@ def json_rest_incremental(context, request):
     return {'result':"HELLO! Nothing found!"}
 
 
-@view_config(context=crud.ISection, containment=IRestRootSection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
+@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
 def json_rest_create(context, request):
     """
     """
@@ -68,7 +68,7 @@ def json_rest_create(context, request):
     params = json.loads(request.body)
     print "JSON_REST_CREATE: %s" % (params)
 
-    # TODO: This is uncool. VocabSection uses that.
+    # TODO: This is uncool. VocabCollection uses that.
     if hasattr(context, 'create_new_item'):
         return context.create_new_item(params, request)
 
@@ -91,13 +91,13 @@ def json_rest_create(context, request):
 
 
 
-@view_config(context=crud.ISection, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
 def json_rest_delete_subitems(context, request):
     """
-    When a DELETE request is sent to a Section,
+    When a DELETE request is sent to a Collection,
     it expects its body to be a JSON dictionary of ids
 
-    If there's no dictionary, we assume that the Section is a scalar
+    If there's no dictionary, we assume that the Collection is a scalar
     and attempt to delete the item itself
 
     """
@@ -114,7 +114,7 @@ def json_rest_delete_subitems(context, request):
 
 
 
-@view_config(context=crud.IResource, containment=IRestRootSection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
 def json_rest_delete_item(context, request):
     """
     When a DELETE request is sent to a Resource,
@@ -126,7 +126,7 @@ def json_rest_delete_item(context, request):
 
 
 
-@view_config(context=crud.IResource, containment=IRestRootSection, permission="rest.update", request_method="PUT", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.update", request_method="PUT", renderer="better_json", accept="text/plain")
 def json_rest_update(context, request):
     """
     """
@@ -146,7 +146,7 @@ def json_rest_update(context, request):
     return {'result':"HELLO FROM THE SERVER"}
 
 
-@view_config(context=crud.IResource, containment=IRestRootSection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
 def json_rest_get(context, request):
     """
     """
