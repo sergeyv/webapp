@@ -23,7 +23,6 @@ class RestCollection(crud.Collection):
     RECORDS_PER_BATCH = 10
     LIMIT_INCREMENTAL_RESULTS = 25
 
-    filter_condition = None
 
     def get_items_listing(self, request, filter_condition=None):
 
@@ -31,10 +30,11 @@ class RestCollection(crud.Collection):
 
         format = request.GET.get('format', 'listing')
 
+        order_by = request.GET.get('order_by', None)
+
         ### 'vocab' format is a special (simplified) case
         ### - returns {'items': [(id, name), (id, name), ...]}
         if format=='vocab':
-            order_by = request.GET.get('order_by', 'name')
             items = self.get_items(order_by=order_by, wrap=False)
             result = [ (item.id, str(item)) for item in items ]
             return {'items':result}
@@ -44,41 +44,9 @@ class RestCollection(crud.Collection):
         batch_start = int(request.GET.get('from', 0))
 
         model_class = self.subitems_source
-        query = DBSession.query(model_class)
 
-        # A descendant class can define a class variable 'filter_condition'
-        # which defines an additional filter condition
-        if self.filter_condition is not None:
-            query = query.filter(self.filter_condition)
-
-        # We can also pass a condition to the method on a per-call basis
-        if filter_condition is not None:
-            query = query.filter(filter_condition)
-
-        #query = DBSession.query(Project).options(sa.orm.eagerload('client'))
-
-        # TODO: Filtering support
-        #status_filter = request.GET.get('status', None)
-        #if status_filter:
-        #    query = query.filter(Project.status_id == int(status_filter))
-
-        #client_filter = request.GET.get('client', None)
-        #if client_filter:
-        #    query = query.filter(Project.client_id == int(client_filter))
-
-
-        ### Sorting
-        sort_on = request.GET.get('sort_on', None)
-        sort_order = request.GET.get('sort_order', 'asc')
-
-        if sort_on:
-            f = getattr(model_class, sort_on, None)
-            if f is not None:
-                if sort_order == 'desc':
-                    f = f.desc()
-
-                query = query.order_by(f)
-
+        query = self.get_items_query(filter_condition = filter_condition, order_by=order_by)
+        
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
         ## filter settings
@@ -94,7 +62,6 @@ class RestCollection(crud.Collection):
         if len(items) > self.RECORDS_PER_BATCH:
             data['has_more'] = True
             data['next_batch_start'] = batch_start + self.RECORDS_PER_BATCH
-        #items = context.get_items(order_by="last_name", wrap=False)
 
         result = []
 
@@ -105,13 +72,9 @@ class RestCollection(crud.Collection):
             for item in items:
                 i = item.get_data(format=format)
 
-                #i['id'] = item.id
-                #i['title'] = item.title
-
                 result.append(i)
         except AttributeError, e:
             raise
-            #raise AttributeError("%s \n ===> Have you forgotten to register your Resource in the .zcml file?" % e.message)
 
         data['items'] = result
         return data
