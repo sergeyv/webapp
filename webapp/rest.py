@@ -130,15 +130,26 @@ class RestCollection(crud.Collection):
 class RestResource(crud.Resource):
     """
     Some additional methods for formatting
+
     """
 
-    def get_data(self, format='default'):
+    def get_data(self, format='default', annotate=False):
         """
+        - requires 'format' parameter - which must correspond to one of formats
+        registered in `data_formats` property. This will determine which fields
+        will be serialized
+
+        - optionally takes an "annotate" parameter - in this case the returned
+        dict will have `_ann` attribute, which will be a list of a schema fields:
+        _ann: [{name:'fieldname', title: 'Field Title'}, ...]
         """
 
         form_name = self.data_formats.get(format, None)
         if form_name is None:
-            raise ValueError("Format '%s' is not registered for %s" % (format, self.__class__))
+            from pyramid.exceptions import ExceptionResponse
+            e = ExceptionResponse("Format '%s' is not registered for %s" % (format, self.__class__))
+            e.status = '444 Data Format Not Found'
+            raise e
 
         form = get_form(self.data_formats[format])
 
@@ -147,7 +158,12 @@ class RestResource(crud.Resource):
             " '%s' format for %s class" % (form_name, format, self.__class__) )
         structure = form.structure.attr
 
-        return self._extract_data_from_item(self.model, structure)
+        data = self._extract_data_from_item(self.model, structure)
+        
+        if annotate:
+            data['_ann'] = self._annotate_fields(structure)
+
+        return data
 
 
     def _extract_data_from_item(self, item, structure):
@@ -164,7 +180,6 @@ class RestResource(crud.Resource):
 
                 # Recursively serialize lists of subitems
                 if isinstance(structure_field, sc.Tuple):
-                    #import pdb; pdb.set_trace()
 
                     subitems_schema = structure_field.attrs[0]
                     subitems = []
@@ -177,7 +192,8 @@ class RestResource(crud.Resource):
                 else:
                     # if it's a callable then call it
                     # (using @property to imitate an attribute
-                    # is not cool because it swallows any exceptions and just hides the property)
+                    # is not cool because it swallows any exceptions 
+                    # and just pretens there's no such property)
 
                     if callable(value):
                         value = value()
@@ -193,4 +209,18 @@ class RestResource(crud.Resource):
                     data[name] =value
         return data
 
+    def _annotate_fields(self, structure):
+        """
+        Extract some additional data from our schema
+        (namely - field titles) to facilitate automated rendering
+        """
+        data = []
+        # structure.attrs is a list of (name,field) tuples
+        for (name, field) in structure.attrs:
+            f = {
+                'name': name,
+                'title':field.title,
+            }
+            data.append(f)
 
+        return data

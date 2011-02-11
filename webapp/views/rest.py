@@ -148,29 +148,18 @@ def json_rest_get(context, request):
     """
 
     format_name = request.GET.get('format', 'default')
+    annotate = bool(request.GET.get('ann', False))
 
     print "JSON_REST_GET"
 
-    #item = context.model
+    # The same checks are made in RestResource
+    #try:
+    #    form_name = context.data_formats[format_name]
+    #except KeyError:
+    #    from pyramid.exceptions import ExceptionResponse
+    #    e = ExceptionResponse("Data format '%s' is not registered for %s" % (format_name, context.__class__.__name__))
+    #    e.status = '444 Data Format Not Found'
+    #    raise e
 
-    try:
-        form_name = context.data_formats[format_name]
-    except KeyError:
-        from pyramid.exceptions import ExceptionResponse
-        e = ExceptionResponse("Data format '%s' is not registered for %s" % (format_name, context.__class__.__name__))
-        e.status = '444 Data Format Not Found'
-        raise e
-
-    return context.get_data(format=format_name)
-    #schema = get_form(form_name).structure
-
-    #result = {}
-
-    #for (field_name, field) in schema.attrs:
-        #print "Checking %s" % field_name,
-        #if hasattr(item, field_name):
-            #print "... yep."
-            #result[field_name] = getattr(item, field_name)
-
-    #return result
+    return context.get_data(format=format_name, annotate=annotate)
 
