@@ -6,7 +6,8 @@ from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy import create_engine
 #from sqlalchemy.exc import IntegrityError, InvalidRequestError
-from sqlalchemy.exceptions import InvalidRequestError, IntegrityError
+# In 0.7 an alias from sqlalchemy.exc to deprecated sqlalchemy.exceptions is finally removed
+from sqlalchemy.exc import InvalidRequestError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
