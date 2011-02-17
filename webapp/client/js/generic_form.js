@@ -253,7 +253,7 @@
                 /// $1 is the slash
                 /// $2 is the id of the 'master field'
 
-                var id = self.options.identifier + "-"+$2;
+                var id = $2;
 
                 var $master_elem = $("#" + id);
                 // we mark the dependent element with a class to

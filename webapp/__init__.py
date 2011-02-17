@@ -7,7 +7,7 @@ from theme import set_theme, get_theme
 from theme import AssetRegistry
 
 
-from forms import loadable, loadable_form, LoadableForm, get_form
+from forms import loadable, loadable_form, LoadableForm, get_form, AutoSchema
 
 
 from rest import RestCollection, RestResource, IRestRootCollection
