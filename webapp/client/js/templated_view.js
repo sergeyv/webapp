@@ -7,6 +7,7 @@
         -identifier
         - rest_service_root
         - data_format
+        - ann
         - after_data_loaded (function)
         */
         this.options = $.extend({
@@ -74,9 +75,19 @@
     TemplatedView.prototype.populateView = function(){
         var self = this;
         var service_url = self.getRestServiceUrl();
+        var params = [];
         if (self.options.data_format) {
-            service_url += "?format="+self.options.data_format;
+            params.push("format="+self.options.data_format);
         }
+        if (self.options.ann) {
+            params.push("ann=1");
+        }
+
+        params = params.join("&");
+        if (params) {
+            service_url = service_url + "?" + params;
+        }
+        
         $.Read(service_url, function(data) {
             var template = self.template;
             if (!self.template.length) { alert("Template not found!"); }

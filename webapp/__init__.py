@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from db import Base, DBSession, initialize_sql
+from db import Base, initialize_sql, get_session, set_dbsession, get_session_class
 
 from app_root import IRootCollection, RootCollection
 

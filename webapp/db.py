@@ -5,13 +5,26 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy import create_engine
-#from sqlalchemy.exc import IntegrityError, InvalidRequestError
+
 # In 0.7 an alias from sqlalchemy.exc to deprecated sqlalchemy.exceptions is finally removed
 from sqlalchemy.exc import InvalidRequestError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
+
+#DBEngine = None
+
+_DBSession = None
+
+def get_session():
+    return _DBSession()
+    
+def get_session_class():
+    return _DBSession
+
+def set_dbsession(session):
+    global _DBSession
+    _DBSession = session
 
 class WebappBase(object):
     """
@@ -51,7 +64,7 @@ class WebappBase(object):
         if object_id is None:
             return None
         try:
-            result = DBSession.query(cls).filter(cls.id==object_id).one()
+            result = get_session().query(cls).filter(cls.id==object_id).one()
         except InvalidRequestError:
             # If an object doesn't exist for this ID - return None
             #raise
@@ -74,7 +87,7 @@ class WebappBase(object):
         """
 
         try:
-            result = DBSession.query(cls).filter(cls.id.in_(ids)).all()
+            result = get_session().query(cls).filter(cls.id.in_(ids)).all()
         except InvalidRequestError:
             # If nothing found - return an empty list
             # (though I'm not sure we need this here)
@@ -88,10 +101,17 @@ Base = declarative_base(cls=WebappBase)
 
 
 def initialize_sql(db_string, db_echo, populate_fn=None):
+
     engine = create_engine(db_string, echo=db_echo)
-    DBSession.configure(bind=engine)
+
+    session = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+    session.configure(bind=engine)
+
+    set_dbsession(session)
+
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
+    
     if populate_fn is not None:
         try:
             populate_fn()

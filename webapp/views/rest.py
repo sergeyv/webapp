@@ -12,7 +12,7 @@ import dottedish
 
 import crud
 
-from webapp import DBSession
+from webapp.db import get_session
 from webapp.rest import IRestRootCollection
 from webapp.forms import get_form
 
@@ -81,7 +81,7 @@ def json_rest_create(context, request):
     if new_item is not None:
         # The context may choose not to return the item added
         # and do everything itself
-        DBSession.add(new_item)
+        get_session().add(new_item)
 
     return {'result':"HELLO FROM THE SERVER"}
 
@@ -137,7 +137,6 @@ def json_rest_update(context, request):
         if v: # Do not set empty fields
             setattr(item, k, v)
 
-    #DBSession.add(new_item)
     print "JSON_STAFF_UPDATE: DONE"
     return {'result':"HELLO FROM THE SERVER"}
 

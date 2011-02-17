@@ -4,7 +4,7 @@ import schemaish as sc
 
 import crud
 
-from webapp.db import DBSession
+from webapp.db import get_session
 from webapp.forms import get_form
 
 class IRestRootCollection(crud.ICollection):
@@ -94,7 +94,7 @@ class RestCollection(crud.Collection):
 
         model_class = self.subitems_source
 
-        query = DBSession.query(model_class)
+        query = get_session().query(model_class)
 
 
         get_id_for = request.GET.get('get_id_for', None)
