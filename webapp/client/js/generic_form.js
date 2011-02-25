@@ -195,26 +195,21 @@
     };
 
 
-
-
-    GenericForm.prototype.populateForm = function() {
-
+    GenericForm.prototype._fill_form = function(id_root, data) {
+        /* Recursively iterate over the json data, find elements
+         * of the form and set their values.
+         * Now works with subforms
+         */
         var self = this;
-        // Reset the form.
-        self.resetForm();
-
-        if (self.isAddForm())
-        {
-            return;
-        }
-
-        self.disableForm();
-
-        $.Read(self.getRestServiceUrl() + "?format="+self.options.data_format, function(data) {
-            $.each(data, function(name, value) {
-                var id = '#' + self.options.identifier + '-' + name;
+        $.each(data, function(name, value) {
+            var id = id_root + '-' + name;
+            if (typeof(value) === "string" ||
+                typeof(value) === "number" ||
+                typeof(value) === "boolean")
+            {
                 var elem = $(id);
-                window.application.log(id + " ===> " + elem);
+                application.log(id + " ===> " + elem);
+
                 if (elem.length)
                 {
                     /// support read-only fields
@@ -225,9 +220,28 @@
                         elem.val(value);
                     }
                 } else {
-                    window.application.log("NOT FOUND: " +id);
+                    application.log("NOT FOUND: " +id);
                 }
-            });
+            } else if (typeof(value) === "object") {
+                self._fill_form(id, data[name])
+            }
+        });
+    }
+
+    GenericForm.prototype.populateForm = function() {
+
+        var self = this;
+        // Reset the form.
+        self.resetForm();
+
+        if (self.isAddForm()) { return; }
+
+        self.disableForm();
+
+        var id_root = '#' + self.options.identifier;
+        
+        $.Read(self.getRestServiceUrl() + "?format="+self.options.data_format, function(data) {
+            self._fill_form(id_root, data);
         });
     };
 

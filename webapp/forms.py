@@ -136,7 +136,7 @@ def loadable(cls):
                 subschema.augment_form(subform)
 
     # Augment the form itself. We can override
-    # any changes made in
+    # any changes made in the subforms
     if hasattr(cls, 'augment_form'):
         schema.augment_form(form)
     gsm.registerUtility(form, ILoadableForm, name)
@@ -150,6 +150,10 @@ def get_form(name):
 
 
 class LoadableForm(formish.Form):
+    """
+    A form which can be loaded by the client's code.
+    Forms are served as `/form/LoadableForm`, where "LoadableForm is the class name
+    """
 
     implements(ILoadableForm)
 
@@ -183,15 +187,10 @@ class LoadableForm(formish.Form):
         return json.dumps(rules)
 
 
-    def augment():
-        """
-        Modify form
-        """
-        pass
-
-
     def get_html(self):
         """
+        Returns html representation of the form, along with a small JS snippet
+        which sets up validation rules
         """
         #form = form_class.get_form()
         js = """<script language="javascript">

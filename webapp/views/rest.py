@@ -67,10 +67,6 @@ def json_rest_create(context, request):
 
     params = json.loads(request.body)
     print "JSON_REST_CREATE: %s" % (params)
-
-    # TODO: A generic case which probably should be moved to the
-    # base class of our context
-
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
@@ -97,9 +93,11 @@ def json_rest_delete_subitems(context, request):
     and attempt to delete the item itself
 
     """
-    print "JSON_REST_DELETE_SUBITEMS: request body %s" % (request.body)
     try:
         params = json.loads(request.body)
+        # Formish uses dotted syntax to deal with nested structures
+        # we need to unflatten it
+        params = dottedish.api.unflatten(params.items())
         ids=params['id']
     except ValueError:
         ids=None
@@ -116,7 +114,6 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
-    print "JSON_REST_DELETE_ITEM"
     return context.delete_item(request) # returns task_id
 
 
@@ -127,17 +124,13 @@ def json_rest_update(context, request):
     """
     """
     print "JSON_REST_UPDATE: request body %s" % (request.body)
-
     params = json.loads(request.body)
-    print "JSON_STAFF_UPDATE: %s" % (params)
 
-    # TODO: Add validation here
-    item = context.model
-    for (k,v) in params.items():
-        if v: # Do not set empty fields
-            setattr(item, k, v)
+    # Formish uses dotted syntax to deal with nested structures
+    # we need to unflatten it
+    params = dottedish.api.unflatten(params.items())
 
-    print "JSON_STAFF_UPDATE: DONE"
+    context.update_model(params)
     return {'result':"HELLO FROM THE SERVER"}
 
 
@@ -148,17 +141,5 @@ def json_rest_get(context, request):
 
     format_name = request.GET.get('format', 'default')
     annotate = bool(request.GET.get('ann', False))
-
-    print "JSON_REST_GET"
-
-    # The same checks are made in RestResource
-    #try:
-    #    form_name = context.data_formats[format_name]
-    #except KeyError:
-    #    from pyramid.exceptions import ExceptionResponse
-    #    e = ExceptionResponse("Data format '%s' is not registered for %s" % (format_name, context.__class__.__name__))
-    #    e.status = '444 Data Format Not Found'
-    #    raise e
-
     return context.get_data(format=format_name, annotate=annotate)
 
