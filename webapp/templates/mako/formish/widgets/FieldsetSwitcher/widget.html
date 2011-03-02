@@ -14,7 +14,7 @@
                 "${option[0]}",
             %endfor
             ],
-            formName = "${field.cssname}".split("-")[0],
+            formName = "${field.cssname.rpartition('-')[0]}",
             to_show = $("#${field.cssname}").val();
 
             $.each(all, function() {

@@ -195,23 +195,35 @@ class RestResource(crud.Resource):
                     subitems_schema = structure_field
                     data[name] = self._extract_data_from_item(value, subitems_schema)
                 else:
+                    print "SERIALIZING A SIMPLE ATTRIBUTE: %s -> %s" % (name, structure_field)
+
+
                     # if it's a callable then call it
                     # (using @property to imitate an attribute
                     # is not cool because it swallows any exceptions 
-                    # and just pretens there's no such property)
-                    print "SERIALIZING A SIMPLE ATTRIBUTE: %s -> %s" % (name, structure_field)
+                    # and just pretends there's no such property)
                     if callable(value):
                         value = value()
                     
                     
                     # We need to prevent classes and other
                     # non-serializable stuff from trying to sneak
-                    # into the JSON serializer.
-                    # So we convert everything except Nones to str
-                    # which probably is not right
-                    if value is not None:
+                    # into the JSON serializer. So we convert the types
+                    # which are explicitly declared as strings or integers
+                    # (TODO: add more!)
+                    # However, we don't convert other generic types (Attribute)
+                    # because we want to be able to call functions which
+                    # directly return json-serializable structures
+                    if value is None:
+                        pass
+                    elif isinstance(structure_field, sc.String):
                         value = str(value)
+                    elif isinstance(structure_field, sc.Integer):
+                        value = int(value)
+                            
                     data[name] =value
+
+        print "EXTRACTED DATA: %s" % data
         return data
 
     def _annotate_fields(self, structure):
