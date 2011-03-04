@@ -47,7 +47,7 @@ class RestCollection(crud.Collection):
         model_class = self.subitems_source
 
         query = self.get_items_query(filter_condition = filter_condition, order_by=order_by)
-        
+
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
         ## filter settings
@@ -160,7 +160,7 @@ class RestResource(crud.Resource):
         structure = form.structure.attr
 
         data = self._extract_data_from_item(self.model, structure)
-        
+
         if annotate:
             data['_ann'] = self._annotate_fields(structure)
 
@@ -200,12 +200,12 @@ class RestResource(crud.Resource):
 
                     # if it's a callable then call it
                     # (using @property to imitate an attribute
-                    # is not cool because it swallows any exceptions 
+                    # is not cool because it swallows any exceptions
                     # and just pretends there's no such property)
                     if callable(value):
                         value = value()
-                    
-                    
+
+
                     # We need to prevent classes and other
                     # non-serializable stuff from trying to sneak
                     # into the JSON serializer. So we convert the types
@@ -220,7 +220,7 @@ class RestResource(crud.Resource):
                         value = str(value)
                     elif isinstance(structure_field, sc.Integer):
                         value = int(value)
-                            
+
                     data[name] =value
 
         print "EXTRACTED DATA: %s" % data
@@ -263,7 +263,7 @@ class RestResource(crud.Resource):
             else:
                 related_class = arg.class_
             return related_class
-        
+
         def _save_structure(item, schema, data):
             attrs = schema.attrs
 
@@ -272,7 +272,7 @@ class RestResource(crud.Resource):
                 if value is _marker:
                     print "### No data passed for attr %s <%s>" % (name, data)
                     continue
-                    
+
                 print "### Saving attribute %s with value %s" % (name, value)
                 if isinstance(attr, sc.Structure):
                     print "STRUCTURE!"
@@ -283,7 +283,7 @@ class RestResource(crud.Resource):
                         subitem = cls()
                         setattr(item, name, subitem)
                     _save_structure(subitem, subschema, value)
-                    
+
                 elif isinstance(attr, sc.String):
                     setattr(item, name, value)
 
@@ -292,8 +292,8 @@ class RestResource(crud.Resource):
         form_name = params.get('__formish_form__')
         form = get_form(form_name)
         schema = form.structure
-        
+
         _save_structure(item, schema, params)
 
 
-                
+

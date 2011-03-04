@@ -54,7 +54,7 @@
         var self = this;
 
         self.init();
-        
+
         var load_from = "/t/"+self.options.identifier+".html";
 
         self.template.load(load_from, function() {
@@ -87,21 +87,28 @@
         if (params) {
             service_url = service_url + "?" + params;
         }
-        
+
         $.Read(service_url, function(data) {
-            var template = self.template;
-            if (!self.template.length) { alert("Template not found!"); }
-            var output = self.template.jqote({data:data, view:self});
-            self.view.html(output);
-
-            self.augmentView();
-
-            if (self.options.after_data_loaded) {
-                self.options.after_data_loaded(self);
-            }
+            self.data = data;
+            self.renderData();
         });
 
     };
+
+    TemplatedView.prototype.renderData = function(){
+        var self = this;
+        var template = self.template;
+        if (!self.template.length) { alert("Template not found!"); }
+        var output = self.template.jqote({data:self.data, view:self});
+        self.view.html(output);
+
+        self.augmentView();
+
+        if (self.options.after_data_loaded) {
+            self.options.after_data_loaded(self);
+        }
+    };
+
 
     /*
      * TemplatedView allows links to have some special classes

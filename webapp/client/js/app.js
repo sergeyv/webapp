@@ -139,7 +139,7 @@
 	};
 
     Application.prototype.registerMenu = function( menu_id, tabs ) {
-        
+
     }
 
 	// I provide an AJAX gateway to the server.
@@ -209,12 +209,6 @@
 
 		}
 	};
-
-
-	// I return an instance of the class with the given name.
-	/*Application.prototype.getModel = function( className, initArguments ){
-		return( this.getClass( this.models, className, initArguments ) );
-	};*/
 
 
 	// I return an instance of the class with the given name.
@@ -633,7 +627,7 @@
             /// A controller can declare this.$menu, which is a jquery
             /// object pointing to a menu. It supposed to have some sub-elements
             /// with ids like #<menu_id>-<tab_id>.
-            
+
             if (this.$menu) {
                 /// Hide the current tab
                 this.$menu.find("a.current").removeClass("current");
@@ -649,7 +643,7 @@
                     tab_name = event.toLocation.split('/')[0];
                     if (!tab_name) {
                         /// if the toLocation was empty (as in case of http://mysite.com/ or http://mysite.com/#/ path)
-                        /// then the tab name is 'default' 
+                        /// then the tab name is 'default'
                         tab_name = 'default';
                     }
                 }
