@@ -67,7 +67,7 @@
         self = this;
 
         self.init();
-        
+
         load_from = "/forms/"+self.options.identifier;
 
         var $placeholder = self.view.find(".formPlaceholder");
@@ -201,6 +201,8 @@
          * Now works with subforms
          */
         var self = this;
+        if (! data) { return; }
+
         $.each(data, function(name, value) {
             var id = id_root + '-' + name;
             if (typeof(value) === "string" ||
@@ -218,14 +220,18 @@
                         elem.html(value || '&mdash;')
                     } else {
                         elem.val(value);
+                        elem.change();
                     }
                 } else {
                     application.log("NOT FOUND: " +id);
                 }
             } else if (typeof(value) === "object") {
-                self._fill_form(id, data[name])
+                if (data) {
+                    self._fill_form(id, data[name]);
+                }
             }
         });
+
     }
 
     GenericForm.prototype.populateForm = function() {
@@ -239,7 +245,7 @@
         self.disableForm();
 
         var id_root = '#' + self.options.identifier;
-        
+
         $.Read(self.getRestServiceUrl() + "?format="+self.options.data_format, function(data) {
             self._fill_form(id_root, data);
         });

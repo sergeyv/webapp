@@ -71,7 +71,7 @@ class RestCollection(crud.Collection):
 
         try:
             for item in items:
-                i = item.get_data(format=format)
+                i = item.serialize(format=format)
 
                 result.append(i)
         except AttributeError, e:
@@ -134,7 +134,7 @@ class RestResource(crud.Resource):
 
     """
 
-    def get_data(self, format='default', annotate=False):
+    def serialize(self, format='default', annotate=False):
         """
         - requires 'format' parameter - which must correspond to one of formats
         registered in `data_formats` property. This will determine which fields
@@ -244,7 +244,7 @@ class RestResource(crud.Resource):
 
 
 
-    def update_model(self, params):
+    def deserialize(self, params):
         """
         Recursively applies data from a Formish form to an SA model,
         using the form's schema to ensure only the attributes from the form are set.

@@ -70,7 +70,7 @@ def json_rest_create(context, request):
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
-    
+
     # TODO: Add validation here
     new_item = context.create_subitem(params=params, request=request)
 
@@ -101,9 +101,9 @@ def json_rest_delete_subitems(context, request):
         ids=params['id']
     except ValueError:
         ids=None
-        
+
     context.delete_subitems(ids)
-    
+
     return {'result':"OK"}
 
 
@@ -130,7 +130,7 @@ def json_rest_update(context, request):
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
 
-    context.update_model(params)
+    context.deserialize(params)
     return {'result':"HELLO FROM THE SERVER"}
 
 
@@ -141,5 +141,7 @@ def json_rest_get(context, request):
 
     format_name = request.GET.get('format', 'default')
     annotate = bool(request.GET.get('ann', False))
-    return context.get_data(format=format_name, annotate=annotate)
+    data = context.serialize(format=format_name, annotate=annotate)
+
+    return data
 
