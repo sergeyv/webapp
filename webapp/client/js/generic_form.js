@@ -25,6 +25,7 @@
          * Check if we either have 'adding' hint passed to the route
          * or 'adding' parameter specified in the options
          */
+        var self=this;
         if (self.parameters.adding ||
             self.options.adding) { return true; }
         return false;
@@ -64,11 +65,11 @@
     };
 
     GenericForm.prototype.showViewFirstTime = function( parameters ) {
-        self = this;
+        var self = this;
 
         self.init();
 
-        load_from = "/forms/"+self.options.identifier;
+        var load_from = "/forms/"+self.options.identifier;
 
         var $placeholder = self.view.find(".formPlaceholder");
         if (! $placeholder.length) {
@@ -99,7 +100,7 @@
 
     GenericForm.prototype.genericAugmentForm = function() {
         /// Do stuff we want on every form
-        self = this;
+        var self = this;
 
         /// TODO: Add option/condition "add_cancel_link"?
         self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
@@ -266,6 +267,8 @@
          *  dependent control is refreshed each time master is changed.
          */
 
+        var self = this;
+
         var url = path.replace(
             new RegExp( "(/):([^/]+)", "gi" ),
             function( $0, $1, $2 ){
@@ -361,9 +364,9 @@
 
     /// VOCABULARY STUFF
     /// (not really sure it belongs here)
-    GenericForm.prototype.show_add_vocab_value_dialog = function (listbox, url, dialog_title) {
+    /*GenericForm.prototype.show_add_vocab_value_dialog = function (listbox, url, dialog_title) {
         /// display a dialog to add a value to a vocab (offices, departments etc.)
-        listbox.val(0);
+        //listbox.val(0);
         var self = this;
         window.application.dialog.find("input.newValueText").attr("value", "");
 
@@ -383,10 +386,10 @@
             .dialog('option', 'title', dialog_title )
             .dialog('option', 'buttons', { Cancel:  close_fn, Add: add_fn} )
             .dialog('open');
-    };
+    };*/
 
 
-    GenericForm.prototype.populate_listbox = function (listbox, data, addmore)
+    /*GenericForm.prototype.populate_listbox = function (listbox, data, addmore)
     {
         listbox.children().remove();
         listbox.append($('<option/>').attr({value:""}).html(" -- please choose -- "));
@@ -404,7 +407,7 @@
         /// select the newly-added value or the first one if empty
         var new_id = data.new_id || 0;
         listbox.val(new_id);
-    };
+    };*/
 
     GenericForm.prototype.refresh_listbox_vocab = function (url, listbox, addmore)
     {

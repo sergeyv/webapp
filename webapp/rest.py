@@ -5,7 +5,7 @@ import schemaish as sc
 import crud
 
 from webapp.db import get_session
-from webapp.forms import get_form
+from webapp.forms import get_form, Literal
 
 class IRestRootCollection(crud.ICollection):
     pass
@@ -174,13 +174,23 @@ class RestResource(crud.Resource):
         default = object()
 
         print "=========="
-        print "Serializing %s" % item
+        print "Serializing %s values of %s" % (fieldnames, item, )
         print "----------"
         for name in fieldnames:
             value = getattr(item, name, default)
             structure_field = getattr(structure, name, default)
 
             if value is not default:
+
+                # if it's a callable then call it
+                # (using @property to imitate an attribute
+                # is not cool because it swallows any exceptions
+                # and just pretends there's no such property)
+                if callable(value):
+                    value = value()
+
+                if value is None:
+                    pass
 
                 # Recursively serialize lists of subitems
                 if isinstance(structure_field, sc.Tuple):
@@ -189,39 +199,27 @@ class RestResource(crud.Resource):
                     subitems = []
                     for item in value:
                         subitems.append(self._extract_data_from_item(item, subitems_schema))
-                    data[name] = subitems
+                    value = subitems
                 elif isinstance(structure_field, sc.Structure):
                     print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
                     subitems_schema = structure_field
-                    data[name] = self._extract_data_from_item(value, subitems_schema)
+                    value = self._extract_data_from_item(value, subitems_schema)
+                elif isinstance(structure_field, sc.String):
+                    print "SERIALIZING A STRING ATTRIBUTE: %s -> %s" % (name, structure_field)
+                    value = str(value)
+                elif isinstance(structure_field, sc.Integer):
+                    print "SERIALIZING AN INTEGER ATTRIBUTE: %s -> %s" % (name, structure_field)
+                    value = int(value)
+                elif isinstance(structure_field, Literal):
+                    print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
+                    pass
                 else:
-                    print "SERIALIZING A SIMPLE ATTRIBUTE: %s -> %s" % (name, structure_field)
+                    print "Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value)
+                    #raise AttributeError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
+            else:
+                value = None
 
-
-                    # if it's a callable then call it
-                    # (using @property to imitate an attribute
-                    # is not cool because it swallows any exceptions
-                    # and just pretends there's no such property)
-                    if callable(value):
-                        value = value()
-
-
-                    # We need to prevent classes and other
-                    # non-serializable stuff from trying to sneak
-                    # into the JSON serializer. So we convert the types
-                    # which are explicitly declared as strings or integers
-                    # (TODO: add more!)
-                    # However, we don't convert other generic types (Attribute)
-                    # because we want to be able to call functions which
-                    # directly return json-serializable structures
-                    if value is None:
-                        pass
-                    elif isinstance(structure_field, sc.String):
-                        value = str(value)
-                    elif isinstance(structure_field, sc.Integer):
-                        value = int(value)
-
-                    data[name] =value
+            data[name] = value
 
         print "EXTRACTED DATA: %s" % data
         return data
@@ -286,6 +284,10 @@ class RestResource(crud.Resource):
 
                 elif isinstance(attr, sc.String):
                     setattr(item, name, value)
+                elif isinstance(attr, sc.Integer):
+                    setattr(item, name, int(value))
+                else:
+                    raise AttributeError("Don't know how to deserialize attribute %s of type" % (name, attr))
 
         item = self.model
 

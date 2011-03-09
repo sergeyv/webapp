@@ -25,6 +25,17 @@ class ILoadableForm(Interface):
     """
     """
 
+from schemaish.attr import LeafAttribute
+
+class Literal(LeafAttribute):
+    """
+    A schema attribute which means that the serialization framework
+    should just serialize the value of the model's attribute as is,
+    without making assumptions about it.
+    It's useful to serialize a result of some mnethod which may
+    return some complex (but still json-serializable) list or dictionary
+    """
+    pass
 
 class loadable_form(object):
     """
@@ -52,14 +63,14 @@ def reflect(cls):
     from sqlalchemy.orm.dynamic import DynamicAttributeImpl
     from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
     from sqlalchemy.orm.attributes import manager_of_class
-    
+
 
     def _get_attribute(cls, p):
         manager = manager_of_class(cls)
         return manager[p.key]
 
     pkeys = [c.key for c in class_mapper(cls).primary_key]
-    
+
     # attributes we're interested in
     attrs = []
     for p in class_mapper(cls).iterate_properties:
@@ -77,31 +88,31 @@ def reflect(cls):
             continue
         if attr.key in pkeys:
             continue
-        
+
         if isinstance(attr.impl, ScalarAttributeImpl):
             attrs.append(attr)
         #fields.AttributeField(attr, self)
-        
+
     #import pdb; pdb.set_trace()
 
     return attrs
     # sort relations last before storing in the OrderedDict
     #L = [fields.AttributeField(attr, self) for attr in attrs]
-    #L.sort(lambda a, b: cmp(a.is_relation, b.is_relation)) 
+    #L.sort(lambda a, b: cmp(a.is_relation, b.is_relation))
     #self._fields.update((field.key, field) for field in L)
 
 
 class AutoSchema(sc.Structure):
 
     model = None
-    
+
     def __init__(self, **kwargs):
 
         super(AutoSchema, self).__init__(**kwargs)
         attrs = reflect(self.model)
         for attr in attrs:
             self.add(attr.key, sc.String())
-        
+
 
 def loadable(cls):
     """

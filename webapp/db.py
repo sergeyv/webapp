@@ -18,7 +18,7 @@ _DBSession = None
 
 def get_session():
     return _DBSession()
-    
+
 def get_session_class():
     return _DBSession
 
@@ -40,10 +40,10 @@ class WebappBase(object):
 
     def __unicode__(self):
         if hasattr(self, 'name') and self.name:
-            return str(self.name)
+            return str(self.name() if callable(self.name) else self.name)
 
         if hasattr(self, 'title') and self.title:
-            return str(self.title)
+            return str(self.title() if callable(self.title) else self.title)
 
         if hasattr(self, 'id') and self.id:
             return "%s #%s" % (self.__class__.__name__, self.id)
@@ -111,7 +111,7 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
 
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
-    
+
     if populate_fn is not None:
         try:
             populate_fn()
@@ -119,4 +119,3 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
             pass
 
 
-                                                      
