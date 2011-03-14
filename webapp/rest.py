@@ -193,9 +193,10 @@ class RestResource(crud.Resource):
                     pass
 
                 # Recursively serialize lists of subitems
-                if isinstance(structure_field, sc.Tuple):
-                    print "SERIALIZING A TUPLE: %s -> %s" % (name, structure_field)
-                    subitems_schema = structure_field.attrs[0]
+                if isinstance(structure_field, sc.Sequence):
+                    print "SERIALIZING A SEQUENCE: %s -> %s" % (name, structure_field)
+                    #import pdb; pdb.set_trace();
+                    subitems_schema = structure_field.attr
                     subitems = []
                     for item in value:
                         subitems.append(self._extract_data_from_item(item, subitems_schema))
