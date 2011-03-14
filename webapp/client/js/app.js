@@ -7,27 +7,27 @@
 	function Application(){
 
         var self = this;
-		// I am the collection of route mappings that map URL patterns to event
-		// handlers within the cached controllers.
-		this.routeMappings = [];
+        // I am the collection of route mappings that map URL patterns to event
+        // handlers within the cached controllers.
+        this.routeMappings = [];
 
-		// I am the collection of controllers. All controllers are intended to be
-		// singleton instances.
-		this.controllers = [];
+        // I am the collection of controllers. All controllers are intended to be
+        // singleton instances.
+        this.controllers = [];
 
-		// I am the collection of models. I can contain either cached singleton
-		// instances or class definitions (to be instantiated at request).
-		this.models = {
-			cache: {},
-			classes: {}
-		};
+        // I am the collection of models. I can contain either cached singleton
+        // instances or class definitions (to be instantiated at request).
+        this.models = {
+            cache: {},
+            classes: {}
+        };
 
-		// I am the collection of views. I can contain either cached singleton
-		// instances of class definitions (to be instantiated at request).
-		this.views = {
-			cache: {},
-			classes: {}
-		};
+        // I am the collection of views. I can contain either cached singleton
+        // instances of class definitions (to be instantiated at request).
+        this.views = {
+            cache: {},
+            classes: {}
+        };
 
         /// validation rules to be used with forms
         this.validation_rules = {
@@ -551,7 +551,7 @@
 
 			// Extract the parameters and replace with capturing groups at the same
 			// time (such that when the pattern is tested, we can map the captured
-			// groups to the ordered paramters above.
+			// groups to the ordered parameters above.
 			var pattern = path.replace(
 				new RegExp( "(/):([^/]+)", "gi" ),
 				function( $0, $1, $2 ){
@@ -608,7 +608,7 @@
             // Store the given view as the current view.
             this.currentView = view;
 
-            // just logging - delete later
+            // TODO: just logging - delete later
             if (parameters)
             {
                 $.each(parameters, function(idx, value) {
@@ -659,6 +659,19 @@
 	// ----------------------------------------------------------------------- //
 	// ----------------------------------------------------------------------- //
 
+    // TODO: Those functions are helpers which used in themplates.
+    // Move them somewhere (a global window.helpers object?)
+    Application.prototype.readable_bytes = function(bytes) {
+        var sizes = ['b', 'Kb', 'Mb', 'Gb', 'Tb'];
+        if (bytes == 0) return 'n/a';
+        var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+        return Math.round(bytes / Math.pow(1024, i), 2) + sizes[i];
+    };
+
+    Application.prototype.percent = function(part, whole) {
+        if (! whole) return 0;
+        return Math.round(part/whole*100);
+    };
 
 	// Create a new instance of the application and store it in the window.
 	window.application = new Application();

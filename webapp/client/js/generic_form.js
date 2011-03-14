@@ -119,6 +119,12 @@
             $(this).replaceWith(text);
         });
 
+        // Init formish form
+        add_sortables(self.view);
+        create_addlinks(self.view);
+        add_mousedown_to_addlinks(self.view);
+        add_remove_buttons(self.view);
+
     }
 
     GenericForm.prototype.augmentForm = function() {

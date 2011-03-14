@@ -206,10 +206,12 @@ class RestResource(crud.Resource):
                     value = self._extract_data_from_item(value, subitems_schema)
                 elif isinstance(structure_field, sc.String):
                     print "SERIALIZING A STRING ATTRIBUTE: %s -> %s" % (name, structure_field)
-                    value = str(value)
+                    if value is not None:
+                        value = str(value)
                 elif isinstance(structure_field, sc.Integer):
                     print "SERIALIZING AN INTEGER ATTRIBUTE: %s -> %s" % (name, structure_field)
-                    value = int(value)
+                    if value is not None:
+                        value = int(value)
                 elif isinstance(structure_field, Literal):
                     print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                     pass

@@ -3,7 +3,7 @@ import datetime
 import json
 import re
 
-
+from decimal import Decimal
 
 _JS_DATE_REGEXP = re.compile(r'"\*\*(new Date\([0-9,]+\))"')
 
@@ -16,6 +16,9 @@ def json_renderer_factory(name):
 
             if isinstance(obj, datetime.date):
                 return "%s-%s-%s" % (obj.year, obj.month, obj.day)
+
+            if isinstance(obj, Decimal):
+                return float(obj)
 
             return json.JSONEncoder.default(self, obj)
 

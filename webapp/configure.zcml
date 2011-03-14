@@ -21,4 +21,16 @@
     />
 
 
+  <!-- Publish formish javascript assets -->
+  <static
+      name="formish.js"
+      path="formish:js"
+  />
+
+  <!-- Publish formish javascript assets -->
+  <static
+      name="formish.css"
+      path="formish:css"
+  />
+
 </configure>

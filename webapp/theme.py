@@ -43,6 +43,9 @@ class AssetRegistry(object):
     # from http://github.com/aefxx/jQote2
     "/webapp.client/core_js/jquery.jqote2.js",
 
+    # Formish
+    "/formish.js/formish.js",
+
     # from http://flowplayer.org/tools/
 
     # Address plugin which deals with the hash part of the url
@@ -76,6 +79,7 @@ class AssetRegistry(object):
     core_css_assets = (
     "/crud_static/default.css",
     "/webapp.client/css/jquery-ui-1.8.1.custom.css",
+    #"/formish.css/formish.css",
     "/webapp.client/css/webapp.css",
     )
 
