@@ -2,6 +2,8 @@
 
 import schemaish as sc
 
+from sqlalchemy.orm import object_session
+
 import crud
 
 from webapp.db import get_session
@@ -195,7 +197,7 @@ class RestResource(crud.Resource):
                 # Recursively serialize lists of subitems
                 if isinstance(structure_field, sc.Sequence):
                     print "SERIALIZING A SEQUENCE: %s -> %s" % (name, structure_field)
-                    #import pdb; pdb.set_trace();
+
                     subitems_schema = structure_field.attr
                     subitems = []
                     for item in value:
@@ -275,6 +277,7 @@ class RestResource(crud.Resource):
                     continue
 
                 print "### Saving attribute %s with value %s" % (name, value)
+                # Nested structures
                 if isinstance(attr, sc.Structure):
                     print "STRUCTURE!"
                     subschema = attr
@@ -285,12 +288,44 @@ class RestResource(crud.Resource):
                         setattr(item, name, subitem)
                     _save_structure(subitem, subschema, value)
 
+                # Sequences of structures
+                elif isinstance(attr, sc.Sequence):
+                    subschema = attr.attr
+                    subitems = getattr(item, name, None)
+                    existing_items = {item.id:item for item in subitems}
+                    collection_attr = getattr(item, name)
+
+                    for (subitem_id, subvalue) in value.items():
+                        import pdb;pdb.set_trace();
+                        # the data must contain 'id' parameter
+                        # if the data should be saved into an existing item
+                        subitem = existing_items.get(subitem_id, None)
+                        if subitem is not None:
+                            subitem.__webapp_existing__ = True
+                        else:
+                            cls = _get_attribute_class(item, name)
+                            subitem = cls()
+                            subitem.__webapp_new__ = True
+                            getattr(item, name).append(subitem)
+                        _save_structure(subitem, subschema, subvalue)
+
+                    for subitem in getattr(item, name):
+                        if not hasattr(subitem, '__webapp_existing__')\
+                           and not hasattr(subitem, '__webapp_new__'):
+
+                            session = object_session(subitem)
+                            session.delete(subitem)
+
+
+                    #raise AttributeError("Need to decide how to deserialize sequence attribute %s of type %s" % (name, attr))
+
+                # Simple attributes
                 elif isinstance(attr, sc.String):
                     setattr(item, name, value)
                 elif isinstance(attr, sc.Integer):
                     setattr(item, name, int(value))
                 else:
-                    raise AttributeError("Don't know how to deserialize attribute %s of type" % (name, attr))
+                    raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 
         item = self.model
 

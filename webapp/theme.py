@@ -50,10 +50,10 @@ class AssetRegistry(object):
 
     # Address plugin which deals with the hash part of the url
     # from http://www.asual.com/jquery/address/
-    "/webapp.client/core_js/jquery.address-1.2.js",
+    "/webapp.client/core_js/jquery.address-1.3.2.js",
 
     # Full JQuery UI from http://jqueryui.com/download
-    "/webapp.client/core_js/jquery-ui-1.8.1.custom.min.js",
+    "/webapp.client/core_js/jquery-ui-1.8.10.custom.min.js",
     # Time picker from http://bililite.com/blog/2009/07/09/updating-timepickr/
     "/webapp.client/core_js/jquery.timepickr.js",
 
@@ -78,7 +78,7 @@ class AssetRegistry(object):
 
     core_css_assets = (
     "/crud_static/default.css",
-    "/webapp.client/css/jquery-ui-1.8.1.custom.css",
+    "/webapp.client/css/jquery-ui-1.8.10.custom.css",
     #"/formish.css/formish.css",
     "/webapp.client/css/webapp.css",
     )

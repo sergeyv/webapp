@@ -207,8 +207,16 @@
          * of the form and set their values.
          * Now works with subforms
          */
-        var self = this;
+        var self = this,
+            _is_array = function (arg) {
+                return (arg && typeof arg === 'object' &&
+                        typeof arg.length === 'number' &&
+                        !(arg.propertyIsEnumerable('length')));
+            };
         if (! data) { return; }
+
+//         application.log("ROOT: "+id_root);
+//         application.log(data);
 
         $.each(data, function(name, value) {
             var id = id_root + '-' + name;
@@ -217,7 +225,7 @@
                 typeof(value) === "boolean")
             {
                 var elem = $(id);
-                application.log(id + " ===> " + elem);
+                application.log(id + " ("+elem.length+") ===> " + elem);
 
                 if (elem.length)
                 {
@@ -232,9 +240,27 @@
                 } else {
                     application.log("NOT FOUND: " +id);
                 }
+            } else if (_is_array(value)) {
+                var elem = $(id+'--field');
+                //alert(elem.length);
+                var link = elem.find('a.adderlink');
+
+                // remove existing fieldsets
+                elem.find('.field').remove();
+
+                //alert(link.length)
+                // should go before the === "object" section
+                $.each(value, function(idx, subvalue) {
+                    application.log("VALUE");
+                    application.log("ID: "+idx);
+                    application.log(subvalue);
+                    add_new_items(link, self.view);
+                    self._fill_form(id+'-'+idx, subvalue);
+                    //add_new_items(link, self.view);
+                });
             } else if (typeof(value) === "object") {
                 if (data) {
-                    self._fill_form(id, data[name]);
+                    self._fill_form(id, value);
                 }
             }
         });
