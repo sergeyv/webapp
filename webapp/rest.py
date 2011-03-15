@@ -290,34 +290,11 @@ class RestResource(crud.Resource):
 
                 # Sequences of structures
                 elif isinstance(attr, sc.Sequence):
-                    subschema = attr.attr
-                    subitems = getattr(item, name, None)
-                    existing_items = {item.id:item for item in subitems}
-                    collection_attr = getattr(item, name)
+                    collection = getattr(item, name)
+                    subitems_cls = _get_attribute_class(item, name)
 
-                    for (subitem_id, subvalue) in value.items():
-                        import pdb;pdb.set_trace();
-                        # the data must contain 'id' parameter
-                        # if the data should be saved into an existing item
-                        subitem = existing_items.get(subitem_id, None)
-                        if subitem is not None:
-                            subitem.__webapp_existing__ = True
-                        else:
-                            cls = _get_attribute_class(item, name)
-                            subitem = cls()
-                            subitem.__webapp_new__ = True
-                            getattr(item, name).append(subitem)
-                        _save_structure(subitem, subschema, subvalue)
+                    _save_sequence(collection, subitems_cls, attr.attr, value)
 
-                    for subitem in getattr(item, name):
-                        if not hasattr(subitem, '__webapp_existing__')\
-                           and not hasattr(subitem, '__webapp_new__'):
-
-                            session = object_session(subitem)
-                            session.delete(subitem)
-
-
-                    #raise AttributeError("Need to decide how to deserialize sequence attribute %s of type %s" % (name, attr))
 
                 # Simple attributes
                 elif isinstance(attr, sc.String):
@@ -326,6 +303,38 @@ class RestResource(crud.Resource):
                     setattr(item, name, int(value))
                 else:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
+
+        def _save_sequence(collection, subitems_cls, schema, data):
+
+
+            existing_items = {item.id:item for item in collection}
+
+            for (order_idx, value) in data.items():
+                if order_idx == '*':
+                    continue;
+                item_id = data.get('id', None)
+                #import pdb;pdb.set_trace();
+                # the data must contain 'id' parameter
+                # if the data should be saved into an existing item
+                item = existing_items.get(item_id, None)
+                if item is not None:
+                    item.__webapp_existing__ = True
+                else:
+                    item = subitems_cls()
+                    item.__webapp_new__ = True
+                    collection.append(item)
+
+                del value['id']
+                _save_structure(item, schema, value)
+
+            for item in collection:
+                # remove items which were not marked as 'seen'
+                if not hasattr(item, '__webapp_existing__')\
+                    and not hasattr(item, '__webapp_new__'):
+
+                    session = object_session(item)
+                    session.delete(item)
+
 
         item = self.model
 

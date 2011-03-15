@@ -114,6 +114,42 @@ class AutoSchema(sc.Structure):
             self.add(attr.key, sc.String())
 
 
+
+def _recursively_augment(form):
+    # Find any subforms and call their
+    # augment_form methods so we can set up widgets etc.
+    try:
+        print "Schema: %s" % form.name
+    except AttributeError:
+        print "FCJK!: %s" % form
+        #import pdb; pdb.set_trace();
+        return
+
+    for field in form.fields:
+        #if key.startswith('_'):
+        #    continue
+        #schema_field =  getattr(schema, key)
+        if isinstance(field.attr, sc.Structure):
+            _recursively_augment(field)
+        elif isinstance(field.attr, sc.Sequence):
+            print "TADA, a Sequence!"
+            #import pdb; pdb.set_trace()
+            #subschema = field.attr
+
+            #subform = form[key]
+            _recursively_augment(field)
+
+    # Augment the form itself. We can override
+    # any changes made in the subforms
+    if hasattr(form, 'structure'):
+        structure = form.structure.attr
+    else:
+        structure = form.attr
+
+    if hasattr(structure, 'augment_form'):
+        structure.augment_form(form)
+
+
 def loadable(cls):
     """
     Registers a formish structure class as a loadable form
@@ -135,21 +171,9 @@ def loadable(cls):
 
     # Find any subforms and call their
     # augment_form methods so we can set up widgets etc.
-    for key in dir(schema):
-        if key.startswith('_'):
-            continue
-        print "FORM KEY: %s" % key
-        schema_field =  getattr(schema, key)
-        if isinstance(schema_field, sc.Structure):
-            subschema = schema_field
-            subform = form[key]
-            if hasattr(subschema, 'augment_form'):
-                subschema.augment_form(subform)
+    #import pdb; pdb.set_trace()
+    _recursively_augment(form)
 
-    # Augment the form itself. We can override
-    # any changes made in the subforms
-    if hasattr(cls, 'augment_form'):
-        schema.augment_form(form)
     gsm.registerUtility(form, ILoadableForm, name)
     print "Registered loadable form %s" % name
     return cls
