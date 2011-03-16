@@ -307,12 +307,12 @@ class RestResource(crud.Resource):
         def _save_sequence(collection, subitems_cls, schema, data):
 
 
-            existing_items = {item.id:item for item in collection}
+            existing_items = {str(item.id):item for item in collection}
 
             for (order_idx, value) in data.items():
                 if order_idx == '*':
                     continue;
-                item_id = data.get('id', None)
+                item_id = value.get('id', None)
                 #import pdb;pdb.set_trace();
                 # the data must contain 'id' parameter
                 # if the data should be saved into an existing item
