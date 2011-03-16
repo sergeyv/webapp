@@ -23,7 +23,7 @@ class RestCollection(crud.Collection):
     """
 
     ### Can be overridden in a subsclass
-    RECORDS_PER_BATCH = 100
+    RECORDS_PER_BATCH = 400
     LIMIT_INCREMENTAL_RESULTS = 25
 
 
