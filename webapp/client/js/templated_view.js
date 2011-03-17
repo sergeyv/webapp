@@ -15,6 +15,8 @@ function TemplatedView(options) {
 }
 
 TemplatedView.prototype = new GenericView();
+/// see http://phrogz.net/js/classes/OOPinJS.html for details
+TemplatedView.prototype.constructor = TemplatedView;
 
 TemplatedView.prototype.init = function () {
     /// this is called when the view is first shown
@@ -98,7 +100,6 @@ TemplatedView.prototype.renderData = function () {
     }
 
     self.view.html(self.template.jqote({data: self.data, view: self}));
-
     self.augmentView();
 
     if (self.options.after_data_loaded) {
@@ -215,9 +216,9 @@ TemplatedView.prototype.augmentView = function () {
 
 TemplatedView.prototype.fill_form = function (id_root, data) {
     /* Recursively iterate over the json data, find elements
-        * of the form and set their values.
-        * Now works with subforms
-        */
+     * of the form and set their values.
+     * Now works with subforms
+     */
     var self = this,
         elem;
     if (!data) { return; }

@@ -68,6 +68,9 @@
             $('#ajax-spinner').ajaxStop(function () {
                 $(this).hide();
             });
+            $('#ajax-spinner').ajaxError(function () {
+                $(this).hide();
+            });
             /// Error message box
             $("#ajax-error").ajaxError(function(event, xhr, ajaxOptions, thrownError) {
                 var self = this;
@@ -133,8 +136,6 @@
 	// I add the given view class or instance to the view class library. Any classes
 	// that are passed in AS instances will be cached and act as singletons.
 	Application.prototype.addView = function( name, view ){
-		//this.addClass( this.views, view );
-        this.log("Adding "+ view + " as "+name);
         this.views[name] = view;
 	};
 
@@ -143,7 +144,7 @@
     }
 
 	// I provide an AJAX gateway to the server.
-	Application.prototype.ajax = function( options ){
+	/*Application.prototype.ajax = function( options ){
 		var self = this;
 
 		// Get the full range of settings.
@@ -181,10 +182,10 @@
 
 		// Make the AJAX call.
 		$.ajax( ajaxOptions );
-	};
+	};*/
 
 
-	// I return an instance of the class with the given name from the given target.
+	/*// I return an instance of the class with the given name from the given target.
 	Application.prototype.getClass = function( target, className, initArguments ){
 		// Check to see if the instance is a cached singleton.
 		if (target.cache[ className ]){
@@ -208,7 +209,7 @@
 			return( newInstance );
 
 		}
-	};
+	};*/
 
 
 	// I return an instance of the class with the given name.
@@ -313,57 +314,6 @@
 	};
 
 
-	// I normalize a JSON response from an AJAX call. This is because some languages
-	// (such as ColdFusion) are not case sensitive and do not have proper casing
-	// on their JSON translations. I will lowercase all keys.
-	Application.prototype.normalizeJSON = function( object ){
-		var self = this;
-
-		// Check to see if this is an object that can be normalized.
-		if (
-			(typeof( object ) == "boolean") ||
-			(typeof( object ) == "string") ||
-			(typeof( object ) == "number") ||
-			$.isFunction( object )
-			){
-
-			// This is a non-object, just return it's value.
-			return( object );
-		}
-
-		// Check to see if this is an array.
-		if ($.isArray( object )){
-
-			// Create an array into which the normalized data will be stored.
-			var normalizedObject = [];
-
-			// Loop over the array value and moralize it's value.
-			$.each(
-				object,
-				function( index, value ){
-					normalizedObject[ index ] = self.normalizeJSON( value );
-				}
-			);
-
-		} else {
-
-			// Create an object into which the normalized data will be stored.
-			var normalizedObject = {};
-
-			// Loop over the object key and moralize it's key and value.
-			$.each(
-				object,
-				function( key, value ){
-					normalizedObject[ key.toLowerCase() ] = self.normalizeJSON( value );
-				}
-			);
-
-		}
-
-		// Return the normalized object.
-		return( normalizedObject );
-	};
-
 
     $.address.change( function( event ){
         /*
@@ -381,9 +331,24 @@
         var eventContext = {
             application: self,
             toLocation: hash,
-            parameters: new Object(), /// to be filled from the matching route
+            /// to be filled from the matching route 
+            /// - i.e. if our url is /clients/10/contacts/123, then a route
+            /// /clients/:client_id/contacts/:contact_id will extract
+            /// {client_id:10, contact_id:123}
+            parameters: {}, 
+            /// this is filled from our 'slack's slack' - a part of hash slack after the first | symbol
+            /// is treated as a |-separated list of name:value pairs, for example
+            /// /clients/10/contacts|sort_by:name|filter_status:active
+            arguments: {}
         };
 
+        var parts = hash.split('|');
+        hash = parts[0];
+        for (var i = 1; i<parts.length; i++) {
+            var pair = parts[i].split(':');
+            eventContext.arguments[pair[0]] = pair[1];
+        }
+        
 		// Iterate over the route mappings.
         // Using a for loop here is much cleaner then using JQuery's $.each
 		for (var i = 0; i < self.routeMappings.length; i++)
@@ -449,21 +414,6 @@
 	});
 
 
-/*	// I create a proxy for the callback so that given callback executes in the
-	// context of the application object, overriding any context provided by the
-	// calling context.
-	Application.prototype.proxyCallback = function( callback ){
-		var self = this;
-
-		// Return a proxy that will apply the callback in the THIS context.
-		return(
-			function(){
-				return( callback.apply( self, arguments ) );
-			}
-		);
-	}
-*/
-
     /*
      * Relocates the application to the given location.
      * Don't do anything explicitly -
@@ -504,12 +454,6 @@
 
 		// Initialize the controllers.
 		this.initControllers();
-
-		// Initialize the location monitor.
-		//this.initLocationMonitor();
-
-		// Turn on location monitor.
-		//this.startLocationMonitor();
 
 		// Flag that the application is running.
 		this.isRunning = true;
