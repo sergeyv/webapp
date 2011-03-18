@@ -5,7 +5,8 @@ function GenericListing(options){
 
     // a nice side-effect of this is that it's doing a deep-copy
     this.options = $.extend({
-        'batch_size': 10,
+        batch_size: 10,
+        data_format: 'listing'
     }, options);
 
 };
@@ -40,20 +41,6 @@ GenericListing.prototype.init = function () {
 
 };
 
-GenericListing.prototype.showViewFirstTime = function () {
-
-    var self = this,
-        load_base_from = "/t/listing.html",
-        load_body_from = "/t/" + self.options.identifier + ".html";
-
-    self.init();
-
-    self.template.load(load_base_from, function () {
-        self.row_template.load(load_body_from, function () {
-            self.showView();
-        });
-    });
-};
 
 GenericListing.prototype.renderTableBody = function() {
     var self=this;

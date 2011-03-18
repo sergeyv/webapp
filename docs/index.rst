@@ -9,4 +9,5 @@ on the client and server.
 
    overview.rst
    api.rst
+   client.rst
    HISTORY.rst
