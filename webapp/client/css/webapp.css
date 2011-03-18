@@ -70,15 +70,6 @@ span.required-marker {
     padding-left:0.5em;
 }
 
-.sortedAsc {
-    background: transparent url(images/sorted_asc.gif) right center no-repeat;
-    padding-right: 16px;
-}
-
-.sortedDesc {
-    background: transparent url(images/sorted_desc.gif) right center no-repeat;
-    padding-right: 16px;
-}
 
 
 /* a nice pipe-separated inline list */

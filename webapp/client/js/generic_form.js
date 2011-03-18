@@ -150,7 +150,7 @@
         var self = this;
 
         /// Cancel link points to the page we came from
-        self.cancelLink.attr('href', "#/"+window.application.previousPageUrl());
+        self.cancelLink.attr('href', window.application.previousPageUrl());
 
         // Show the view.
         self.view.addClass( "activeContentView" );
@@ -279,7 +279,7 @@
 
         var id_root = '#' + self.options.identifier;
 
-        $.Read(self.getRestServiceUrl() + "?format="+self.options.data_format, function(data) {
+        $.Read(self.getRestServiceUrl(), function(data) {
             self._fill_form(id_root, data);
         });
     };

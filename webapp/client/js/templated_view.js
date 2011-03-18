@@ -70,9 +70,11 @@ TemplatedView.prototype.showView = function () {
 };
 
 TemplatedView.prototype.populateView = function () {
-    var self = this,
-        service_url = self.getRestServiceUrl(),
-        params = [];
+    var self = this;
+
+
+    /*  service_url = self.getRestServiceUrl();  ,
+    params = [];
     if (self.options.data_format) {
         params.push("format=" + self.options.data_format);
     }
@@ -83,9 +85,9 @@ TemplatedView.prototype.populateView = function () {
     params = params.join("&");
     if (params) {
         service_url = service_url + "?" + params;
-    }
+    }*/
 
-    $.Read(service_url, function (data) {
+    $.Read(self.getRestServiceUrl(), function (data) {
         self.data = data;
         self.renderData();
     });

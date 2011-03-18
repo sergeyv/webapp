@@ -22,8 +22,11 @@ class RestCollection(crud.Collection):
     rest sections need to subclass this
     """
 
-    ### Can be overridden in a subsclass
-    RECORDS_PER_BATCH = 400
+    ### Some 'sane' defaults for an unlikely case the frontent does not tell
+    ### us how much results it wants or asks for an unrelistic or stupid number
+    DEFAULT_RECORDS_PER_BATCH = 10
+    MIN_RECORDS_PER_BATCH = 3
+    MAX_RECORDS_PER_BATCH = 400
     LIMIT_INCREMENTAL_RESULTS = 25
 
 
@@ -33,22 +36,33 @@ class RestCollection(crud.Collection):
 
         format = request.GET.get('format', 'listing')
 
-        order_by = request.GET.get('order_by', None)
+        sort_on = request.GET.get('sort_on', None)
+        sort_order = request.GET.get('sort_order', None)
+        batch_size = request.GET.get('batch_size', self.DEFAULT_RECORDS_PER_BATCH)
+        batch_size = int(batch_size)
+        batch_size = max(batch_size, self.MIN_RECORDS_PER_BATCH)
+        batch_size = min(batch_size, self.MAX_RECORDS_PER_BATCH)
+        batch_start = int(request.GET.get('batch_start', 0))
+
+
+        if sort_order == 'desc':
+            sort_on = "-%s" % sort_on
+        else:
+            sort_on = "+%s" % sort_on
 
         ### 'vocab' format is a special (simplified) case
         ### - returns {'items': [(id, name), (id, name), ...]}
         if format=='vocab':
-            items = self.get_items(order_by=order_by, wrap=False)
+            items = self.get_items(order_by=sort_on, wrap=False)
             result = [ (item.id, str(item)) for item in items ]
             return {'items':result}
 
 
         data = {}
-        batch_start = int(request.GET.get('from', 0))
 
         model_class = self.subitems_source
 
-        query = self.get_items_query(filter_condition = filter_condition, order_by=order_by)
+        query = self.get_items_query(filter_condition = filter_condition, order_by=sort_on)
 
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
@@ -59,12 +73,12 @@ class RestCollection(crud.Collection):
         # Limit the result set to a single batch only
         # request one record more than needed to see if there are
         # more records
-        query = query.offset(batch_start).limit(self.RECORDS_PER_BATCH+1)
+        query = query.offset(batch_start).limit(batch_size+1)
         items = query.all()
 
-        if len(items) > self.RECORDS_PER_BATCH:
+        if len(items) > batch_size:
             data['has_more'] = True
-            data['next_batch_start'] = batch_start + self.RECORDS_PER_BATCH
+            data['next_batch_start'] = batch_start + batch_size
 
         result = []
 

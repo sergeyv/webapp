@@ -307,22 +307,32 @@
 	// I normalize a hash value for comparison.
 	Application.prototype.normalizeHash = function( hash ){
 		// Strip off front hash and slashses as well as trailing slash. This will
-		// convert hash values like "#/section/" into "section".
+		// convert hash values like "#/section/" into "#/section".
 		return(
-			hash.replace( new RegExp( "^[#/]+|/$", "g" ), "" )
+			//hash.replace( new RegExp( "^[#/]+|/$", "g" ), "" )
+			hash.replace( new RegExp( "/$", "g" ), "" )
 		);
 	};
 
 
 
-    $.address.change( function( event ){
+    $.address.change( function( address_change_event ){
         /*
         Find a route which matches the URL hash we've given and show the view
         which is registered for that route
         */
 		var self = window.application;
 
-        var hash = self.normalizeHash(event.value);
+        var hash = self.normalizeHash(address_change_event.value);
+        var parts = hash.split('|');
+        var arguments = {};
+
+        // note that we're starting with the 1st element, skipping
+        /// the 0th, which goes into event's 'location' attribute
+        for (var i = 1; i < parts.length; i++) {
+            var pair = parts[i].split(':');
+            arguments[pair[0]] = pair[1];
+        }
 
         // remember the url
         self.visitedUrlsLog.push(hash);
@@ -330,24 +340,18 @@
         // Define the default event context.
         var eventContext = {
             application: self,
-            toLocation: hash,
-            /// to be filled from the matching route
+            /// `location` is the current hash slack
+            location: parts[0],
+            /// `parameters` are filled from the matching route
             /// - i.e. if our url is /clients/10/contacts/123, then a route
             /// /clients/:client_id/contacts/:contact_id will extract
-            /// {client_id:10, contact_id:123}
+            /// {client_id:10, contact_id:123} into the `parameters` dictionary
             parameters: {},
-            /// this is filled from our 'slack's slack' - a part of hash slack after the first | symbol
+            /// arguments filled from our 'slack's slack' - the part of hash slack after the first | symbol
             /// is treated as a |-separated list of name:value pairs, for example
             /// /clients/10/contacts|sort_by:name|filter_status:active
-            arguments: {}
+            arguments: arguments
         };
-
-        var parts = hash.split('|');
-        hash = parts[0];
-        for (var i = 1; i<parts.length; i++) {
-            var pair = parts[i].split(':');
-            eventContext.arguments[pair[0]] = pair[1];
-        }
 
 		// Iterate over the route mappings.
         // Using a for loop here is much cleaner then using JQuery's $.each
@@ -361,7 +365,7 @@
             // not match, this will return null) and check to see if this route
             // mapping applies to the current location (if no matches are returned,
             // matches array will be null).
-            if (matches = hash.match( mapping.test )){
+            if (matches = eventContext.location.match( mapping.test )){
                 self.log("MATCH: "+matches);
                 // The route mapping will handle this location change. Now, we
                 // need to prepare the event context and invoke the route handler.
@@ -374,7 +378,8 @@
 
 
                 /// push the default parameters into the parameters dict
-                if (mapping.default_parameters)
+                $.extend(eventContext.parameters, mapping.default_parameters);
+                /*if (mapping.default_parameters)
                 {
                     $.each(
                         mapping.default_parameters,
@@ -382,7 +387,7 @@
                             eventContext.parameters[ index ] = value;
                         }
                     );
-                }
+                }*/
 
                 // Map the captured group matches to the ordered parameters defined
                 // in the route mapping.
@@ -428,7 +433,7 @@
         location = this.normalizeHash( location );
 
         // Change the location
-        window.location.hash = ("#/" + location );
+        window.location.hash = ( location );
 
 	};
 
@@ -439,6 +444,10 @@
         var result = "";
         if (l.length > 1) {
             result = l[l.length - 2];
+        }
+
+        if (result.indexOf('#') !== 0) {
+            result = '#' + result;
         }
         window.application.log("PREV PAGE: "+ result);
         return result;
@@ -585,9 +594,9 @@
                 /// the view's location, so /clients/123/orders/325 will toggle
                 /// #<menu_id>-clients
                 if (tab_name === undefined) {
-                    tab_name = event.toLocation.split('/')[0];
+                    tab_name = event.location.split('/')[0];
                     if (!tab_name) {
-                        /// if the toLocation was empty (as in case of http://mysite.com/ or http://mysite.com/#/ path)
+                        /// if event.location was empty (as in case of http://mysite.com/ or http://mysite.com/#/ path)
                         /// then the tab name is 'default'
                         tab_name = 'default';
                     }

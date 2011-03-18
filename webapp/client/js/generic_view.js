@@ -7,6 +7,28 @@ function GenericView(options){
 };
 
 
+GenericView.prototype.collectRestParams = function() {
+    /*
+     * returns a list of 'key=value' strings aggreggated from
+     * different parts of the view to be passed to the Rest backend
+     * when querying for data. Subclasses may override this to add
+     * more parameters
+     */
+    var self = this;
+    var params = [];
+    if (self.options.data_format) {
+        params.push("format=" + self.options.data_format);
+    }
+    if (self.options.ann) {
+        params.push("ann=1");
+    }
+
+    $.each(self.event.arguments, function(key, value) {
+        params.push(key+"="+value);
+    });
+    return params;
+}
+
 GenericView.prototype.getRestServiceUrl = function() {
     /*
      * Finds and replaces placeholders in the rest_service_root
@@ -30,6 +52,14 @@ GenericView.prototype.getRestServiceUrl = function() {
             return "";
         }
         );
+
+
+    var params = self.collectRestParams();
+
+    params = params.join("&");
+    if (params) {
+        url = url + "?" + params;
+    }
 
     return url;
 }
