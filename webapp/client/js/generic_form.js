@@ -26,7 +26,7 @@
          * or 'adding' parameter specified in the options
          */
         var self=this;
-        if (self.parameters.adding ||
+        if (self.event.parameters.adding ||
             self.options.adding) { return true; }
         return false;
     }
@@ -64,7 +64,7 @@
 
     };
 
-    GenericForm.prototype.showViewFirstTime = function( parameters ) {
+    GenericForm.prototype.showViewFirstTime = function() {
         var self = this;
 
         self.init();
@@ -92,7 +92,7 @@
             self.setHandlers();
 
             /// finally we can show the form
-            self.showView( parameters );
+            self.showView();
         });
 
     };
@@ -146,7 +146,7 @@
 
 
     // I get called when the view needs to be shown.
-    GenericForm.prototype.showView = function( parameters ){
+    GenericForm.prototype.showView = function(){
         var self = this;
 
         /// Cancel link points to the page we came from
@@ -155,7 +155,7 @@
         // Show the view.
         self.view.addClass( "activeContentView" );
 
-        self.parameters = parameters;
+        //self.parameters = parameters;
 
         /// Change the form's title depending on whether we're adding or editing
 

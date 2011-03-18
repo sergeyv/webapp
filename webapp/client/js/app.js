@@ -331,11 +331,11 @@
         var eventContext = {
             application: self,
             toLocation: hash,
-            /// to be filled from the matching route 
+            /// to be filled from the matching route
             /// - i.e. if our url is /clients/10/contacts/123, then a route
             /// /clients/:client_id/contacts/:contact_id will extract
             /// {client_id:10, contact_id:123}
-            parameters: {}, 
+            parameters: {},
             /// this is filled from our 'slack's slack' - a part of hash slack after the first | symbol
             /// is treated as a |-separated list of name:value pairs, for example
             /// /clients/10/contacts|sort_by:name|filter_status:active
@@ -348,7 +348,7 @@
             var pair = parts[i].split(':');
             eventContext.arguments[pair[0]] = pair[1];
         }
-        
+
 		// Iterate over the route mappings.
         // Using a for loop here is much cleaner then using JQuery's $.each
 		for (var i = 0; i < self.routeMappings.length; i++)
@@ -526,39 +526,40 @@
             view.controller = this;
 
 
-            if (event) {
+            /*if (event) {
                 parameters = event.parameters;
             } else {
                 parameters = undefined;
-            }
+            }*/
 
             // hide the current view
             if (this.currentView && this.currentView.hideView){
                 this.currentView.hideView();
             }
 
+            /*view.parameters = parameters;
+            view.arguments = event.arguments;*/
+            view.event = event;
+
             /// Do the initial view set-up before the first showing.
             /// Allows us, say, to load the view contents on demand
             if (!view.alreadyInitialized && view.showViewFirstTime)
             {
-                view.showViewFirstTime(parameters);
+                view.showViewFirstTime();
                 view.alreadyInitialized = true;
             } else {
 
                 // Show the given view.
-                view.showView( parameters );
+                view.showView();
             }
 
             // Store the given view as the current view.
             this.currentView = view;
 
             // TODO: just logging - delete later
-            if (parameters)
-            {
-                $.each(parameters, function(idx, value) {
+            $.each(event.parameters || [], function(idx, value) {
                     application.log("PARAMETER: "+idx+"->"+value);
-                });
-            }
+            });
 
             if (event) {
                 $.each(event, function(idx, value) {
@@ -579,7 +580,7 @@
                 /// in route options we may provide a hint as to what
                 /// menu tab to display: { menu_tab: 'megatab' } - then
                 /// the element #<menu_id>-megatab will be displayed
-                var tab_name = parameters && parameters.menu_tab;
+                var tab_name = event.parameters && event.parameters.menu_tab;
                 /// if there's no menu_tab hint, we use the first part of
                 /// the view's location, so /clients/123/orders/325 will toggle
                 /// #<menu_id>-clients

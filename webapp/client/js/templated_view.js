@@ -49,7 +49,7 @@ TemplatedView.prototype.init = function () {
 
 };
 
-TemplatedView.prototype.showViewFirstTime = function (parameters) {
+TemplatedView.prototype.showViewFirstTime = function () {
 
     var self = this,
         load_from = "/t/" + self.options.identifier + ".html";
@@ -57,13 +57,13 @@ TemplatedView.prototype.showViewFirstTime = function (parameters) {
     self.init();
 
     self.template.load(load_from, function () {
-        self.showView(parameters);
+        self.showView();
     });
 };
 
-TemplatedView.prototype.showView = function (parameters) {
+TemplatedView.prototype.showView = function () {
 
-    this.parameters = parameters;
+    //this.parameters = parameters;
     // Show the view.
     this.view.addClass("activeContentView");
     this.populateView();

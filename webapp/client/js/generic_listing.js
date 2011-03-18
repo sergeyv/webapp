@@ -13,7 +13,7 @@ GenericListing.prototype = new TemplatedView();
 /// see http://phrogz.net/js/classes/OOPinJS.html for details
 GenericListing.prototype.constructor = GenericListing;
 
-    
+
 GenericListing.prototype.init = function () {
 
    /// this is called when the view is first shown
@@ -24,7 +24,7 @@ GenericListing.prototype.init = function () {
     // this is how to call a 'super' method in JS
     TemplatedView.prototype.init.call(this);
 
-    
+
     /// find or create the body template container
     node_id = self.options.identifier + '-row-template';
     self.row_template = $("#" + node_id);
@@ -39,7 +39,7 @@ GenericListing.prototype.init = function () {
 
 };
 
-GenericListing.prototype.showViewFirstTime = function (parameters) {
+GenericListing.prototype.showViewFirstTime = function () {
 
     var self = this,
         load_base_from = "/t/listing.html",
@@ -49,7 +49,7 @@ GenericListing.prototype.showViewFirstTime = function (parameters) {
 
     self.template.load(load_base_from, function () {
         self.row_template.load(load_body_from, function () {
-            self.showView(parameters);
+            self.showView();
         });
     });
 };
@@ -62,10 +62,11 @@ GenericListing.prototype.renderTableBody = function() {
 
 GenericListing.prototype.augmentView = function () {
     var self = this;
-    
-    function _filter_url(new_attrs) {
+
+    function _filter_url(attr, toggle) {
+        return 'xxx-'+attr;
     };
-    
+
     function _get_column_id(elem) {
         var result = null;
         $(elem.attr('class').split(' ')).each(function (idx, val) {
@@ -77,16 +78,16 @@ GenericListing.prototype.augmentView = function () {
         });
         return result;
     }
-    
+
     // this is how to call a 'super' method in JS
     TemplatedView.prototype.augmentView.call(this);
-    
+
     self.view.find("th.sortable").each(function(ids, val) {
         var $cell = $(this);
         var title = $cell.html();
         var id = _get_column_id($cell);
-        alert(id);
-        $cell.html('<a href="xxx">'+title+'</a>');
+        //alert(id);
+        $cell.html('<a href="'+_filter_url(id, true)+'">'+title+'</a>');
     });
 };
 
