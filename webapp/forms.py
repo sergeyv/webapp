@@ -109,6 +109,8 @@ class AutoSchema(sc.Structure):
     def __init__(self, **kwargs):
 
         super(AutoSchema, self).__init__(**kwargs)
+        if 'model' in kwargs:
+            self.model = kwargs['model']
         attrs = reflect(self.model)
         for attr in attrs:
             self.add(attr.key, sc.String())
