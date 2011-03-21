@@ -65,7 +65,7 @@ GenericView.prototype.collectRestParams = function() {
     return params;
 }
 
-GenericView.prototype.getRestServiceUrl = function() {
+GenericView.prototype.getRestServiceUrl = function(with_params) {
     /*
      * Finds and replaces placeholders in the rest_service_root
      * options parameters with the actual values from the 'event.parameters' dict
@@ -90,11 +90,13 @@ GenericView.prototype.getRestServiceUrl = function() {
         );
 
 
-    var params = self.collectRestParams();
+    if (with_params === "with-params") {
+        var params = self.collectRestParams();
 
-    params = params.join("&");
-    if (params) {
-        url = url + "?" + params;
+        params = params.join("&");
+        if (params) {
+            url = url + "?" + params;
+        }
     }
 
     return url;

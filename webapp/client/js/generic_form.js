@@ -279,7 +279,7 @@
 
         var id_root = '#' + self.options.identifier;
 
-        $.Read(self.getRestServiceUrl(), function(data) {
+        $.Read(self.getRestServiceUrl("with-params"), function(data) {
             self._fill_form(id_root, data);
         });
     };

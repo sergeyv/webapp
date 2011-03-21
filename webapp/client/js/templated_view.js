@@ -87,7 +87,7 @@ TemplatedView.prototype.populateView = function () {
         service_url = service_url + "?" + params;
     }*/
 
-    $.Read(self.getRestServiceUrl(), function (data) {
+    $.Read(self.getRestServiceUrl("with-params"), function (data) {
         self.data = data;
         self.renderData();
     });
