@@ -29,14 +29,13 @@ class RestCollection(crud.Collection):
     MAX_RECORDS_PER_BATCH = 400
     LIMIT_INCREMENTAL_RESULTS = 25
 
-
     def get_items_listing(self, request, filter_condition=None):
 
 
 
         format = request.GET.get('format', 'listing')
 
-        sort_on = request.GET.get('sort_on', None)
+        order_by = request.GET.get('sort_on', None)
         sort_order = request.GET.get('sort_order', None)
         batch_size = request.GET.get('batch_size', self.DEFAULT_RECORDS_PER_BATCH)
         batch_size = int(batch_size)
@@ -45,15 +44,16 @@ class RestCollection(crud.Collection):
         batch_start = int(request.GET.get('batch_start', 0))
 
 
-        if sort_order == 'desc':
-            sort_on = "-%s" % sort_on
-        else:
-            sort_on = "+%s" % sort_on
+        if order_by is not None:
+            if sort_order == 'desc':
+                order_by = "-%s" % order_by
+            else:
+                order_by = "+%s" % order_by
 
         ### 'vocab' format is a special (simplified) case
         ### - returns {'items': [(id, name), (id, name), ...]}
         if format=='vocab':
-            items = self.get_items(order_by=sort_on, wrap=False)
+            items = self.get_items(order_by=order_by, wrap=False)
             result = [ (item.id, str(item)) for item in items ]
             return {'items':result}
 
@@ -62,7 +62,7 @@ class RestCollection(crud.Collection):
 
         model_class = self.subitems_source
 
-        query = self.get_items_query(filter_condition = filter_condition, order_by=sort_on)
+        query = self.get_items_query(filter_condition = filter_condition, order_by=order_by)
 
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
@@ -327,7 +327,6 @@ class RestResource(crud.Resource):
                 if order_idx == '*':
                     continue;
                 item_id = value.get('id', None)
-                #import pdb;pdb.set_trace();
                 # the data must contain 'id' parameter
                 # if the data should be saved into an existing item
                 item = existing_items.get(item_id, None)

@@ -93,8 +93,6 @@ def reflect(cls):
             attrs.append(attr)
         #fields.AttributeField(attr, self)
 
-    #import pdb; pdb.set_trace()
-
     return attrs
     # sort relations last before storing in the OrderedDict
     #L = [fields.AttributeField(attr, self) for attr in attrs]
@@ -135,8 +133,6 @@ def _recursively_augment(form):
             _recursively_augment(field)
         elif isinstance(field.attr, sc.Sequence):
             print "TADA, a Sequence!"
-            #import pdb; pdb.set_trace()
-            #subschema = field.attr
 
             #subform = form[key]
             _recursively_augment(field)
