@@ -42,7 +42,7 @@ Basically, the only JS file in your application will be ``controller.js``:
                     add_button_title: "Add User",
                     identifier: "UserAddForm",
                     rest_service_root: "/rest/users/:item_id",
-                }), {adding:true} );
+                }));
 
             this.route( "/users/:item_id", new TemplatedView({
                     identifier: "user-view",
@@ -119,11 +119,44 @@ Then we can use it by attaching a GenericForm to some route:
             add_button_title: "Add User",
             identifier: "UserEditForm", // the same as the name of the class in Python
             rest_service_root: "/rest/users/:item_id" // we set up a Rest API at this address by registering an SA model (supposedly called User) with crud
-        }), {adding:true} );
+        }));
 
 Now, if we open ``#/users/123/edit``, the form will request json data from
 ``/rest/users/123``, display the data in the form, and after we click Save
 the data will be converted into a JSON structure and POSTed to the same url.
+
+Add form vs. Edit form
+......................
+
+Here's how the framework tells if a form is an Edit form, i.e. displaying
+the data of an existing item and updating the existing item, or it's an Add form which initially is empty and when submitted a new item will be created.
+
+For an edit form the route should contain ``:item_id`` placeholder. Also, rest_service_root should contain that placeholder too:
+
+.. code-block:: javascript
+
+    this.route( "/users/:item_id/edit", new GenericForm({
+            identifier: "UserEditForm",
+            rest_service_root: "/rest/users/:item_id"
+        }));
+
+This way, when we open a form at #/users/123/edit, the framework will query
+the initial form values from /rest/users/123 and when the form is submitted
+it'll PUT data to the same URL.
+
+An Add form has no ``:item_id`` placeholder in its route. When invoked, it queries object's initial data from a url where ``:item_id`` is substituted by 'new', and when submitted it PUTs to that url:
+
+.. code-block:: javascript
+
+    this.route( "/users/add", new GenericForm({
+            identifier: "UserAddForm",
+            rest_service_root: "/rest/users/:item_id"
+        }));
+
+The form above will GET its initial values from ``/rest/users/new`` and when submitted will PUT the data to the same URL.
+
+On the server side, ``new`` maps to a couple of view functions registered on IRestCollection interface, one function handles GET and another PUT method
+
 
 TemplatedView
 -------------

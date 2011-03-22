@@ -31,8 +31,6 @@ class RestCollection(crud.Collection):
 
     def get_items_listing(self, request, filter_condition=None):
 
-
-
         format = request.GET.get('format', 'listing')
 
         order_by = request.GET.get('sort_on', None)
@@ -96,6 +94,18 @@ class RestCollection(crud.Collection):
         data['items'] = result
         return data
 
+
+    def get_empty(self, request):
+        """
+        Returns an empty subitem - i.e. with all fields either
+        empty or set to default values
+        """
+        format = request.GET.get('format', 'listing')
+
+        item = self.create_transient_subitem()
+        resource = self.wrap_child(item, name="empty")
+        data = resource.serialize(format = format)
+        return data
 
 
 
