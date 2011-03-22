@@ -48,6 +48,7 @@
             $('<div></div>').html(msg).dialog({
                 modal: true,
                 title:title,
+                width:400,
                 buttons: {
                     Ok: function() {
                         $(this).dialog('close');
@@ -76,6 +77,9 @@
                 var self = this;
                 $(self).html(xhr.responseText).dialog({
                         modal: true,
+                        title: "Server Error",
+                        width:"80%",
+                        height:600,
                         buttons: {
                             Ok: function() {
                                 $(this).dialog('close');
@@ -590,11 +594,13 @@
                 /// menu tab to display: { menu_tab: 'megatab' } - then
                 /// the element #<menu_id>-megatab will be displayed
                 var tab_name = event.parameters && event.parameters.menu_tab;
+
                 /// if there's no menu_tab hint, we use the first part of
                 /// the view's location, so /clients/123/orders/325 will toggle
                 /// #<menu_id>-clients
                 if (tab_name === undefined) {
-                    tab_name = event.location.split('/')[0];
+                    // location starts with /, so the first element is an empty string
+                    tab_name = event.location.split('/')[1];
                     if (!tab_name) {
                         /// if event.location was empty (as in case of http://mysite.com/ or http://mysite.com/#/ path)
                         /// then the tab name is 'default'

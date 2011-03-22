@@ -31,8 +31,6 @@ class RestCollection(crud.Collection):
 
     def get_items_listing(self, request, filter_condition=None):
 
-
-
         format = request.GET.get('format', 'listing')
 
         order_by = request.GET.get('sort_on', None)
