@@ -65,15 +65,21 @@ GenericView.prototype.collectRestParams = function() {
     return params;
 }
 
-GenericView.prototype.getRestServiceUrl = function(with_params) {
+GenericView.prototype.getRestServiceUrl = function(with_params, overrides) {
     /*
      * Finds and replaces placeholders in the rest_service_root
      * options parameters with the actual values from the 'event.parameters' dict
      * so if we have a view registered at /companies/:company_id/staff/:person_id, and its rest_service_root is
      * /rest/companies/:company_id/:person_id, the view will load its data from /rest/companies/123/456
+     *
+     * @param with_params - if 'with-params' is passed, append arguments collected by collectRestParams
+     * @param overrides - allows to override variables from self.event.parameters for just one call
      */
-    var self = this;
-    var root = self.options.rest_service_root;
+    var self = this,
+        root = self.options.rest_service_root,
+        // we don't want to modify self.event.parameters here,
+        // so we're extending an empty object
+        params = $.extend({}, self.event.parameters, overrides);
 
     /* Not every view needs to load data */
     if (! root) { return "" };
@@ -81,8 +87,8 @@ GenericView.prototype.getRestServiceUrl = function(with_params) {
     var url = root.replace(
         new RegExp( "(/):([^/]+)", "gi" ),
         function( $0, $1, $2 ){
-            var repl = self.event.parameters[$2];
-            if (repl) {
+            var repl = params[$2];
+            if (repl !== undefined) { // if (repl) {...} would not work for false-y values, such as 0 or ''
                 return "/"+repl;
             }
             return "";

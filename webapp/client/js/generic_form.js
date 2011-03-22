@@ -22,13 +22,15 @@
 
     GenericForm.prototype.isAddForm = function(){
         /*
-         * Check if we either have 'adding' hint passed to the route
-         * or 'adding' parameter specified in the options
+         * Check if we either have 'item_id' parameter, which
+         * would mean we're editing an existing item. Otherwise
+         * we're adding
          */
         var self=this;
-        if (self.event.parameters.adding ||
-            self.options.adding) { return true; }
-        return false;
+        if (self.event.parameters.item_id) {
+            return false;
+        }
+        return true;
     }
 
     GenericForm.prototype.decorateView = function(){
@@ -190,15 +192,15 @@
     };
 
 
-
-
-    // I reset the contact form.
     GenericForm.prototype.resetForm = function(){
-        // Clear the errors.
-        //this.clearErrors();
+        /*
+         * Removes validation messages and resets the form to its initial values
+         */
+        var self = this;
 
-        // Reset the form fields.
-        //this.form.get( 0 ).reset();
+        var validator = self.form.validate();
+        validator.resetForm();
+
     };
 
 
@@ -215,10 +217,12 @@
             };
         if (! data) { return; }
 
-//         application.log("ROOT: "+id_root);
-//         application.log(data);
-
         $.each(data, function(name, value) {
+
+            if (value === null) {
+                value = '';
+            }
+
             var id = id_root + '-' + name;
             if (typeof(value) === "string" ||
                 typeof(value) === "number" ||
@@ -241,8 +245,11 @@
                     application.log("NOT FOUND: " +id);
                 }
             } else if (_is_array(value)) {
+                /* Support arrays (aka sc.Sequence) subforms -
+                 * need to delete any fields added during the
+                 * previous showing of the form
+                 */
                 var elem = $(id+'--field');
-                //alert(elem.length);
                 var link = elem.find('a.adderlink');
 
                 // remove existing fieldsets
@@ -269,17 +276,19 @@
 
     GenericForm.prototype.populateForm = function() {
 
-        var self = this;
+        var self = this,
+            item_id,
+            id_root;
+
         // Reset the form.
         self.resetForm();
 
-        if (self.isAddForm()) { return; }
-
         self.disableForm();
 
-        var id_root = '#' + self.options.identifier;
+        id_root = '#' + self.options.identifier;
+        item_id = self.event.parameters.item_id || 'new';
 
-        $.Read(self.getRestServiceUrl("with-params"), function(data) {
+        $.Read(self.getRestServiceUrl("with-params", { item_id:item_id }), function(data) {
             self._fill_form(id_root, data);
         });
     };
@@ -367,29 +376,25 @@
         }
     };
 
-    // I submit the form.
     GenericForm.prototype.submitForm = function(){
-        var self = this;
+        /*
+         * If self.event.parameters.item_id is present, the method
+         * PUTs json-serialized form data to the rest url of that item.
+         * Otherwise it uses a 'virtual' item called 'new', i.e.
+         * /rest/clients/new.
+         */
+        var self = this,
+            form_data = self.form.serializeObject(),
+            item_id = self.event.parameters.item_id || 'new',
+            redirect_to = (item_id === 'new')?self.options.redirect_after_add:self.options.redirect_after_edit;
 
+        $.Update(self.getRestServiceUrl("", {item_id:item_id}), form_data,
+            function(data) {
+                var url = redirect_to || window.application.previousPageUrl();
+                window.application.relocateTo(url);
 
-        var form_data = self.form.serializeObject();
-        if (self.isAddForm())
-        {
-            /// It's an Add form
-            $.Create(self.getRestServiceUrl(), form_data,
-                function(data) {
-                    var url = self.options.redirect_after_edit || window.application.previousPageUrl();
-                    window.application.relocateTo(url);
-                });
-        } else {
-            /// It's an Edit form
-            $.Update(self.getRestServiceUrl(), form_data,
-                function(data) {
-                    var url = self.options.redirect_after_edit || window.application.previousPageUrl();
-                    window.application.relocateTo(url);
+            });
 
-                });
-        }
         return false;
     };
 

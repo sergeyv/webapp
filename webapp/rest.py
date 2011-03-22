@@ -97,6 +97,18 @@ class RestCollection(crud.Collection):
         return data
 
 
+    def get_empty(self, request):
+        """
+        Returns an empty subitem - i.e. with all fields either
+        empty or set to default values
+        """
+        format = request.GET.get('format', 'listing')
+
+        item = self.create_transient_subitem()
+        resource = self.wrap_child(item, name="empty")
+        data = resource.serialize(format = format)
+        return data
+
 
 
     def get_incremental(self, request):
