@@ -223,7 +223,8 @@
                 value = '';
             }
 
-            console.log("Setting "+name+" to "+value);
+            console.log("Setting "+name+" >-->> ");
+            console.log(value);
 
             var id = id_root + '-' + name;
             if (typeof value === "string" ||
@@ -370,6 +371,7 @@
         if (from) {
             $.Read(from, function(data) {
                 $select.children().remove();
+                $('<option value="">- choose -</option>').appendTo($select);
                 $.each(data.items, function(idx, value) {
                     $("<option/>").val(value[0]).html(value[1]).appendTo($select);
                 });

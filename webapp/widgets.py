@@ -2,7 +2,7 @@
 Commonly needed form widgets.
 """
 
-__all__ = ['LoadableListbox']
+__all__ = ['LoadableListbox', 'FieldsetSwitcher', 'Calendar']
 
 from convertish.convert import string_converter, \
         datetuple_converter,ConvertError
@@ -19,7 +19,22 @@ from formish.widgets import Widget, SelectChoice
 
 class LoadableListbox(Widget):
     """
-    A listbox which loads its data from an external URL as json
+    A listbox which loads its data from an external URL as json::
+
+        def augment_form(self, form):
+            form['controller_id'].widget = \\
+                webapp.LoadableListbox(load_from="/rest/controllers?format=vocab")
+
+    the only parameter is ``load_from``, which is the URL from which
+    the widget will load its data.
+
+    It's also possible to load data from a dynamic URL and to have dependent
+    listboxes, i.e. when one changes another is reloaded::
+
+        form['image_id'].widget = \\
+            webapp.LoadableListbox(load_from="/rest/controllers/:%s/images?format=vocab" % form['controller_id'].cssname)
+
+
     """
 
     type = 'LoadableListbox'
@@ -29,71 +44,34 @@ class LoadableListbox(Widget):
         self.load_from = k.pop('load_from', '')
 
         Widget.__init__(self, **k)
-        #if not self.converter_options.has_key('delimiter'):
-        #    self.converter_options['delimiter'] = ','
-
-    #def from_request_data(self, field, request_data):
-        #"""
-        #Default to stripping whitespace
-        #"""
-        #if self.strip is True:
-            #request_data = [request_data[0].strip()]
-        #return super(Input, self).from_request_data(field, request_data)
-
-    #def __repr__(self):
-        #attributes = []
-        #if self.strip is False:
-            #attributes.append('strip=%r'%self.strip)
-        #if self.converter_options != {'delimiter':','}:
-            #attributes.append('converter_options=%r'%self.converter_options)
-        #if self.css_class:
-            #attributes.append('css_class=%r'%self.css_class)
-        #if self.empty is not None:
-            #attributes.append('empty=%r'%self.empty)
-
-        #return 'formish.%s(%s)'%(self.__class__.__name__, ', '.join(attributes))
 
 
 
 class FieldsetSwitcher(SelectChoice):
     """
-    Basic input widget type, used for text input
+    A listbox which will switch subforms based on which item is selected::
+
+        form['connection_method'].widget = \\
+            webapp.widgets.FieldsetSwitcher((
+            ('ssh', 'Use the main server''s SSH connection'),
+            ('https', 'Connect via HTTPS'),
+            ('http', 'Connect via HTTP'),
+        ))
+
+    The widget above will show a subform named "http" and hide all the other subforms when 'Connect via HTTP' is selected etc.
     """
 
     type = 'FieldsetSwitcher'
     template = 'field.FieldsetSwitcher'
 
-    #def __init__(self, **k):
-    #    self.load_from = k.pop('load_from', '')
-    #    SelectChoice.__init__(self, **k)
-        #if not self.converter_options.has_key('delimiter'):
-        #    self.converter_options['delimiter'] = ','
-
-    #def from_request_data(self, field, request_data):
-        #"""
-        #Default to stripping whitespace
-        #"""
-        #if self.strip is True:
-            #request_data = [request_data[0].strip()]
-        #return super(Input, self).from_request_data(field, request_data)
-
-    #def __repr__(self):
-        #attributes = []
-        #if self.strip is False:
-            #attributes.append('strip=%r'%self.strip)
-        #if self.converter_options != {'delimiter':','}:
-            #attributes.append('converter_options=%r'%self.converter_options)
-        #if self.css_class:
-            #attributes.append('css_class=%r'%self.css_class)
-        #if self.empty is not None:
-            #attributes.append('empty=%r'%self.empty)
-
-        #return 'formish.%s(%s)'%(self.__class__.__name__, ', '.join(attributes))
-
 
 class Calendar(Widget):
     """
-    A listbox which loads its data from an external URL as json
+    An input field with a JQuery UI datepicker widget linked to it::
+
+        form['renewal_date'].widget = webapp.widgets.Calendar()
+
+    The widget is designed to work with schemaish.Date field
     """
 
     type = 'Calendar'

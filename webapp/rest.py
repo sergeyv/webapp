@@ -9,7 +9,7 @@ import crud
 from webapp.db import get_session
 from webapp.forms import get_form, Literal
 
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 class IRestRootCollection(crud.ICollection):
@@ -244,9 +244,13 @@ class RestResource(crud.Resource):
                         value = int(value)
                 elif isinstance(structure_field, sc.Date):
                     print "SERIALIZING A DATE ATTRIBUTE: %s -> %s" % (name, structure_field)
-                    #import pdb; pdb.set_trace()
+                    if value is not None:
+                        value = date(value)
+                elif isinstance(structure_field, sc.DateTime):
+                    print "SERIALIZING A DATETIME ATTRIBUTE: %s -> %s" % (name, structure_field)
                     #if value is not None:
-                    #    value = int(value)
+                    #    value = datetime(value)
+                    pass
                 elif isinstance(structure_field, Literal):
                     print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                     pass

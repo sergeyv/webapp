@@ -132,12 +132,14 @@ GenericListing.prototype.augmentView = function () {
             bs,
             $pager = self.view.find("div.pager");
 
-            for (i = 0; i < pages; i++) {
-                if (i == current) {
-                    output.push('<span class="current">'+(i+1)+'</span>');
-                } else {
-                    bs = i*batch_size;
-                    output.push('<a href="#' + _new_filter_url('batch_start',bs) + '">'+(i+1)+'</a>');
+            if (pages > 1) { // no need a pager for just a single page
+                for (i = 0; i < pages; i++) {
+                    if (i == current) {
+                        output.push('<span class="current">'+(i+1)+'</span>');
+                    } else {
+                        bs = i*batch_size;
+                        output.push('<a href="#' + _new_filter_url('batch_start',bs) + '">'+(i+1)+'</a>');
+                    }
                 }
             }
 

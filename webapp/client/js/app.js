@@ -566,6 +566,14 @@
         return Math.round(part/whole*100);
     };
 
+    Application.prototype.date_tag = function(date_str) {
+        var d = Date(date_str);
+        //alert(d)
+        /*var s = "" + d.getDate() + "-" + d.getMonth() + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + d.getSeconds();*/
+
+        return '<time class="timeago" datetime="'+date_str+'">'+d+'</time>';
+    };
+
 	// Create a new instance of the application and store it in the window.
 	window.application = new Application();
 

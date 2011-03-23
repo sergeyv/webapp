@@ -12,12 +12,10 @@ def json_renderer_factory(name):
     class _JSONDateEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, datetime.datetime):
-                return "%s-%s-%s" % (obj.year, obj.month, obj.day)
-                #return obj.isoformat()
+                return obj.isoformat()
 
             if isinstance(obj, datetime.date):
-                #return "%s-%s-%s" % (obj.year, obj.month, obj.day)
-                return obj.isoformat()
+                return obj.strftime("%d %b %Y")
 
             if isinstance(obj, Decimal):
                 return float(obj)
