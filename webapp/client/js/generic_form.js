@@ -223,10 +223,12 @@
                 value = '';
             }
 
+            console.log("Setting "+name+" to "+value);
+
             var id = id_root + '-' + name;
-            if (typeof(value) === "string" ||
-                typeof(value) === "number" ||
-                typeof(value) === "boolean")
+            if (typeof value === "string" ||
+                typeof value === "number" ||
+                typeof value === "boolean")
             {
                 var elem = $(id);
                 application.log(id + " ("+elem.length+") ===> " + elem);

@@ -9,6 +9,9 @@ import crud
 from webapp.db import get_session
 from webapp.forms import get_form, Literal
 
+from datetime import datetime
+from decimal import Decimal
+
 class IRestRootCollection(crud.ICollection):
     pass
 
@@ -239,6 +242,11 @@ class RestResource(crud.Resource):
                     print "SERIALIZING AN INTEGER ATTRIBUTE: %s -> %s" % (name, structure_field)
                     if value is not None:
                         value = int(value)
+                elif isinstance(structure_field, sc.Date):
+                    print "SERIALIZING A DATE ATTRIBUTE: %s -> %s" % (name, structure_field)
+                    #import pdb; pdb.set_trace()
+                    #if value is not None:
+                    #    value = int(value)
                 elif isinstance(structure_field, Literal):
                     print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                     pass
@@ -300,7 +308,7 @@ class RestResource(crud.Resource):
                     print "### No data passed for attr %s <%s>" % (name, data)
                     continue
 
-                print "### Saving attribute %s with value %s" % (name, value)
+                print "### Saving attribute %s (type %s) with value %s" % (name, attr, value)
                 # Nested structures
                 if isinstance(attr, sc.Structure):
                     print "STRUCTURE!"
@@ -324,7 +332,22 @@ class RestResource(crud.Resource):
                 elif isinstance(attr, sc.String):
                     setattr(item, name, value)
                 elif isinstance(attr, sc.Integer):
-                    setattr(item, name, int(value))
+                    if value:
+                        setattr(item, name, int(value))
+                    else:
+                        setattr(item, name, None)
+                elif isinstance(attr, sc.Decimal):
+                    if value:
+                        setattr(item, name, Decimal(value))
+                    else:
+                        setattr(item, name, None)
+
+                elif isinstance(attr, sc.Date):
+                    if value:
+                        date = datetime.strptime(value, "%d %b %Y")
+                    else:
+                        date = None
+                    setattr(item, name, date)
                 else:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 

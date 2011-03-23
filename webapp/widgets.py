@@ -89,3 +89,17 @@ class FieldsetSwitcher(SelectChoice):
             #attributes.append('empty=%r'%self.empty)
 
         #return 'formish.%s(%s)'%(self.__class__.__name__, ', '.join(attributes))
+
+
+class Calendar(Widget):
+    """
+    A listbox which loads its data from an external URL as json
+    """
+
+    type = 'Calendar'
+    template = 'field.Calendar'
+
+    def __init__(self, **k):
+        #self.load_from = k.pop('load_from', '')
+
+        Widget.__init__(self, **k)
