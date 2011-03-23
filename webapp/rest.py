@@ -354,7 +354,7 @@ class RestResource(crud.Resource):
         def _save_sequence(collection, subitems_cls, schema, data):
 
 
-            existing_items = {str(item.id):item for item in collection}
+            #existing_items = {str(item.id):item for item in collection}
 
             for (order_idx, value) in data.items():
                 if order_idx == '*':
