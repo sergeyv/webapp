@@ -107,6 +107,12 @@ TemplatedView.prototype.renderData = function () {
     if (self.options.after_data_loaded) {
         self.options.after_data_loaded(self);
     }
+
+    // TODO: Move somewhere - webapp does not need to know
+    // about jquery.timeago at all.
+    $("time.timeago").timeago();
+    jQuery.timeago.settings.allowFuture = true;
+
 };
 
 

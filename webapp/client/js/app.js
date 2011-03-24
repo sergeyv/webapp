@@ -403,6 +403,7 @@
 
 		// Flag that the application is running.
 		this.isRunning = true;
+
 	};
 
     Application.prototype.renderMenu = function(id, data) {
@@ -567,11 +568,36 @@
     };
 
     Application.prototype.date_tag = function(date_str) {
-        var d = Date(date_str);
-        //alert(d)
-        /*var s = "" + d.getDate() + "-" + d.getMonth() + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + d.getSeconds();*/
+        var d = new Date(date_str);
+        //alert(d);
+        /*var m = d.getMonth();
+        var s = "" + d.getDate() + "-" +  + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();*/
 
-        return '<time class="timeago" datetime="'+date_str+'">'+d+'</time>';
+        s = d.toString();
+        return '<time class="timeago" datetime="'+date_str+'">'+s+'</time>';
+    };
+
+    Application.prototype.calendar_date = function(date_str) {
+
+        if (!date_str) { return ""; }
+
+        var d = new Date(date_str);
+
+        MONTH_NAMES = [
+            'Jan', 'Feb', 'Mar',
+            'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep',
+            'Oct', 'Nov', 'Dec',
+        ];
+
+        var day = d.getDate();
+        if (day < 10) { day = "0" + day; }
+        var s = "" + day + " " + MONTH_NAMES[d.getMonth()] + " " + d.getFullYear();
+        //alert(d);
+        /*var m = d.getMonth();
+        var s = "" + d.getDate() + "-" +  + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();*/
+
+        return s;
     };
 
 	// Create a new instance of the application and store it in the window.

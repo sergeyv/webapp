@@ -236,12 +236,22 @@
 
                 if (elem.length)
                 {
-                    /// support read-only fields
-                    if (elem[0].tagName.toLowerCase() == 'div')
+                    if (elem.hasClass("calendar")) {
+                        /// this is for calendar widget - it allows us to
+                        /// display a friendly date (7 Nov 1012)
+                        /// while submitting '2012-11-07' to the server
+                        var display_elem = $(id+"-display");
+                        elem.val(value);
+                        elem.change();
+                        display_elem.val(application.calendar_date(value));
+                        display_elem.change();
+                    } else if (elem[0].tagName.toLowerCase() == 'div')
                     {
+                        /// support read-only fields
                         elem.html(value || '&mdash;')
                     } else {
                         elem.val(value);
+                        elem.attr("original_value", value);
                         elem.change();
                     }
                 } else {
@@ -258,7 +268,6 @@
                 // remove existing fieldsets
                 elem.find('.field').remove();
 
-                //alert(link.length)
                 // should go before the === "object" section
                 $.each(value, function(idx, subvalue) {
                     application.log("VALUE");
@@ -366,6 +375,7 @@
     GenericForm.prototype.reloadLoadable = function($select) {
         var self = this;
         var from = self._mangle_url($select.attr("href"), $select);
+
         /// empty 'from' url signals that we shouldn't attempt to load the data
         /// just yet (i.e. a master listbox was not loaded yet)
         if (from) {
@@ -375,6 +385,16 @@
                 $.each(data.items, function(idx, value) {
                     $("<option/>").val(value[0]).html(value[1]).appendTo($select);
                 });
+
+                /// for dependent listboxes, their options are loaded
+                /// after the content is loaded, so we need somehow to
+                /// set their value after the fact. For this, we store
+                /// the original value as "original_value" attribute of every
+                /// element. After the listbox has been loaded, we now able
+                /// to select the element we need
+                $select.val($select.attr("original_value"));
+                $select.removeAttr("original_value");
+
                 $select.change();
             });
         }

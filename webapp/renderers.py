@@ -15,7 +15,8 @@ def json_renderer_factory(name):
                 return obj.isoformat()
 
             if isinstance(obj, datetime.date):
-                return obj.strftime("%d %b %Y")
+                #return obj.strftime("%d %b %Y")
+                return obj.isoformat()
 
             if isinstance(obj, Decimal):
                 return float(obj)

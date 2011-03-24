@@ -160,9 +160,10 @@ class RestCollection(crud.Collection):
 class RestResource(crud.Resource):
     """
     Some additional methods for formatting
-
     """
-    default_datetime_format = "%d %b %Y %M:%I %p"
+
+    #default_datetime_format = "%d %b %Y %M:%I %p"
+
     def serialize(self, format='default', annotate=False):
         """
         - requires 'format' parameter - which must correspond to one of formats
@@ -243,13 +244,14 @@ class RestResource(crud.Resource):
                     if value is not None:
                         value = int(value)
                 elif isinstance(structure_field, sc.Date):
-                    print "SERIALIZING A DATE ATTRIBUTE: %s -> %s" % (name, structure_field)
-                    if value is not None:
-                        value = value.strftime("%d %b %Y")
+                    print "SERIALIZING A DATE ATTRIBUTE: %s -> %s = %s" % (name, structure_field, value)
+                    #if value is not None:
+                    #    value = value.strftime("%d %b %Y")
                 elif isinstance(structure_field, sc.DateTime):
                     print "SERIALIZING A DATETIME ATTRIBUTE: %s -> %s" % (name, structure_field)
-                    if value is not None:
-                        value = value.strftime(self.default_datetime_format)
+                    #if value is not None:
+                    #    value = value.strftime(self.default_datetime_format)
+                    pass
                 elif isinstance(structure_field, Literal):
                     print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                     pass
@@ -347,16 +349,17 @@ class RestResource(crud.Resource):
 
                 elif isinstance(attr, sc.Date):
                     if value:
-                        date = datetime.strptime(value, "%d %b %Y")
+                        d = datetime.strptime(value, "%Y-%m-%d")
                     else:
-                        date = None
-                    setattr(item, name, date)
+                        d = None
+                    setattr(item, name, d)
                 elif isinstance(attr, sc.DateTime):
                     if value:
-                        datetime = datetime.strptime(value, self.default_datetime_format)
+                        # TODO: proper format here
+                        dt = datetime.strptime(value, "%d-%m-%Y")
                     else:
-                        datetime = None
-                    setattr(item, name, datetime)
+                        dt = None
+                    setattr(item, name, dt)
                 else:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 

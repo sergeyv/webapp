@@ -1,16 +1,15 @@
 <%page args="field" />
 
-<input id="${field.cssname}" type="text" name="${field.name}" value="" />
-
-<!--input id="${field.cssname}" type="text" name="${field.name}" value="" /-->
+<input id="${field.cssname}-display" type="text" name="" value="" />
+<input id="${field.cssname}" type="hidden"  class="calendar" name="${field.name}" value="" />
 
 <script type="text/javascript">
-    $("#${field.cssname}").datepicker({
+    $("#${field.cssname}-display").datepicker({
         changeYear:true,
         changeMonth:true,
         dateFormat: "dd M yy",
-        /*altField: "#${field.cssname}",
-        altFormat: $.datepicker.ISO_8601,*/
+        altField: "#${field.cssname}",
+        altFormat: $.datepicker.ISO_8601,
     });
 </script>
 
