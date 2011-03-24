@@ -162,7 +162,7 @@ class RestResource(crud.Resource):
     Some additional methods for formatting
 
     """
-
+    default_datetime_format = "%d %b %Y %M:%I %p"
     def serialize(self, format='default', annotate=False):
         """
         - requires 'format' parameter - which must correspond to one of formats
@@ -245,12 +245,11 @@ class RestResource(crud.Resource):
                 elif isinstance(structure_field, sc.Date):
                     print "SERIALIZING A DATE ATTRIBUTE: %s -> %s" % (name, structure_field)
                     if value is not None:
-                        value = date(value)
+                        value = value.strftime("%d %b %Y")
                 elif isinstance(structure_field, sc.DateTime):
                     print "SERIALIZING A DATETIME ATTRIBUTE: %s -> %s" % (name, structure_field)
-                    #if value is not None:
-                    #    value = datetime(value)
-                    pass
+                    if value is not None:
+                        value = value.strftime(self.default_datetime_format)
                 elif isinstance(structure_field, Literal):
                     print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                     pass
@@ -352,6 +351,12 @@ class RestResource(crud.Resource):
                     else:
                         date = None
                     setattr(item, name, date)
+                elif isinstance(attr, sc.DateTime):
+                    if value:
+                        datetime = datetime.strptime(value, self.default_datetime_format)
+                    else:
+                        datetime = None
+                    setattr(item, name, datetime)
                 else:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 
