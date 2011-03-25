@@ -44,8 +44,9 @@ def _create_item(context, request):
         # and do everything itself
         get_session().add(new_item)
 
-    if hasattr(context, "new_item_created"):
-        context.new_item_created(new_item, request)
+    resource = context.wrap_child(model=new_item, name=str(new_item.id))
+    if hasattr(resource, "after_item_created"):
+        resource.after_item_created(request)
 
     return {'result':"HELLO FROM THE SERVER"}
 
@@ -137,7 +138,13 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
-    return context.delete_item(request) # returns task_id
+    result = context.delete_item(request) # returns task_id
+
+    if hasattr(context, "after_item_deleted"):
+        context.after_item_deleted(request)
+
+    return result
+
 
 
 
@@ -152,8 +159,11 @@ def json_rest_update(context, request):
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
-
     context.deserialize(params)
+
+    if hasattr(context, "after_item_updated"):
+        context.after_item_updated(request)
+
     return {'result':"HELLO FROM THE SERVER"}
 
 
