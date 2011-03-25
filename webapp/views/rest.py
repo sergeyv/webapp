@@ -25,14 +25,13 @@ def json_rest_empty(context, request):
     return context.get_empty(request)
 
 
-@view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="PUT", renderer="better_json", accept="text/plain")
-def json_rest_create_new(context, request):
+def _create_item(context, request):
     """
     """
-    print "JSON_REST_CREATE: request body %s" % (request.body)
+    print "+JSON_REST_CREATE: request body %s" % (request.body)
 
     params = json.loads(request.body)
-    print "JSON_REST_CREATE: %s" % (params)
+    print "+JSON_REST_CREATE: %s" % (params)
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
@@ -45,8 +44,23 @@ def json_rest_create_new(context, request):
         # and do everything itself
         get_session().add(new_item)
 
+    if hasattr(context, "new_item_created"):
+        context.new_item_created(new_item, request)
+
     return {'result':"HELLO FROM THE SERVER"}
 
+
+@view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="PUT", renderer="better_json", accept="text/plain")
+def json_rest_create_new(context, request):
+    """
+    """
+    return _create_item(context, request)
+
+@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
+def json_rest_create(context, request):
+    """
+    """
+    return _create_item(context, request)
 
 
 @view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json", xhr=True, accept="application/json")
@@ -89,29 +103,6 @@ def json_rest_incremental(context, request):
         return result
 
     return {'result':"HELLO! Nothing found!"}
-
-
-@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
-def json_rest_create(context, request):
-    """
-    """
-    print "JSON_REST_CREATE: request body %s" % (request.body)
-
-    params = json.loads(request.body)
-    print "JSON_REST_CREATE: %s" % (params)
-    # Formish uses dotted syntax to deal with nested structures
-    # we need to unflatten it
-    params = dottedish.api.unflatten(params.items())
-
-    # TODO: Add validation here
-    new_item = context.create_subitem(params=params, request=request)
-
-    if new_item is not None:
-        # The context may choose not to return the item added
-        # and do everything itself
-        get_session().add(new_item)
-
-    return {'result':"HELLO FROM THE SERVER"}
 
 
 
