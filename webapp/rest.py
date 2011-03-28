@@ -356,17 +356,26 @@ class RestResource(crud.Resource):
                 elif isinstance(attr, sc.DateTime):
                     if value:
                         # TODO: proper format here
-                        dt = datetime.strptime(value, "%d-%m-%Y")
+                        dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
                     else:
                         dt = None
                     setattr(item, name, dt)
+                elif isinstance(attr, sc.Boolean):
+                    if str(value).lower() in ('true', 'yes', '1'):
+                        value = True
+                    elif str(value).lower() in ('false', 'no', '0'):
+                        value = False
+                    else:
+                        if value not in (None, ''):
+                            raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
+                            
                 else:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 
         def _save_sequence(collection, subitems_cls, schema, data):
 
 
-            existing_items = {str(item.id):item for item in collection}
+            existing_items = { str(item.id):item for item in collection }
 
             for (order_idx, value) in data.items():
                 if order_idx == '*':
