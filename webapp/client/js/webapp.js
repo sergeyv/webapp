@@ -29,6 +29,10 @@
             classes: {}
         };
 
+		// an application can register some helper methods here to be used in
+		// templates, <%=webapp.helpers.format_date(this.date) %>, for example
+		this.helpers = {};
+		
         /// validation rules to be used with forms
         this.validation_rules = {
         };
@@ -567,38 +571,6 @@
         return Math.round(part/whole*100);
     };
 
-    WebApp.prototype.date_tag = function(date_str) {
-        var d = new Date(date_str);
-        //alert(d);
-        /*var m = d.getMonth();
-        var s = "" + d.getDate() + "-" +  + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();*/
-
-        s = d.toString();
-        return '<time class="timeago" datetime="'+date_str+'">'+s+'</time>';
-    };
-
-    WebApp.prototype.calendar_date = function(date_str) {
-
-        if (!date_str) { return ""; }
-
-        var d = new Date(date_str);
-
-        MONTH_NAMES = [
-            'Jan', 'Feb', 'Mar',
-            'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep',
-            'Oct', 'Nov', 'Dec',
-        ];
-
-        var day = d.getDate();
-        if (day < 10) { day = "0" + day; }
-        var s = "" + day + " " + MONTH_NAMES[d.getMonth()] + " " + d.getFullYear();
-        //alert(d);
-        /*var m = d.getMonth();
-        var s = "" + d.getDate() + "-" +  + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();*/
-
-        return s;
-    };
 
 	// Create a new instance of the webapp and store it in the window.
 	webapp = new WebApp();

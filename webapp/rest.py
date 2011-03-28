@@ -349,6 +349,8 @@ class RestResource(crud.Resource):
 
                 elif isinstance(attr, sc.Date):
                     if value:
+                        # TODO: Need to improve this. Use dateutil?
+                        value = value.split('T')[0] # strip off the time part
                         d = datetime.strptime(value, "%Y-%m-%d")
                     else:
                         d = None

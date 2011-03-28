@@ -243,7 +243,7 @@
                         var display_elem = $(id+"-display");
                         elem.val(value);
                         elem.change();
-                        display_elem.val(webapp.calendar_date(value));
+                        display_elem.val(webapp.helpers.calendar_date(value));
                         display_elem.change();
                     } else if (elem[0].tagName.toLowerCase() == 'div')
                     {
