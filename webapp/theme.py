@@ -72,7 +72,7 @@ class AssetRegistry(object):
     "/webapp.client/js/generic_form.js",
     "/webapp.client/js/templated_view.js",
     "/webapp.client/js/generic_listing.js",
-    "/webapp.client/js/app.js",
+    "/webapp.client/js/webapp.js",
     )
 
 

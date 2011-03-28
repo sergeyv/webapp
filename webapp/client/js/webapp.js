@@ -1,10 +1,10 @@
 
-// Create a closed memory space for the application definition and instantiation.
+// Create a closed memory space for the webapp definition and instantiation.
 // This way, we keep the global name space clean.
 (function( $ ){
 
 	// I am the class that controls the Javascript framework.
-	function Application(){
+	function WebApp(){
 
         var self = this;
         // I am the collection of route mappings that map URL patterns to event
@@ -117,40 +117,40 @@
 
 
 	// I add the given controller to the collection of controllers.
-	Application.prototype.addController = function( controller ){
+	WebApp.prototype.addController = function( controller ){
 		// Add the controller.
 		this.controllers.push( controller );
 
-		// Check to see if the application is running. If it is, then we need to initialize
+		// Check to see if the webapp is running. If it is, then we need to initialize
 		// the controller instance.
 		if (this.isRunning){
 			this.initClass( controller );
 		}
 	};
 
-    Application.prototype.addValidationRules = function(name, rule) {
+    WebApp.prototype.addValidationRules = function(name, rule) {
         this.validation_rules[name] = rule;
     }
 
-    Application.prototype.getValidationRules = function(name) {
+    WebApp.prototype.getValidationRules = function(name) {
         return this.validation_rules[name];
     }
 
 
 	// I add the given view class or instance to the view class library. Any classes
 	// that are passed in AS instances will be cached and act as singletons.
-	Application.prototype.addView = function( name, view ){
+	WebApp.prototype.addView = function( name, view ){
         this.views[name] = view;
 	};
 
-    Application.prototype.registerMenu = function( menu_id, tabs ) {
+    WebApp.prototype.registerMenu = function( menu_id, tabs ) {
 
     }
 
 
 
 	// I return an instance of the class with the given name.
-	Application.prototype.getView = function( name, initArguments ){
+	WebApp.prototype.getView = function( name, initArguments ){
 		//return( this.getClass( this.views, className, initArguments ) );
         this.log("Asked for "+name+", found "+name)
         return this.views[name];
@@ -158,7 +158,7 @@
 
 
 	// I initialize the given class instance.
-	Application.prototype.initClass = function( instance ){
+	WebApp.prototype.initClass = function( instance ){
 		// Check to see if the target instance has an init method.
 		if (instance.init){
 			// Invoke the init method.
@@ -168,7 +168,7 @@
 
 
 	// I intialize the given collection of class singletons.
-	Application.prototype.initClasses = function( classes ){
+	WebApp.prototype.initClasses = function( classes ){
 		var self = this;
 
 		// Loop over the given class collection - our singletons - and init them.
@@ -181,26 +181,26 @@
 	};
 
 
-	// I intialize the controllers. Once the application starts running and the
+	// I intialize the controllers. Once the webapp starts running and the
 	// DOM can be interacted with, I need to give the controllers a chance to
 	// get ready.
-	Application.prototype.initControllers = function(){
+	WebApp.prototype.initControllers = function(){
 		this.initClasses( this.controllers );
 	};
 
 
-	// I intialize the model. Once the application starts running and the
+	// I intialize the model. Once the webapp starts running and the
 	// DOM can be interacted with, I need to give the model a chance to
 	// get ready.
-	Application.prototype.initModels = function(){
+	WebApp.prototype.initModels = function(){
 		this.initClasses( this.models.cache );
 	};
 
 
-	// I intialize the views. Once the application starts running and the
+	// I intialize the views. Once the webapp starts running and the
 	// DOM can be interacted with, I need to give the views a chance to
 	// get ready.
-	Application.prototype.initViews = function(){
+	WebApp.prototype.initViews = function(){
         var self = this;
         $.each(
             self.views,
@@ -220,7 +220,7 @@
 	// I am the logging method that will work cross-browser, if there is a
 	// console or not. If no console is avilable, output simply gets appended
 	// to the body of the page (in paragraph tags).
-	Application.prototype.log = function(){
+	WebApp.prototype.log = function(){
 		// Check to see if there is a console to log to.
 		if (window.console && window.console.log){
 
@@ -242,7 +242,7 @@
 
 
 	// I normalize a hash value for comparison.
-	Application.prototype.normalizeHash = function( hash ){
+	WebApp.prototype.normalizeHash = function( hash ){
 		// Strip off front hash and slashses as well as trailing slash. This will
 		// convert hash values like "#/section/" into "#/section".
 		return(
@@ -258,7 +258,7 @@
         Find a route which matches the URL hash we've given and show the view
         which is registered for that route
         */
-		var self = window.application;
+		var self = webapp;
 
         var hash = self.normalizeHash(address_change_event.value);
         var parts = hash.split('|');
@@ -276,7 +276,7 @@
 
         // Define the default event context.
         var eventContext = {
-            application: self,
+            webapp: self,
             /// `location` is the current hash slack
             location: parts[0],
             /// `parameters` are filled from the matching route
@@ -357,14 +357,14 @@
 
 
     /*
-     * Relocates the application to the given location.
+     * Relocates the webapp to the given location.
      * Don't do anything explicitly -
      * let the location monitoring handle the change implicitly.
      * (hint: location may change without calling this function,
      * for example by clicking on a link
      */
 
-	Application.prototype.relocateTo = function( location ){
+	WebApp.prototype.relocateTo = function( location ){
 
         // Clear the location.
         location = this.normalizeHash( location );
@@ -374,9 +374,9 @@
 
 	};
 
-    // uses window.application.visitedUrlsLog
+    // uses webapp.visitedUrlsLog
     // to return the previous page url
-    Application.prototype.previousPageUrl = function() {
+    WebApp.prototype.previousPageUrl = function() {
         var l = this.visitedUrlsLog;
         var result = "";
         if (l.length > 1) {
@@ -386,12 +386,12 @@
         if (result.indexOf('#') !== 0) {
             result = '#' + result;
         }
-        window.application.log("PREV PAGE: "+ result);
+        webapp.log("PREV PAGE: "+ result);
         return result;
     };
 
-	// I start the application.
-	Application.prototype.run = function(){
+	// I start the webapp.
+	WebApp.prototype.run = function(){
 		// Initialize the model.
 		this.initModels();
 
@@ -401,12 +401,12 @@
 		// Initialize the controllers.
 		this.initControllers();
 
-		// Flag that the application is running.
+		// Flag that the webapp is running.
 		this.isRunning = true;
 
 	};
 
-    Application.prototype.renderMenu = function(id, data) {
+    WebApp.prototype.renderMenu = function(id, data) {
         var output = $(id+"-template").jqote(data);
         $(id).html(output);
     };
@@ -414,27 +414,27 @@
 	// ----------------------------------------------------------------------- //
 	// ----------------------------------------------------------------------- //
 
-	// I am the prototype for the application controllers. This is so they
+	// I am the prototype for the webapp controllers. This is so they
 	// can leverage some binding magic without the overhead of the implimentation.
-	Application.prototype.Controller = function(){
+	WebApp.prototype.Controller = function(){
 		// ...
 	};
 
 
 	// I am the prototype for the Controller prototype.
-	Application.prototype.Controller.prototype = {
+	WebApp.prototype.Controller.prototype = {
 
 		// I route the given pseudo location to the given controller method.
 		route: function( path, view, default_parameters ){
 
             // Do not allow to add an undefined view:
             if (!view) {
-                window.application.showMessage("Undefined view for path "+path,
+                webapp.showMessage("Undefined view for path "+path,
                                                "Invalid Route");
             }
 
 			// Strip of any trailing and leading slashes.
-			path = application.normalizeHash( path );
+			path = webapp.normalizeHash( path );
 
 			// We will need to extract the parameters into an array - these will be used
 			// to create the event object when the location changes get routed.
@@ -455,11 +455,11 @@
 				}
 				);
 
-            // window.application.log("Pattern for "+path+" == "+pattern+" => "+parameters);
+            // webapp.log("Pattern for "+path+" == "+pattern+" => "+parameters);
 			// Now that we have our parameters and our test pattern, we can create our
-			// route mapping (which will be used by the application to match location
+			// route mapping (which will be used by the webapp to match location
 			// changes to controllers).
-			application.routeMappings.push({
+			webapp.routeMappings.push({
 				controller: this,
 				parameters: parameters,
 				test: new RegExp( ("^" + pattern + "$"), "i" ),
@@ -505,12 +505,12 @@
 
             // TODO: just logging - delete later
             $.each(event.parameters || [], function(idx, value) {
-                    application.log("PARAMETER: "+idx+"->"+value);
+                    webapp.log("PARAMETER: "+idx+"->"+value);
             });
 
             if (event) {
                 $.each(event, function(idx, value) {
-                    application.log("EVENT: "+idx+"->"+value);
+                    webapp.log("EVENT: "+idx+"->"+value);
                 });
             }
 
@@ -555,19 +555,19 @@
 
     // TODO: Those functions are helpers which used in themplates.
     // Move them somewhere (a global window.helpers object?)
-    Application.prototype.readable_bytes = function(bytes) {
+    WebApp.prototype.readable_bytes = function(bytes) {
         var sizes = ['b', 'Kb', 'Mb', 'Gb', 'Tb'];
         if (bytes == 0) return 'n/a';
         var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
         return Math.round(bytes / Math.pow(1024, i), 2) + sizes[i];
     };
 
-    Application.prototype.percent = function(part, whole) {
+    WebApp.prototype.percent = function(part, whole) {
         if (! whole) return 0;
         return Math.round(part/whole*100);
     };
 
-    Application.prototype.date_tag = function(date_str) {
+    WebApp.prototype.date_tag = function(date_str) {
         var d = new Date(date_str);
         //alert(d);
         /*var m = d.getMonth();
@@ -577,7 +577,7 @@
         return '<time class="timeago" datetime="'+date_str+'">'+s+'</time>';
     };
 
-    Application.prototype.calendar_date = function(date_str) {
+    WebApp.prototype.calendar_date = function(date_str) {
 
         if (!date_str) { return ""; }
 
@@ -600,16 +600,16 @@
         return s;
     };
 
-	// Create a new instance of the application and store it in the window.
-	window.application = new Application();
+	// Create a new instance of the webapp and store it in the window.
+	webapp = new WebApp();
 
-	// When the DOM is ready, run the application.
+	// When the DOM is ready, run the webapp.
 	$(function(){
-		window.application.run();
+		webapp.run();
 	});
 
-	// Return a new application instance.
-	return( window.application );
+	// Return a new webapp instance.
+	return( webapp );
 
 })( jQuery );
 

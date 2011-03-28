@@ -17,7 +17,7 @@ GenericView.prototype.init = function(){
     self.view = $( "#"+self.options.identifier+"-view" );
     if (!self.view.length)
     {
-        window.application.log("Can't find a node for #"+self.options.identifier+"-view, creating a new one");
+        webapp.log("Can't find a node for #"+self.options.identifier+"-view, creating a new one");
         /// Create and append a node if not found
         var nodeId = self.options.identifier+'-view';
         var $node = ($('<div id="'+nodeId+'" class="contentView">'));
@@ -127,6 +127,6 @@ RedirectView.prototype.hideView = function(){
 };
 
 RedirectView.prototype.showView = function(){
-    window.application.log("Redirecting to "+this.target_url);
-    window.application.relocateTo(this.target_url);
+    webapp.log("Redirecting to "+this.target_url);
+    webapp.relocateTo(this.target_url);
 };

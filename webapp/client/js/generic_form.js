@@ -57,7 +57,7 @@
 
     GenericForm.prototype.setValidationRules = function() {
         var self = this;
-        var rules = window.application.getValidationRules(self.options.identifier)
+        var rules = webapp.getValidationRules(self.options.identifier)
         self.form.validate( { rules: rules,
             submitHandler: function(form) {
                 self.submitForm();
@@ -152,7 +152,7 @@
         var self = this;
 
         /// Cancel link points to the page we came from
-        self.cancelLink.attr('href', window.application.previousPageUrl());
+        self.cancelLink.attr('href', webapp.previousPageUrl());
 
         // Show the view.
         self.view.addClass( "activeContentView" );
@@ -232,7 +232,7 @@
                 typeof value === "boolean")
             {
                 var elem = $(id);
-                application.log(id + " ("+elem.length+") ===> " + elem);
+                webapp.log(id + " ("+elem.length+") ===> " + elem);
 
                 if (elem.length)
                 {
@@ -243,7 +243,7 @@
                         var display_elem = $(id+"-display");
                         elem.val(value);
                         elem.change();
-                        display_elem.val(application.calendar_date(value));
+                        display_elem.val(webapp.calendar_date(value));
                         display_elem.change();
                     } else if (elem[0].tagName.toLowerCase() == 'div')
                     {
@@ -255,7 +255,7 @@
                         elem.change();
                     }
                 } else {
-                    application.log("NOT FOUND: " +id);
+                    webapp.log("NOT FOUND: " +id);
                 }
             } else if (_is_array(value)) {
                 /* Support arrays (aka sc.Sequence) subforms -
@@ -270,9 +270,9 @@
 
                 // should go before the === "object" section
                 $.each(value, function(idx, subvalue) {
-                    application.log("VALUE");
-                    application.log("ID: "+idx);
-                    application.log(subvalue);
+                    webapp.log("VALUE");
+                    webapp.log("ID: "+idx);
+                    webapp.log(subvalue);
                     add_new_items(link, self.view);
                     self._fill_form(id+'-'+idx, subvalue);
                     //add_new_items(link, self.view);
@@ -414,8 +414,8 @@
 
         $.Update(self.getRestServiceUrl("", {item_id:item_id}), form_data,
             function(data) {
-                var url = redirect_to || window.application.previousPageUrl();
-                window.application.relocateTo(url);
+                var url = redirect_to || webapp.previousPageUrl();
+                webapp.relocateTo(url);
 
             });
 
@@ -429,21 +429,21 @@
         /// display a dialog to add a value to a vocab (offices, departments etc.)
         //listbox.val(0);
         var self = this;
-        window.application.dialog.find("input.newValueText").attr("value", "");
+        webapp.dialog.find("input.newValueText").attr("value", "");
 
         var close_fn = function() { $(this).dialog("close"); };
         var add_fn = function() {
-            $.Create(url, {'name': window.application.dialog.find("input.newValueText").attr("value")},
+            $.Create(url, {'name': webapp.dialog.find("input.newValueText").attr("value")},
                         function(data) {
                             self.populate_listbox(listbox, data, true);
                     });
-            window.application.dialog.dialog('close');
-            window.application.dialog.find("button.okButton").unbind("click");
+            webapp.dialog.dialog('close');
+            webapp.dialog.find("button.okButton").unbind("click");
         };
 
 
         if (!dialog_title) { dialog_title = "Add New Item"; }
-        window.application.dialog
+        webapp.dialog
             .dialog('option', 'title', dialog_title )
             .dialog('option', 'buttons', { Cancel:  close_fn, Add: add_fn} )
             .dialog('open');

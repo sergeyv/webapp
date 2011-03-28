@@ -1,5 +1,5 @@
 
-// Add view to the application.
+// Add view to the webapp.
 
 function TemplatedView(options) {
 
@@ -27,7 +27,7 @@ TemplatedView.prototype.init = function () {
     /// find or create the view container
     self.view = $("#" + node_id);
     if (!self.view.length) {
-        application.log("Can't find a node for #" + node_id + ", creating a new one");
+        webapp.log("Can't find a node for #" + node_id + ", creating a new one");
         /// Create and append a node if not found
         $node = ($('<div id="' + node_id + '" class="contentView">'));
 
@@ -39,7 +39,7 @@ TemplatedView.prototype.init = function () {
     node_id = self.options.identifier + '-template';
     self.template = $("#" + node_id);
     if (!self.template.length) {
-        application.log("Can't find a node for #" + node_id + ", creating a new one");
+        webapp.log("Can't find a node for #" + node_id + ", creating a new one");
         /// Create and append a node if not found
         $node = ($('<script type="text/x-jquote-template" id="' + node_id + '">'));
 
@@ -173,7 +173,7 @@ TemplatedView.prototype.augmentView = function () {
             meth($link.attr('href'), callback);
 
             if ($link.hasClass("webappGoBack")) {
-                application.relocateTo(application.previousPageUrl());
+                webapp.relocateTo(webapp.previousPageUrl());
             }
             return false;
         };
@@ -238,7 +238,7 @@ TemplatedView.prototype.fill_form = function (id_root, data) {
                 typeof value === "boolean") {
 
             elem = $('#' + id);
-            application.log(id + " ===> " + elem);
+            webapp.log(id + " ===> " + elem);
             if (elem.length) {
                 /// support read-only fields
                 if (elem[0].tagName.toLowerCase() === 'div') {
@@ -248,7 +248,7 @@ TemplatedView.prototype.fill_form = function (id_root, data) {
                     elem.change();
                 }
             } else {
-                application.log("NOT FOUND: " + id);
+                webapp.log("NOT FOUND: " + id);
             }
         } else if (typeof value === "object" && data) {
             self.fill_form(id, data[name]);
