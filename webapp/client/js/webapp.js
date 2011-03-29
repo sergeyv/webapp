@@ -12,7 +12,7 @@
 
         // I am the collection of controllers. All controllers are intended to be
         // singleton instances.
-        this.controllers = [];
+        this.controller = null;
 
         // I am the collection of models. I can contain either cached singleton
         // instances or class definitions (to be instantiated at request).
@@ -116,16 +116,13 @@
 	}
 
 
-	// I add the given controller to the collection of controllers.
-	WebApp.prototype.addController = function (controller) {
+	WebApp.prototype.getController = function () {
 		// Add the controller.
-		this.controllers.push(controller);
+		if (!this.controller) {
+            this.controller = new webapp.Controller();
+        }
 
-		// Check to see if the webapp is running. If it is, then we need to initialize
-		// the controller instance.
-		if (this.isRunning) {
-			this.initClass(controller);
-		}
+        return this.controller;
 	};
 
     WebApp.prototype.addValidationRules = function (name, rule) {
@@ -178,13 +175,6 @@
 	};
 
 
-	// I intialize the controllers. Once the webapp starts running and the
-	// DOM can be interacted with, I need to give the controllers a chance to
-	// get ready.
-	WebApp.prototype.initControllers = function () {
-		this.initClasses(this.controllers);
-	};
-
 
 	// I intialize the model. Once the webapp starts running and the
 	// DOM can be interacted with, I need to give the model a chance to
@@ -199,15 +189,8 @@
 	// get ready.
 	WebApp.prototype.initViews = function () {
         var self = this;
-        $.each(
-            self.views,
-            function (name, view) {
-                if (view.init) {
-                    view.init();
-                }
-            }
-        );
-        //self.pageNotFoundView.init();
+        /// a "Page not found" view - displayed when a page is not found
+        this.pageNotFoundView = new webapp.View({identifier: "404"});
 	};
 
 
@@ -344,7 +327,7 @@
 
         /// If we arrived here then no route was found; display a 404 message
         if (self.pageNotFoundView) {
-            self.controllers[0].showView(self.pageNotFoundView, eventContext);
+            self.getController().showView(self.pageNotFoundView, eventContext);
         } else {
             self.showMessage("NOT FOUND");
         }
@@ -391,9 +374,6 @@
 		// Initialize the views.
 		this.initViews();
 
-		// Initialize the controllers.
-		this.initControllers();
-
 		// Flag that the webapp is running.
 		this.isRunning = true;
 
@@ -407,10 +387,8 @@
 	// ----------------------------------------------------------------------- //
 	// ----------------------------------------------------------------------- //
 
-	// I am the prototype for the webapp controllers. This is so they
-	// can leverage some binding magic without the overhead of the implimentation.
 	WebApp.prototype.Controller = function () {
-		// ...
+        this.currentView = null;
 	};
 
 
