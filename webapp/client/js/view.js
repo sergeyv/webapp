@@ -1,14 +1,14 @@
 (function ($, webapp) {
 
-    function GenericView(options) {
+    function View(options) {
         this.options = $.extend({}, options);
     }
 
     /// see http://phrogz.net/js/classes/OOPinJS.html for details
-    GenericView.prototype.constructor = GenericView;
+    View.prototype.constructor = View;
 
 
-    GenericView.prototype.init = function () {
+    View.prototype.init = function () {
         /// this is called _before_ the view is loaded
         /// (as the view is loaded on demand)
         /// so the html stuff is not available yet
@@ -33,20 +33,20 @@
     };
 
 
-    GenericView.prototype.hideView = function () {
+    View.prototype.hideView = function () {
         this.view.removeClass("activeContentView");
     };
 
-    GenericView.prototype.showView = function () {
+    View.prototype.showView = function () {
         this.view.addClass("activeContentView");
     };
 
-    GenericView.prototype.showViewFirstTime = function () {
+    View.prototype.showViewFirstTime = function () {
         this.init();
     };
 
 
-    GenericView.prototype.collectRestParams = function () {
+    View.prototype.collectRestParams = function () {
         /*
         * returns a list of 'key=value' strings aggreggated from
         * different parts of the view to be passed to the Rest backend
@@ -68,7 +68,7 @@
         return params;
     };
 
-    GenericView.prototype.getRestServiceUrl = function (with_params, overrides) {
+    View.prototype.getRestServiceUrl = function (with_params, overrides) {
         /*
         * Finds and replaces placeholders in the rest_service_root
         * options parameters with the actual values from the 'event.parameters' dict
@@ -114,7 +114,7 @@
         return url;
     };
 
-    webapp.GenericView = GenericView;
+    webapp.View = View;
 
 }(jQuery, webapp));
 

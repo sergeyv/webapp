@@ -3,7 +3,7 @@
 
     // Add view to the webapp.
 
-    function TemplatedView(options) {
+    function Template(options) {
 
         /* options are:
         -identifier
@@ -16,11 +16,11 @@
         }, options);
     }
 
-    TemplatedView.prototype = new webapp.GenericView();
+    Template.prototype = new webapp.View();
     /// see http://phrogz.net/js/classes/OOPinJS.html for details
-    TemplatedView.prototype.constructor = TemplatedView;
+    Template.prototype.constructor = Template;
 
-    TemplatedView.prototype.init = function () {
+    Template.prototype.init = function () {
         /// this is called when the view is first shown
         var self = this,
             node_id = self.options.identifier + '-view',
@@ -51,7 +51,7 @@
 
     };
 
-    TemplatedView.prototype.showViewFirstTime = function () {
+    Template.prototype.showViewFirstTime = function () {
 
         var self = this,
             load_from = "/t/" + self.options.identifier + ".html";
@@ -63,7 +63,7 @@
         });
     };
 
-    TemplatedView.prototype.showView = function () {
+    Template.prototype.showView = function () {
 
         //this.parameters = parameters;
         // Show the view.
@@ -71,7 +71,7 @@
         this.populateView();
     };
 
-    TemplatedView.prototype.populateView = function () {
+    Template.prototype.populateView = function () {
         var self = this;
 
 
@@ -96,7 +96,7 @@
 
     };
 
-    TemplatedView.prototype.renderData = function () {
+    Template.prototype.renderData = function () {
         var self = this;
 
         if (!self.template.length) {
@@ -119,7 +119,7 @@
 
 
     /*
-        * TemplatedView allows links to have some special classes
+        * Template allows links to have some special classes
         * which modify their behaviour:
         *
         * - webappAsyncAction - clicking on the link pings the target URL
@@ -144,7 +144,7 @@
         *   the data from the server and re-render the template with that data.
         *
         */
-    TemplatedView.prototype.augmentView = function () {
+    Template.prototype.augmentView = function () {
 
         var self = this,
             invoke_async_action = function ($link) {
@@ -224,7 +224,7 @@
     };
 
 
-    TemplatedView.prototype.fill_form = function (id_root, data) {
+    Template.prototype.fill_form = function (id_root, data) {
         /* Recursively iterate over the json data, find elements
         * of the form and set their values.
         * Now works with subforms
@@ -259,7 +259,7 @@
 
     };
 
-    TemplatedView.prototype.renderForm = function (form_name, data) {
+    Template.prototype.renderForm = function (form_name, data) {
         /*
         * Loads a loadable form and uses it to render the data.
         * Can be invoked from the template as
@@ -281,6 +281,6 @@
         return placeholder;
     };
 
-    webapp.TemplatedView = TemplatedView;
+    webapp.Template = Template;
 
 }(jQuery, webapp));

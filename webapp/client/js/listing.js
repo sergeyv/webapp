@@ -1,6 +1,6 @@
 (function ($, webapp) {
 
-    function GenericListing(options) {
+    function Listing(options) {
 
         // a nice side-effect of this is that it's doing a deep-copy
         this.options = $.extend({
@@ -10,12 +10,12 @@
 
     }
 
-    GenericListing.prototype = new webapp.TemplatedView();
+    Listing.prototype = new webapp.Template();
     /// see http://phrogz.net/js/classes/OOPinJS.html for details
-    GenericListing.prototype.constructor = GenericListing;
+    Listing.prototype.constructor = Listing;
 
 
-    GenericListing.prototype.init = function () {
+    Listing.prototype.init = function () {
 
     /// this is called when the view is first shown
         var self = this,
@@ -23,7 +23,7 @@
             $node;
 
         // this is how to call a 'super' method in JS
-        webapp.TemplatedView.prototype.init.call(this);
+        webapp.Template.prototype.init.call(this);
 
 
         /// find or create the body template container
@@ -41,24 +41,24 @@
     };
 
 
-    GenericListing.prototype.renderTableBody = function () {
+    Listing.prototype.renderTableBody = function () {
         var self = this,
             output = self.row_template.jqote({data: self.data, view: self});
         return output;
     };
 
 
-    GenericListing.prototype.collectRestParams = function () {
+    Listing.prototype.collectRestParams = function () {
         /*
         * Adds batch_size to the params which are sent to the Rest backend
         */
         // this is how to call a 'super' method in JS
-        var params = webapp.TemplatedView.prototype.collectRestParams.call(this);
+        var params = webapp.Template.prototype.collectRestParams.call(this);
         params.push('batch_size=' + this.options.batch_size);
         return params;
     };
 
-    GenericListing.prototype.augmentView = function () {
+    Listing.prototype.augmentView = function () {
 
         var self = this;
 
@@ -143,7 +143,7 @@
         }
 
         // this is how to call a 'super' method in JS
-        webapp.TemplatedView.prototype.augmentView.call(this);
+        webapp.Template.prototype.augmentView.call(this);
 
         self.view.find("th.sortable").each(function (ids, val) {
             var $cell = $(this),
@@ -156,7 +156,7 @@
         render_pager();
     };
 
-    webapp.GenericListing = GenericListing;
+    webapp.Listing = Listing;
 
 }(jQuery, webapp));
 

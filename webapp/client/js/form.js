@@ -1,6 +1,6 @@
 (function ($, webapp) {
 
-    function GenericForm(options) {
+    function Form(options) {
 
         /* Options are:
         identifier
@@ -18,10 +18,10 @@
 
     }
 
-    GenericForm.prototype = new webapp.GenericView();
+    Form.prototype = new webapp.View();
 
 
-    GenericForm.prototype.isAddForm = function () {
+    Form.prototype.isAddForm = function () {
         /*
         * Check if we either have 'item_id' parameter, which
         * would mean we're editing an existing item. Otherwise
@@ -35,8 +35,8 @@
     };
 
 
-    GenericForm.prototype.decorateView = function () {
-        /// this is called by GenericView.init and allows us to
+    Form.prototype.decorateView = function () {
+        /// this is called by View.init and allows us to
         /// insert arbitrary content into the newly-created
         /// <div class="contentView" />
         /// This happens before the content is loaded
@@ -46,7 +46,7 @@
     };
 
 
-    GenericForm.prototype.bindFormControls = function () {
+    Form.prototype.bindFormControls = function () {
         var self = this,
             items;
         self.form = $("#" + self.options.identifier);
@@ -59,7 +59,7 @@
         });
     };
 
-    GenericForm.prototype.setValidationRules = function () {
+    Form.prototype.setValidationRules = function () {
         var self = this,
             rules = webapp.getValidationRules(self.options.identifier);
 
@@ -71,7 +71,7 @@
 
     };
 
-    GenericForm.prototype.showViewFirstTime = function () {
+    Form.prototype.showViewFirstTime = function () {
         var self = this,
             load_from = "/forms/" + self.options.identifier,
             $placeholder;
@@ -107,7 +107,7 @@
     };
 
 
-    GenericForm.prototype.genericAugmentForm = function () {
+    Form.prototype.genericAugmentForm = function () {
         /// Do stuff we want on every form
         var self = this;
 
@@ -136,7 +136,7 @@
 
     };
 
-    GenericForm.prototype.augmentForm = function () {
+    Form.prototype.augmentForm = function () {
         /*
         Modify the form appearance after it is loaded
         */
@@ -144,7 +144,7 @@
         /// do nothing, override in subclasses
     };
 
-    GenericForm.prototype.setHandlers = function () {
+    Form.prototype.setHandlers = function () {
         /*
         Attach form handlers which respond to changes in the form_data
         (i.e. to implement dependent controls etc.)
@@ -155,7 +155,7 @@
 
 
     // I get called when the view needs to be shown.
-    GenericForm.prototype.showView = function () {
+    Form.prototype.showView = function () {
         var self = this;
 
         /// Cancel link points to the page we came from
@@ -188,18 +188,18 @@
 
 
     // I disable the form.
-    GenericForm.prototype.disableForm = function () {
+    Form.prototype.disableForm = function () {
         // Disable the fields.
     };
 
 
     // I enable the form.
-    GenericForm.prototype.enableForm = function () {
+    Form.prototype.enableForm = function () {
         // Enable the fields.
     };
 
 
-    GenericForm.prototype.resetForm = function () {
+    Form.prototype.resetForm = function () {
         /*
         * Removes validation messages and resets the form to its initial values
         */
@@ -210,7 +210,7 @@
     };
 
 
-    GenericForm.prototype.fill_form = function (id_root, data) {
+    Form.prototype.fill_form = function (id_root, data) {
         /* Recursively iterate over the json data, find elements
         * of the form and set their values.
         * Now works with subforms
@@ -294,7 +294,7 @@
 
     };
 
-    GenericForm.prototype.populateForm = function () {
+    Form.prototype.populateForm = function () {
 
         var self = this,
             item_id,
@@ -313,7 +313,7 @@
         });
     };
 
-    GenericForm.prototype.mangle_url = function (path, $elem) {
+    Form.prototype.mangle_url = function (path, $elem) {
         /*
         *  The method takes a URL which contains some placeholders, such as
         *  /providers/:provider_id/datacentres, prepends the form's name to it
@@ -368,7 +368,7 @@
     };
 
 
-    GenericForm.prototype.populateLoadables = function () {
+    Form.prototype.populateLoadables = function () {
 
         var self = this;
         // Reset the form.
@@ -379,7 +379,7 @@
         });
     };
 
-    GenericForm.prototype.reloadLoadable = function ($select) {
+    Form.prototype.reloadLoadable = function ($select) {
         var self = this,
             from = self.mangle_url($select.attr("href"), $select);
 
@@ -407,7 +407,7 @@
         }
     };
 
-    GenericForm.prototype.submitForm = function () {
+    Form.prototype.submitForm = function () {
         /*
         * If self.event.parameters.item_id is present, the method
         * PUTs json-serialized form data to the rest url of that item.
@@ -431,7 +431,7 @@
 
 
 
-    GenericForm.prototype.refresh_listbox_vocab = function (url, listbox, addmore) {
+    Form.prototype.refresh_listbox_vocab = function (url, listbox, addmore) {
         var self = this;
         /// query an id-value list form the server and populate
         /// a listbox
@@ -440,7 +440,7 @@
         });
     };
 
-    webapp.GenericForm = GenericForm;
+    webapp.Form = Form;
 
 }(jQuery, webapp));
 

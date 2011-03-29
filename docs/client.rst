@@ -33,18 +33,18 @@ Basically, the only JS file in your application will be ``controller.js``:
             var self = this;
             this.$menu = $("#top-tabs");
 
-            this.route( "/users/", new GenericListing({
+            this.route( "/users/", new webapp.Listing({
                     identifier: "users-listing",
                     rest_service_root: "/rest/users/",
                 }));
 
-            this.route( "/users/add", new GenericForm({
+            this.route( "/users/add", new webapp.Form({
                     add_button_title: "Add User",
                     identifier: "UserAddForm",
                     rest_service_root: "/rest/users/:item_id",
                 }));
 
-            this.route( "/users/:item_id", new TemplatedView({
+            this.route( "/users/:item_id", new webapp.Template({
                     identifier: "user-view",
                     rest_service_root: "/rest/users/:item_id",
                 }) );
@@ -71,11 +71,11 @@ at ``http://mysite.com/#/users/<user_id>/edit``
 
 There are currently a few types of "views" built in:
 
-GenericView
------------
+View
+----
 
-GenericView is linked to some html emelent in the page; when Controller matches
-the current URL hash slack to a route which leads to a GenericView, that html
+``View`` is linked to some html emelent in the page; when Controller matches
+the current URL hash slack to a route which leads to a View, that html
 element is shown:
 
 .. code-block:: html
@@ -97,12 +97,12 @@ element is shown:
 
 A "404 view" is a built-in view so there's no need to configure a route for it,
 yet there should be a div inside contect-views for it. But yes, 404 view is a
-GenericView too.
+View too.
 
-GenericForm
+Form
 -----------
 
-A GenericForm uses server-generated forms to represent data to the user - the
+A Form uses server-generated forms to represent data to the user - the
 form is a ``schemaish`` structure defined in Python code::
 
     @webapp.loadable
@@ -111,11 +111,11 @@ form is a ``schemaish`` structure defined in Python code::
         last_name = sc.String()
         date_of_birth = sc.String()
 
-Then we can use it by attaching a GenericForm to some route:
+Then we can use it by attaching a webapp.Form to some route:
 
 .. code-block:: javascript
 
-    this.route( "/users/:item_id/edit", new GenericForm({
+    this.route( "/users/:item_id/edit", new webapp.Form({
             add_button_title: "Add User",
             identifier: "UserEditForm", // the same as the name of the class in Python
             rest_service_root: "/rest/users/:item_id" // we set up a Rest API at this address by registering an SA model (supposedly called User) with crud
@@ -135,7 +135,7 @@ For an edit form the route should contain ``:item_id`` placeholder. Also, rest_s
 
 .. code-block:: javascript
 
-    this.route( "/users/:item_id/edit", new GenericForm({
+    this.route( "/users/:item_id/edit", new webapp.Form({
             identifier: "UserEditForm",
             rest_service_root: "/rest/users/:item_id"
         }));
@@ -148,7 +148,7 @@ An Add form has no ``:item_id`` placeholder in its route. When invoked, it queri
 
 .. code-block:: javascript
 
-    this.route( "/users/add", new GenericForm({
+    this.route( "/users/add", new webapp.Form({
             identifier: "UserAddForm",
             rest_service_root: "/rest/users/:item_id"
         }));
@@ -158,14 +158,14 @@ The form above will GET its initial values from ``/rest/users/new`` and when sub
 On the server side, ``new`` maps to a couple of view functions registered on IRestCollection interface, one function handles GET and another PUT method
 
 
-TemplatedView
+webapp.Template
 -------------
 
-TemplatedView loads a jqote2 template from ``/t/<view-identifier>.html`` and
+webapp.Template loads a jqote2 template from ``/t/<view-identifier>.html`` and
 uses that template to render json data received from the server.
 
 
-TemplatedView allows links to have some special classes
+webapp.Template allows links to have some special classes
 which modify their behaviour. This allows to avoid having any 'custom' JS code
 in templates:
 
@@ -214,23 +214,23 @@ in templates:
         title="Do you really want to delete this client?">X</a>
     </td>
 
-GenericListing
+webapp.Listing
 --------------
 
-GenericListing is based on TemplatedView but has additional features allowing
-it to display listings of items (which is also possible to do with TemplatedView,
-but GenericListing allows the tables to be sorted/batched/filtered).
+webapp.Listing is based on webapp.Template but has additional features allowing
+it to display listings of items (which is also possible to do with webapp.Template,
+but webapp.Listing allows the tables to be sorted/batched/filtered).
 
 .. code-block:: javascript
 
-    this.route( "/servers/", new GenericListing({
+    this.route( "/servers/", new webapp.Listing({
         identifier: "servers-listing",
         rest_service_root: "/rest/servers/",
         data_format: 'listing', // optional, if missing 'listing' will be used
         batch_size: 42, //optional, if missing a default value will be used
     }));
 
-*How sorting works:* GenericListing expects a table.listingTable to be present
+*How sorting works:* webapp.Listing expects a table.listingTable to be present
 in the template. The <th> elements inside that table which have 'sortable' and
 'id_<fieldname>' classes will be turned into links which modify the hash slack to
 force the framework to re-query the data with the new sorting settings and

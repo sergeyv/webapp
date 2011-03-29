@@ -68,11 +68,11 @@ class AssetRegistry(object):
 
 
     # Our framework stuff
-    "/webapp.client/js/generic_view.js",
-    "/webapp.client/js/generic_form.js",
-    "/webapp.client/js/templated_view.js",
-    "/webapp.client/js/generic_listing.js",
     "/webapp.client/js/webapp.js",
+    "/webapp.client/js/view.js",
+    "/webapp.client/js/form.js",
+    "/webapp.client/js/template.js",
+    "/webapp.client/js/listing.js",
     )
 
 
