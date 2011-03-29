@@ -1,11 +1,13 @@
+(function ($, webapp) {
 
-    /* Options are:
-    identifier
-    rest_service_root
-    redirect_after_add
-    redirect_after_edit
-    */
-    function GenericForm(options){
+    function GenericForm(options) {
+
+        /* Options are:
+        identifier
+        rest_service_root
+        redirect_after_add
+        redirect_after_edit
+        */
         this.options = $.extend({
             data_format: "default",
             add_form_title: "Add Item",
@@ -14,70 +16,75 @@
             edit_button_title: "Save Changes"
         }, options);
 
-        /*this.dependent_fields = {};*/
-    };
+    }
 
-    GenericForm.prototype = new GenericView();
+    GenericForm.prototype = new webapp.GenericView();
 
 
-    GenericForm.prototype.isAddForm = function(){
+    GenericForm.prototype.isAddForm = function () {
         /*
-         * Check if we either have 'item_id' parameter, which
-         * would mean we're editing an existing item. Otherwise
-         * we're adding
-         */
-        var self=this;
+        * Check if we either have 'item_id' parameter, which
+        * would mean we're editing an existing item. Otherwise
+        * we're adding
+        */
+        var self = this;
         if (self.event.parameters.item_id) {
             return false;
         }
         return true;
-    }
+    };
 
-    GenericForm.prototype.decorateView = function(){
-         /// this is called by GenericView.init and allows us to
-         /// insert arbitrary content into the newly-created
-         /// <div class="contentView" />
-         /// This happens before the content is loaded
-         var self = this;
-         self.view.append($('<h1><span class="formTitle">###</span></h1>'))
+
+    GenericForm.prototype.decorateView = function () {
+        /// this is called by GenericView.init and allows us to
+        /// insert arbitrary content into the newly-created
+        /// <div class="contentView" />
+        /// This happens before the content is loaded
+        var self = this;
+        self.view.append($('<h1><span class="formTitle">###</span></h1>'))
             .append($('<div class="formPlaceholder"></div>'));
     };
 
 
-    GenericForm.prototype.bindFormControls = function() {
-        var self = this;
-        self.form = $( "#"+self.options.identifier );
-        self.controls = {}
+    GenericForm.prototype.bindFormControls = function () {
+        var self = this,
+            items;
+        self.form = $("#" + self.options.identifier);
+        self.controls = {};
 
-        var items = self.form.serializeArray();
-        $.each(items, function() {
-                self.controls[this.name] = $("#"+self.options.identifier+"-"+this.name);
-            });
+        items = self.form.serializeArray();
+
+        $.each(items, function () {
+            self.controls[this.name] = $("#" + self.options.identifier + "-" + this.name);
+        });
     };
 
-    GenericForm.prototype.setValidationRules = function() {
-        var self = this;
-        var rules = webapp.getValidationRules(self.options.identifier)
-        self.form.validate( { rules: rules,
-            submitHandler: function(form) {
+    GenericForm.prototype.setValidationRules = function () {
+        var self = this,
+            rules = webapp.getValidationRules(self.options.identifier);
+
+        self.form.validate({ rules: rules,
+            submitHandler: function (form) {
                 self.submitForm();
             }
-        } );
+            });
 
     };
 
-    GenericForm.prototype.showViewFirstTime = function() {
-        var self = this;
+    GenericForm.prototype.showViewFirstTime = function () {
+        var self = this,
+            load_from = "/forms/" + self.options.identifier,
+            $placeholder;
 
         self.init();
 
-        var load_from = "/forms/"+self.options.identifier;
+        $placeholder = self.view.find(".formPlaceholder");
 
-        var $placeholder = self.view.find(".formPlaceholder");
-        if (! $placeholder.length) {
+        if (!$placeholder.length) {
             alert("Can't find form placeholder for " + self.options.identifier);
         }
-        $placeholder.load(load_from, function() {
+
+        $placeholder.load(load_from, function () {
 
             self.genericAugmentForm();
 
@@ -100,7 +107,7 @@
     };
 
 
-    GenericForm.prototype.genericAugmentForm = function() {
+    GenericForm.prototype.genericAugmentForm = function () {
         /// Do stuff we want on every form
         var self = this;
 
@@ -111,12 +118,12 @@
 
         /// convert the "fake" fields which are marked with
         /// 'section_title' class into titles
-        this.view.find(".section_title").each( function () {
-            var text = "";
-            var t = $(this).children("label");
-            var st = $(this).children("span.description");
-            if (t.length) { text = "<h2>"+t.html()+"</h2>"; }
-            if (st.length) { text += '<p class="description">'+st.html()+'</p>'; }
+        this.view.find(".section_title").each(function () {
+            var text = "",
+                t = $(this).children("label"),
+                st = $(this).children("span.description");
+            if (t.length) { text = "<h2>" + t.html() + "</h2>"; }
+            if (st.length) { text += '<p class="description">' + st.html() + '</p>'; }
 
             $(this).replaceWith(text);
         });
@@ -127,35 +134,35 @@
         add_mousedown_to_addlinks(self.view);
         add_remove_buttons(self.view);
 
-    }
+    };
 
-    GenericForm.prototype.augmentForm = function() {
+    GenericForm.prototype.augmentForm = function () {
         /*
         Modify the form appearance after it is loaded
         */
 
         /// do nothing, override in subclasses
-    }
+    };
 
-    GenericForm.prototype.setHandlers = function() {
+    GenericForm.prototype.setHandlers = function () {
         /*
         Attach form handlers which respond to changes in the form_data
         (i.e. to implement dependent controls etc.)
         */
 
         /// do nothing, override in subclasses
-    }
+    };
 
 
     // I get called when the view needs to be shown.
-    GenericForm.prototype.showView = function(){
+    GenericForm.prototype.showView = function () {
         var self = this;
 
         /// Cancel link points to the page we came from
         self.cancelLink.attr('href', webapp.previousPageUrl());
 
         // Show the view.
-        self.view.addClass( "activeContentView" );
+        self.view.addClass("activeContentView");
 
         //self.parameters = parameters;
 
@@ -163,10 +170,10 @@
 
         if (self.isAddForm()) {
             self.view.find(".formTitle").text(self.options.add_form_title);
-            self.view.find("#"+self.options.identifier+"-action").val(self.options.add_button_title);
+            self.view.find("#" + self.options.identifier + "-action").val(self.options.add_button_title);
         } else {
             self.view.find(".formTitle").text(self.options.edit_form_title);
-            self.view.find("#"+self.options.identifier+"-action").val(self.options.edit_button_title);
+            self.view.find("#" + self.options.identifier + "-action").val(self.options.edit_button_title);
         }
 
 
@@ -181,112 +188,113 @@
 
 
     // I disable the form.
-    GenericForm.prototype.disableForm = function(){
+    GenericForm.prototype.disableForm = function () {
         // Disable the fields.
     };
 
 
     // I enable the form.
-    GenericForm.prototype.enableForm = function(){
+    GenericForm.prototype.enableForm = function () {
         // Enable the fields.
     };
 
 
-    GenericForm.prototype.resetForm = function(){
+    GenericForm.prototype.resetForm = function () {
         /*
-         * Removes validation messages and resets the form to its initial values
-         */
-        var self = this;
-
-        var validator = self.form.validate();
+        * Removes validation messages and resets the form to its initial values
+        */
+        var self = this,
+            validator = self.form.validate();
         validator.resetForm();
 
     };
 
 
-    GenericForm.prototype._fill_form = function(id_root, data) {
+    GenericForm.prototype.fill_form = function (id_root, data) {
         /* Recursively iterate over the json data, find elements
-         * of the form and set their values.
-         * Now works with subforms
-         */
+        * of the form and set their values.
+        * Now works with subforms
+        */
         var self = this,
-            _is_array = function (arg) {
+            is_array = function (arg) {
                 return (arg && typeof arg === 'object' &&
                         typeof arg.length === 'number' &&
                         !(arg.propertyIsEnumerable('length')));
             };
-        if (! data) { return; }
+        if (!data) { return; }
 
-        $.each(data, function(name, value) {
+        $.each(data, function (name, value) {
+
+            var id,
+                elem,
+                display_elem,
+                link;
 
             if (value === null) {
                 value = '';
             }
 
-            console.log("Setting "+name+" >-->> ");
+            console.log("Setting " + name + " >-->> ");
             console.log(value);
 
-            var id = id_root + '-' + name;
+            id = id_root + '-' + name;
             if (typeof value === "string" ||
-                typeof value === "number" ||
-                typeof value === "boolean")
-            {
-                var elem = $(id);
-                webapp.log(id + " ("+elem.length+") ===> " + elem);
+                    typeof value === "number" ||
+                    typeof value === "boolean") {
+                elem = $(id);
+                webapp.log(id + " (" + elem.length + ") ===> " + elem);
 
-                if (elem.length)
-                {
+                if (elem.length) {
                     if (elem.hasClass("calendar")) {
                         /// this is for calendar widget - it allows us to
                         /// display a friendly date (7 Nov 1012)
                         /// while submitting '2012-11-07' to the server
-                        var display_elem = $(id+"-display");
+                        display_elem = $(id + "-display");
                         elem.val(value);
                         elem.change();
                         display_elem.val(webapp.helpers.calendar_date(value));
                         display_elem.change();
-                    } else if (elem[0].tagName.toLowerCase() == 'div')
-                    {
+                    } else if (elem[0].tagName.toLowerCase() === 'div') {
                         /// support read-only fields
-                        elem.html(value || '&mdash;')
+                        elem.html(value || '&mdash;');
                     } else {
                         elem.val(value);
                         elem.attr("original_value", value);
                         elem.change();
                     }
                 } else {
-                    webapp.log("NOT FOUND: " +id);
+                    webapp.log("NOT FOUND: " + id);
                 }
-            } else if (_is_array(value)) {
+            } else if (is_array(value)) {
                 /* Support arrays (aka sc.Sequence) subforms -
-                 * need to delete any fields added during the
-                 * previous showing of the form
-                 */
-                var elem = $(id+'--field');
-                var link = elem.find('a.adderlink');
+                * need to delete any fields added during the
+                * previous showing of the form
+                */
+                elem = $(id + '--field');
+                link = elem.find('a.adderlink');
 
                 // remove existing fieldsets
                 elem.find('.field').remove();
 
                 // should go before the === "object" section
-                $.each(value, function(idx, subvalue) {
+                $.each(value, function (idx, subvalue) {
                     webapp.log("VALUE");
-                    webapp.log("ID: "+idx);
+                    webapp.log("ID: " + idx);
                     webapp.log(subvalue);
                     add_new_items(link, self.view);
-                    self._fill_form(id+'-'+idx, subvalue);
+                    self.fill_form(id + '-' + idx, subvalue);
                     //add_new_items(link, self.view);
                 });
-            } else if (typeof(value) === "object") {
+            } else if (typeof value === "object") {
                 if (data) {
-                    self._fill_form(id, value);
+                    self.fill_form(id, value);
                 }
             }
         });
 
-    }
+    };
 
-    GenericForm.prototype.populateForm = function() {
+    GenericForm.prototype.populateForm = function () {
 
         var self = this,
             item_id,
@@ -300,60 +308,59 @@
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
 
-        $.Read(self.getRestServiceUrl("with-params", { item_id:item_id }), function(data) {
-            self._fill_form(id_root, data);
+        $.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
+            self.fill_form(id_root, data);
         });
     };
 
-    GenericForm.prototype._mangle_url = function(path, $elem) {
+    GenericForm.prototype.mangle_url = function (path, $elem) {
         /*
-         *  The method takes a URL which contains some placeholders, such as
-         *  /providers/:provider_id/datacentres, prepends the form's name to it
-         *  and finds a form element which
-         *  matches (i.e. with id="ZopeAddForm-provider_id"). Then it replaces
-         *  the placeholder with the value of the control.
-         *  If the 'master' control's value evaluates to false
-         *  (i.e. when it's contents is not loaded) the method returns
-         *  an empty string, which indicates that we should not load just now.
-         *
-         *  The method also adds a change handler to the 'master' control so the
-         *  dependent control is refreshed each time master is changed.
-         */
+        *  The method takes a URL which contains some placeholders, such as
+        *  /providers/:provider_id/datacentres, prepends the form's name to it
+        *  and finds a form element which
+        *  matches (i.e. with id="ZopeAddForm-provider_id"). Then it replaces
+        *  the placeholder with the value of the control.
+        *  If the 'master' control's value evaluates to false
+        *  (i.e. when it's contents is not loaded) the method returns
+        *  an empty string, which indicates that we should not load just now.
+        *
+        *  The method also adds a change handler to the 'master' control so the
+        *  dependent control is refreshed each time master is changed.
+        */
 
-        var self = this;
+        var self = this,
+            url = path.replace(
+                new RegExp("(/):([^/]+)", "gi"),
+                function ($0, $1, $2) {
+                    /// here $0 is the whole match,
+                    /// $1 is the slash
+                    /// $2 is the id of the 'master field'
 
-        var url = path.replace(
-            new RegExp( "(/):([^/]+)", "gi" ),
-            function( $0, $1, $2 ){
-                /// here $0 is the whole match,
-                /// $1 is the slash
-                /// $2 is the id of the 'master field'
+                    var id = $2,
+                        $master_elem = $("#" + id);
+                    // we mark the dependent element with a class to
+                    // avoid setting the change() handler more than once for
+                    // any dependent element
+                    if (!$elem.hasClass('dependent')) {
+                        $master_elem.change(function () {
+                            self.reloadLoadable($elem);
+                        });
+                        $elem.addClass('dependent');
+                    }
 
-                var id = $2;
-
-                var $master_elem = $("#" + id);
-                // we mark the dependent element with a class to
-                // avoid setting the change() handler more than once for
-                // any dependent element
-                if (! $elem.hasClass('dependent') ) {
-                    $master_elem.change(function() {
-                        self.reloadLoadable($elem);
-                    })
-                    $elem.addClass('dependent');
+                    /// if the master select has no value, this means it's
+                    /// not loaded - anyway, it makes no sense to attempt to
+                    /// load from, say, /providers/undefined/hosts, so we inject
+                    /// a marker into the URL so later we can say if we need to skip
+                    /// loading altogether
+                    if ($master_elem.val()) {
+                        return $1 + $master_elem.val();
+                    } else {
+                        return "MASTER_NOT_LOADED";
+                    }
                 }
-
-                /// if the master select has no value, this means it's
-                /// not loaded - anyway, it makes no sense to attempt to
-                /// load from, say, /providers/undefined/hosts, so we inject
-                /// a marker into the URL so later we can say if we need to skip
-                /// loading altogether
-                if ($master_elem.val()) {
-                    return $1 + $master_elem.val();
-                } else {
-                    return "MASTER_NOT_LOADED";
-                }
-            });
-        if (url.indexOf("MASTER_NOT_LOADED") == -1) {
+            );
+        if (url.indexOf("MASTER_NOT_LOADED") === -1) {
             return url;
         } else {
             return "";
@@ -361,28 +368,28 @@
     };
 
 
-    GenericForm.prototype.populateLoadables = function() {
+    GenericForm.prototype.populateLoadables = function () {
 
         var self = this;
         // Reset the form.
 
-        self.form.find('div.loadableListbox').each(function(idx) {
+        self.form.find('div.loadableListbox').each(function (idx) {
             var $select = $(this).find('select');
             self.reloadLoadable($select);
         });
     };
 
-    GenericForm.prototype.reloadLoadable = function($select) {
-        var self = this;
-        var from = self._mangle_url($select.attr("href"), $select);
+    GenericForm.prototype.reloadLoadable = function ($select) {
+        var self = this,
+            from = self.mangle_url($select.attr("href"), $select);
 
         /// empty 'from' url signals that we shouldn't attempt to load the data
         /// just yet (i.e. a master listbox was not loaded yet)
         if (from) {
-            $.Read(from, function(data) {
+            $.Read(from, function (data) {
                 $select.children().remove();
                 $('<option value="">- choose -</option>').appendTo($select);
-                $.each(data.items, function(idx, value) {
+                $.each(data.items, function (idx, value) {
                     $("<option/>").val(value[0]).html(value[1]).appendTo($select);
                 });
 
@@ -400,20 +407,20 @@
         }
     };
 
-    GenericForm.prototype.submitForm = function(){
+    GenericForm.prototype.submitForm = function () {
         /*
-         * If self.event.parameters.item_id is present, the method
-         * PUTs json-serialized form data to the rest url of that item.
-         * Otherwise it uses a 'virtual' item called 'new', i.e.
-         * /rest/clients/new.
-         */
+        * If self.event.parameters.item_id is present, the method
+        * PUTs json-serialized form data to the rest url of that item.
+        * Otherwise it uses a 'virtual' item called 'new', i.e.
+        * /rest/clients/new.
+        */
         var self = this,
             form_data = self.form.serializeObject(),
             item_id = self.event.parameters.item_id || 'new',
-            redirect_to = (item_id === 'new')?self.options.redirect_after_add:self.options.redirect_after_edit;
+            redirect_to = (item_id === 'new') ? self.options.redirect_after_add : self.options.redirect_after_edit;
 
-        $.Update(self.getRestServiceUrl("", {item_id:item_id}), form_data,
-            function(data) {
+        $.Update(self.getRestServiceUrl("", {item_id: item_id}), form_data,
+            function (data) {
                 var url = redirect_to || webapp.previousPageUrl();
                 webapp.relocateTo(url);
 
@@ -423,61 +430,19 @@
     };
 
 
-    /// VOCABULARY STUFF
-    /// (not really sure it belongs here)
-    /*GenericForm.prototype.show_add_vocab_value_dialog = function (listbox, url, dialog_title) {
-        /// display a dialog to add a value to a vocab (offices, departments etc.)
-        //listbox.val(0);
-        var self = this;
-        webapp.dialog.find("input.newValueText").attr("value", "");
 
-        var close_fn = function() { $(this).dialog("close"); };
-        var add_fn = function() {
-            $.Create(url, {'name': webapp.dialog.find("input.newValueText").attr("value")},
-                        function(data) {
-                            self.populate_listbox(listbox, data, true);
-                    });
-            webapp.dialog.dialog('close');
-            webapp.dialog.find("button.okButton").unbind("click");
-        };
-
-
-        if (!dialog_title) { dialog_title = "Add New Item"; }
-        webapp.dialog
-            .dialog('option', 'title', dialog_title )
-            .dialog('option', 'buttons', { Cancel:  close_fn, Add: add_fn} )
-            .dialog('open');
-    };*/
-
-
-    /*GenericForm.prototype.populate_listbox = function (listbox, data, addmore)
-    {
-        listbox.children().remove();
-        listbox.append($('<option/>').attr({value:""}).html(" -- please choose -- "));
-
-        for (var i = 0; i< data.items.length; i++) {
-            var d = data.items[i];
-            listbox.append($('<option/>').attr({value:d[0]}).html(d[1]));
-        }
-
-        if (addmore)
-        {
-            listbox.append($('<option/>').attr({value:"ADD"}).html("... add another one"));
-        }
-
-        /// select the newly-added value or the first one if empty
-        var new_id = data.new_id || 0;
-        listbox.val(new_id);
-    };*/
-
-    GenericForm.prototype.refresh_listbox_vocab = function (url, listbox, addmore)
-    {
+    GenericForm.prototype.refresh_listbox_vocab = function (url, listbox, addmore) {
         var self = this;
         /// query an id-value list form the server and populate
         /// a listbox
-        $.getJSON(url, function(data) {
+        $.getJSON(url, function (data) {
             self.populate_listbox(listbox, data, addmore);
         });
-    }
-    /// END VOCABULARY STUFF
+    };
+
+    webapp.GenericForm = GenericForm;
+
+}(jQuery, webapp));
+
+
 

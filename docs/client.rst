@@ -21,13 +21,13 @@ Basically, the only JS file in your application will be ``controller.js``:
 .. code-block:: javascript
 
 
-    window.application.addController((function( $, application ){
+    webapp.addController((function( $, webapp ){
 
         function Controller(){
             this.currentView = null;
         };
 
-        Controller.prototype = new application.Controller();
+        Controller.prototype = new webapp.Controller();
 
         Controller.prototype.init = function(){
             var self = this;
@@ -49,7 +49,7 @@ Basically, the only JS file in your application will be ``controller.js``:
                     rest_service_root: "/rest/users/:item_id",
                 }) );
 
-            application.renderMenu(
+            webapp.renderMenu(
                 "#top-tabs",
                 [
                     {title:'Home', path:'', id: 'default'},
@@ -61,7 +61,7 @@ Basically, the only JS file in your application will be ``controller.js``:
         // Return a new contoller singleton instance.
         return( new Controller() );
 
-    })( jQuery, window.application ));
+    })( jQuery, webapp ));
 
 
 Here it configures an application which will display a listing of Users at
@@ -270,3 +270,65 @@ re-display the view.
     <div class="pager"> &nbsp; </div>
 
 TODO: Filtering and search are not currently implemented
+
+
+Template Helpers
+----------------
+
+``webapp`` has ``helpers`` object which can be populated by the application with
+methods to simplify building templates. In kitovu, the helpers are defined
+in ``kitovu_admin/client/helpers.js``:
+
+.. code-block:: javascript
+
+    /// Helpers
+    (function($, webapp) {
+        
+        var h = webapp.helpers;
+        h.simple_value = function(title, value) {
+            /*
+             Returns a nicely-formatted bit of html for a view page
+            */
+            if (value) {
+                return "<div><label>"+title+"</label> "+ value + "</div>";
+            } else {
+                return "";
+            }
+        };
+        ...
+    }) (jQuery, webapp);
+
+The helpers then can be used in templates, so instead of tedious
+
+.. code-block:: html
+
+    <% if (item.client.id) { %>
+    <div>
+        <label>Client:</label>
+        <a href="#/clients/<%=item.client.id %>"><%=item.client.name %></a>
+    </div>
+    <% } %>
+    
+we can now use
+
+.. code-block:: html
+
+    <%=webapp.helpers.name_and_id("Client", item.client, "#/clients/") %>
+    
+The current list of helpers is as follows:
+
+    * simple_value(title, value) - renders a string value with a header
+    
+    * name_and_id(title, obj, root) - renders a link to a related object (see example above)
+    
+    * email_value(title, value) - renders a mailto: link
+    
+    * uri_value(title, value) - renders a link witha header
+    
+    * time_ago(date_str) - renders a "about 3 hours ago" auto-updating block. Expects a correct timestamp 
+    
+    * calendar_date(date_str) - renders a date formatted as "28 Mar 2011"
+    
+Developers are encouraged to re-use the existing helpers and add new ones.
+    
+    
