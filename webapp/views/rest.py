@@ -45,7 +45,9 @@ def _create_item(context, request):
     if new_item is not None:
         # The context may choose not to return the item added
         # and do everything itself
-        get_session().add(new_item)
+        session = get_session()
+        session.add(new_item)
+        session.flush()
 
     resource = context.wrap_child(model=new_item, name=str(new_item.id))
     if hasattr(resource, "after_item_created"):
