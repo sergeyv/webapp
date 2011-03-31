@@ -161,8 +161,6 @@
         /// Cancel link points to the page we came from
         self.cancelLink.attr('href', webapp.previousPageUrl());
 
-        // Show the view.
-        self.view.addClass("activeContentView");
 
         //self.parameters = parameters;
 
@@ -175,6 +173,7 @@
             self.view.find(".formTitle").text(self.options.edit_form_title);
             self.view.find("#" + self.options.identifier + "-action").val(self.options.edit_button_title);
         }
+
 
 
         self.populateLoadables();
@@ -310,6 +309,9 @@
 
         $.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
             self.fill_form(id_root, data);
+
+            // Only show the view after all the data is set.
+            self.view.addClass("activeContentView");
         });
     };
 
@@ -343,7 +345,11 @@
                     // any dependent element
                     if (!$elem.hasClass('dependent')) {
                         $master_elem.change(function () {
-                            self.reloadLoadable($elem);
+                            if ($(this).val()) {
+                                self.reloadLoadable($elem);
+                            } else {
+                                $elem.parents("div.field").hide();
+                            }
                         });
                         $elem.addClass('dependent');
                     }
@@ -371,7 +377,9 @@
     Form.prototype.populateLoadables = function () {
 
         var self = this;
-        // Reset the form.
+
+        // hide the loadables until they're loaded
+        self.form.find('div.loadableListbox').parents("div.field").hide();
 
         self.form.find('div.loadableListbox').each(function (idx) {
             var $select = $(this).find('select');
@@ -401,6 +409,7 @@
                 /// to select the element we need
                 $select.val($select.attr("original_value"));
                 $select.removeAttr("original_value");
+                $select.parents("div.field").show();
 
                 $select.change();
             });

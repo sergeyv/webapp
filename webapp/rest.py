@@ -34,6 +34,7 @@ class RestCollection(crud.Collection):
 
     def get_items_listing(self, request, filter_condition=None):
 
+
         format = request.GET.get('format', 'listing')
 
         order_by = request.GET.get('sort_on', None)
@@ -370,7 +371,7 @@ class RestResource(crud.Resource):
                     else:
                         if value not in (None, ''):
                             raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
-                            
+
                 else:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 

@@ -66,8 +66,6 @@
     Template.prototype.showView = function () {
 
         //this.parameters = parameters;
-        // Show the view.
-        this.view.addClass("activeContentView");
         this.populateView();
     };
 
@@ -92,6 +90,10 @@
         $.Read(self.getRestServiceUrl("with-params"), function (data) {
             self.data = data;
             self.renderData();
+
+            // Show the view.
+            self.view.addClass("activeContentView");
+
         });
 
     };
