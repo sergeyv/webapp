@@ -79,7 +79,7 @@
             });
             /// Error message box
             $("#ajax-error").ajaxError(function (event, xhr, ajaxOptions, thrownError) {
-                alert("Bam!");
+            
                 var self = this,
                     response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
 

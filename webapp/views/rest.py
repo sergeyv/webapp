@@ -24,8 +24,6 @@ def json_rest_empty(context, request):
     Returns an empty item with all fields set to default values
     """
 
-    sluggish()
-
     print "JSON_REST_EMPTY: request body %s" % (request.body)
     return context.get_empty(request)
 
