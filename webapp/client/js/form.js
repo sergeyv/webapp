@@ -311,7 +311,7 @@
             self.fill_form(id_root, data);
 
             // Only show the view after all the data is set.
-            self.view.addClass("activeContentView");
+            webapp.controller.setActiveView(self);
         });
     };
 

@@ -48,9 +48,10 @@
 
         view.controller = this;
 
-        // hide the current view
-        if (this.currentView && this.currentView.hideView) {
-            this.currentView.hideView();
+
+        // notify the current view - allows the view to do some processing on hiding
+        if (this.currentView && this.currentView.aboutToBeHidden) {
+            this.currentView.aboutToBeHidden();
         }
 
         view.event = event;
@@ -108,6 +109,11 @@
             $("#" + this.$menu.attr('id') + "-" + tab_name).addClass("current");
         }
     };
+
+    Controller.prototype.setActiveView = function ($view) {
+        $(".activeContentView").removeClass("activeContentView");
+        $view.view.addClass("activeContentView");
+    }
 
     webapp.controller = new Controller();
 

@@ -92,8 +92,7 @@
             self.renderData();
 
             // Show the view.
-            self.view.addClass("activeContentView");
-
+            webapp.controller.setActiveView(self);
         });
 
     };
@@ -115,7 +114,7 @@
         // TODO: Move somewhere - webapp does not need to know
         // about jquery.timeago at all.
         $("time.timeago").timeago();
-        jQuery.timeago.settings.allowFuture = true;
+        $.timeago.settings.allowFuture = true;
 
     };
 

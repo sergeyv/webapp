@@ -16,7 +16,7 @@ from webapp.db import get_session
 from webapp.rest import IRestRootCollection
 from webapp.forms import get_form
 
-from webapp.testing import sluggish
+from webapp.testing import sluggish, explode
 
 @view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json")
 def json_rest_empty(context, request):
@@ -60,15 +60,12 @@ def _create_item(context, request):
 def json_rest_create_new(context, request):
     """
     """
-    sluggish()
-
     return _create_item(context, request)
 
 @view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
 def json_rest_create(context, request):
     """
     """
-    sluggish()
     return _create_item(context, request)
 
 
@@ -76,7 +73,6 @@ def json_rest_create(context, request):
 def json_rest_list(context, request, permission=""):
     """
     """
-    sluggish()
     result = context.get_items_listing(request)
     return result
 
@@ -163,7 +159,6 @@ def json_rest_update(context, request):
     """
     """
     print "JSON_REST_UPDATE: request body %s" % (request.body)
-    sluggish()
     params = json.loads(request.body)
 
     # Formish uses dotted syntax to deal with nested structures
@@ -182,7 +177,6 @@ def json_rest_get(context, request):
     """
     """
 
-    sluggish()
 
     format_name = request.GET.get('format', 'default')
     annotate = bool(request.GET.get('ann', False))

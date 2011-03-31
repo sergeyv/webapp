@@ -1,0 +1,580 @@
+/* @override http://localhost:5000/_debug/media/traceback.css */
+
+
+/* Layout Styles */
+
+#ajax-error div#nav-bar{
+    border-top: 1px solid #fff;
+    float: right;
+    width: 100%;
+    margin-top: 0px;
+}
+#ajax-error div#main-content{
+    float: left;
+    width: 100%;
+    background: #fff;
+}
+#ajax-error div#side-content{
+    padding-top: 42px;
+    float: left; margin-top: 0px; width: 30%; clear: right;
+    height: 550px;
+}
+#ajax-error div.three, #ajax-error div.two, #ajax-error div.one{
+    width: 746px;
+    padding: 0 12px 0px 12px;
+    clear: both;
+}
+
+#ajax-error div.three #ajax-error div.a, #ajax-error div.two #ajax-error div.a{
+    float: left;
+    clear: left;
+    width: 204px;
+}
+#ajax-error div.a div.padding,
+#ajax-error div.b div.padding,
+#ajax-error div.c div.padding,
+#ajax-error div.one div.padding{
+    padding: 0px 12px 20px 12px;
+}
+
+#ajax-error div.three div.b{
+    float: left;
+    width: 271px;
+}
+#ajax-error div.three div.c{
+    float: left;
+    clear: right;
+    width: 271px;
+}
+
+#ajax-error div.two div.b{
+    float: left;
+    clear: right;
+    width: 542px;
+}
+
+#ajax-error div.frame {
+    border-bottom: 1px solid #ccc;
+}
+
+/* Logo */
+
+
+#ajax-error h1#logo{
+    margin: 20px 5% 0 5%;
+    padding: 0;
+    float: left;
+    width: 155px;
+    height: 52px;
+}
+
+/* Nav Bar */
+
+#ajax-error #nav-global {
+    margin:0;
+    white-space:nowrap;
+    float: right;
+    /*position: absolute; margin:0; left:380px; top: 0px;*/
+    padding-right: 5%;
+    clear: right;
+    padding-bottom: 20px;
+}
+#ajax-error #nav-global li {
+    display:block;
+    float:left;
+    list-style-type:none;
+    margin:0;
+    padding:0;
+}
+#ajax-error #nav-global a {
+    display:block;
+    float:left;
+    /*font-family:"Trebuchet MS";
+    font-size: 110%; */
+    padding:42px 18px 7px 18px;
+    background:#000000;
+    color: #ccc;
+    border: 0px;
+    text-decoration: underline;
+}
+#ajax-error #nav-global a:hover {
+    color:white;
+    background: url(../img/main-nav-bg-on.png) bottom repeat-x;
+    border: 0px;
+}
+
+#ajax-error ul#navlist
+{
+    margin: 0;
+    padding:0;
+    padding-left: 5%;
+    padding-top: 8px;
+    color: #eee;
+    line-height: 20px;
+}
+
+#ajax-error ul#navlist  li {
+    display: inline;
+}
+
+#ajax-error ul#navlist li a
+{
+    /*font-family: Tahoma, sans-serif;
+    font-size: 11px;font-weight: bold;*/
+    border: 1px solid #fff;
+    /*padding: 0em 1em;*/
+    padding: 0 18px 0 18px;
+    color: #000;
+    margin-right: 9px;
+    text-decoration: none;
+    float: right;
+}
+#ajax-error ul#navlist  li a#highlight ,
+#ajax-error ul#navlist li a#highlight:hover
+{
+    color: #555;
+    padding-right: 33px;
+}
+
+#ajax-error ul#navlist li a:hover
+{
+    color: #b11;
+}
+
+#ajax-error ul#navlist li.active a.active,
+#ajax-error ul#main-nav li.active a.active:hover
+{
+    color: #b00;
+    border: 1px solid #888;
+}
+
+
+
+/* Font Styles */
+
+#ajax-error a, #ajax-error a:link, #ajax-error a:visited, #ajax-error a:active {
+    color: #0040BB;
+    text-decoration: none;
+    border-bottom:  1px dotted #ccc;
+}
+#ajax-error a:hover{
+    color: #000;
+    border-bottom: 1px dotted #000;
+}
+
+#ajax-error a.no-underline,
+#ajax-error a.no-underline:link,
+#ajax-error a.no-underline:visited,
+#ajax-error a.no-underline:active {
+    border: 0px;
+}
+
+#ajax-error img.no-border{
+    border: 0px;
+}
+
+
+/* Paragraph Styles */
+
+#ajax-error .last{
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+
+#ajax-error .first{
+    margin-top: 0px;
+}
+
+#ajax-error blockquote {
+	padding-left: 10px;
+	padding-right: 10px;
+	margin-left: 5px;
+	margin-right: 0;
+	border-left: #ddd;
+	border-width: 0 0 0 1px;
+	border-style: none none none solid;
+}
+#ajax-error p.first,
+#ajax-error form{
+    padding: 0px;
+    margin: 0px;
+}
+
+#ajax-error .medium{
+    font-family: Verdana, Geneva, Arial, sans-serif;
+    font-size: 11px;
+    line-height: 19px;
+}
+
+#ajax-error .large{
+    font-size: 110%;
+}
+
+#ajax-error .small{
+    font-size: 90%;
+    line-height: 150%;
+    font-family: Verdana, sans-serif;
+    color: #000;
+}
+
+#ajax-error p.indent{
+    padding-left: 15px;
+    padding-bottom: 15px;
+}
+
+#ajax-error tt,
+#ajax-error code{
+    font-size: 130%;
+    color: #800000;
+}
+
+#ajax-error pre {
+    font-size: 120%;
+
+    padding: 3px 5px 3px 10px;
+    margin-right: 10px;
+}
+
+#ajax-error .go{
+    /*background: url(../img/go.png) no-repeat right bottom;*/
+    padding-right: 20px;
+}
+
+#ajax-error .help,
+#ajax-error a.help{
+    cursor: help;
+    font-weight: normal;
+}
+
+#ajax-error div.feature-highlight{
+    width: 550px;
+    background: #eee;
+    margin-top: 0px;
+    padding: 12px 15px 15px 15px;
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ddd;
+}
+
+/* Horizontal Rule */
+
+#ajax-error div.hr {
+    clear: both; line-height: 0px; font-size: 0px;     margin: 0px;
+    padding: 0px;
+    /*height: 4px;
+    url(../img/horizontal-rule.png) no-repeat;background: #000;
+    margin-bottom: 20px;
+    width: 770px;*/
+}
+#ajax-error hr {
+    height: 1em;
+    visibility: hidden;
+    margin: 0px;
+    padding: 0px;
+}
+
+/* Form Styles */
+
+#ajax-error .form-style input[type=submit]{
+    background: #87CD15;
+    color: #fff;
+    border-top: 1px solid #999;
+    border-left: 1px solid #999;
+    border-bottom: 1px solid #333;
+    border-right: 1px solid #333;
+}
+
+#ajax-error .form-style input[type=text], textarea,  input[type=file]{
+    font-family: Tahoma, sans-serif;
+    font-size: 11px;
+    color: #444;
+    background: #EAFEC2;
+    border: solid 1px #aaa;
+    padding: 3px;
+}
+
+#ajax-error .form-style select{
+    font-family: Tahoma, sans-serif;
+    font-size: 11px;
+    color: #444;
+    background: #EAFEC2;
+    border: solid 1px #aaa;
+}
+
+/* Lists */
+
+#ajax-error ul.large{
+    padding: 0 0 0 15px;
+    margin: 0 0 15px 0px;
+}
+#ajax-error ul.large li a {
+    font-weight: normal;
+}
+
+
+/* Header Styles */
+
+#ajax-error h1.first{
+    margin-top: 0px;
+    margin-bottom: 0px;
+    border-bottom: 1px solid #666;
+    background: #fFF;
+    padding: 3px;
+}
+
+#ajax-error h1,
+#ajax-error h2,
+#ajax-error h3 {
+	font-size: 170%;
+	line-height: normal;
+	font-weight: normal;
+        font-family: Arial, sans-serif;
+	color: #000000;
+	text-decoration: none;
+	/*margin: 0 0 12px 0;
+	padding: 0;*/
+	text-align: left;
+}
+
+#ajax-error h2{
+    font-size: 140%;
+}
+
+#ajax-error h3 {
+    font-size: 120%;
+}
+
+#ajax-error h4{
+    font-size: 100%;
+}
+
+#ajax-error h4.asterix{
+    /*background: url(../img/box-small.png) no-repeat left center;*/
+    padding: 0px 0px 0px 15px;
+    margin: 0px;
+    /*font-size: 110%; */
+    color: #000000;
+}
+
+#ajax-error .main-exception-bar {
+    background: #f8f8f8;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0px;
+    margin-bottom: 17px;
+}
+#ajax-error .main-exception {
+    font-size: 200%;
+}
+#ajax-error span.main-exception {
+    margin-left: 19px;
+    margin-right: 10px;
+}
+#ajax-error code.main-exception {
+}
+
+/* Boxes */
+
+#ajax-error #formats {
+    margin: -17px 4px 4px 5px;
+    font-size: 11px;
+    color: #888;
+    float: right;
+}
+
+#ajax-error #formats .title {
+    color: #222;
+}
+
+#ajax-error #formats a {
+    color: #22a;
+}
+
+#ajax-error #formats a:hover {
+    border-bottom: 1px solid #33f;
+}
+
+#ajax-error #formats a.active {
+    color: #0b0;
+    border-bottom: none;
+}
+
+#ajax-error div.faq-box{
+    padding: 10px;
+}
+
+#ajax-error div.highlight-box{
+    border-style: solid;
+    border-color: #cccccc;
+    border-width: 1px;
+    background:url('../img/hatch-yellow.png');
+    padding: 10px;
+    color: #555;
+    /*font-family: Verdana, Geneva, Arial, sans-serif;
+    font-size: 11px;
+    line-height: 17px;*/
+}
+
+#ajax-error .box-top{
+    width: 518px;
+    /*background: url(../img/box-top.png) no-repeat left top;*/
+    padding-top: 7px;
+    margin-bottom: 15px;
+}
+.#ajax-error box-middle{
+    /*background: url(../img/box-middle.png) repeat-y left top;*/
+}
+#ajax-error .box-bottom{
+    /*background: url(../img/box-bottom.png) no-repeat left bottom;*/
+    padding: 0 10px 11px 12px;
+}
+
+
+/* Utility Styles */
+
+#ajax-error .content-padding{
+    padding: 0px 6.5% 40px 6.5%;
+}
+#ajax-error .sidebar-padding{
+    padding: 15px 15px 40px 25px;
+}
+#ajax-error .invisible{
+    visibility: hidden;
+    font-size: 1px;
+    padding: 0px;
+    line-height: 0px;
+    margin: 0px;
+}
+
+#ajax-error a.no-underline{
+    border: 0px;
+}
+
+#ajax-error img.no-border{
+    border: 0px;
+}
+
+#ajax-error br.clear{
+    clear: both;
+    width: 100%;
+}
+
+
+/* Quotes */
+#ajax-error .quote-top p{
+    padding: 0px;
+    margin: 0px;
+
+}
+#ajax-error .quote-top{
+    font-family: tahoma;
+
+    /*background: url(../img/quote-top.png) no-repeat left top;*/
+    padding-left: 25px;
+    padding-top: 4px;
+}
+#ajax-error .quote-bottom{
+    /*background: url(../img/quote-bottom.png) no-repeat right bottom;*/
+    padding-right: 17px;
+    padding-bottom: 7px;
+}
+#ajax-error .quote-author{
+
+    /*background: url(../img/quote-author.png) no-repeat left top;*/
+    padding-left: 20px;
+    padding-bottom: 20px;
+}
+/* Footer Styles */
+
+#ajax-error #footer{padding: 5px 5% 40px 5%;}
+#ajax-error #footer p{
+    color: #333;
+}
+#ajax-error #footer a{
+    font-weight: normal;
+}
+#ajax-error #footer a:visited{
+    color: #666;
+    text-decoration: none;
+    border-bottom: 1px dotted;
+}
+#ajax-error #footer a{
+    color: #888;
+    font-weight: normal;
+}
+#ajax-error #footer a:hover{
+    color: #000;
+    text-decoration: none;
+    border-bottom: 1px dotted;
+}
+
+
+#ajax-error table {
+  width: 100%;
+}
+
+#ajax-error tr.header {
+  background-color: #006;
+  color: #fff;
+}
+
+#ajax-error tr.even {
+  background-color: #e8e8e8;
+}
+
+#ajax-error table.variables td {
+  vertical-align: top;
+  overflow: auto;
+}
+
+#ajax-error a.button {
+  background-color: #ccc;
+  border: 2px outset #aaa;
+  color: #000;
+  text-decoration: none;
+}
+
+#ajax-error a.button:hover {
+  background-color: #ddd;
+}
+
+#ajax-error code.source {
+  color: #006;
+}
+
+#ajax-error a.switch_source {
+  color: #090;
+  text-decoration: none;
+}
+
+#ajax-error a.show_locals {
+  color: #090;
+  text-decoration: none;
+}
+
+#ajax-error a.switch_source:hover {
+  background-color: #ddd;
+}
+
+#ajax-error .source-highlight {
+  background-color: #ff9;
+}
+
+#ajax-error .red { color:#FF0000; }
+#ajax-error .bold { font-weight: bold; }
+
+#ajax-error .hidden-data {display: none}
+
+#ajax-error #util-link a,
+#ajax-error #util-link a:link,
+#ajax-error #util-link a:visited,
+#ajax-error #util-link a:active {
+    border-bottom: 2px outset #aaa
+}
+
+/* Mako Styles */
+
+#ajax-error .stacktrace { margin:5px 5px 5px 5px; }
+#ajax-error .highlight { padding:0px 10px 0px 10px; background-color:#9F9FDF; }
+#ajax-error .nonhighlight { padding:0px; background-color:#DFDFDF; }
+#ajax-error .sample { padding:10px; margin:10px 10px 10px 10px; font-family:monospace; font-size: 110%; }
+#ajax-error .sampleline { padding:0px 10px 0px 10px; }
+#ajax-error .sourceline { margin:5px 5px 10px 5px; font-family:monospace; font-size: 110%;}

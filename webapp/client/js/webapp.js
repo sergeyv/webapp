@@ -74,10 +74,17 @@
             $('#ajax-spinner').ajaxError(function () {
                 $(this).hide();
             });
+            $('#ajax-spinner').ajaxComplete(function () {
+                $(this).hide();
+            });
             /// Error message box
             $("#ajax-error").ajaxError(function (event, xhr, ajaxOptions, thrownError) {
-                var self = this;
-                $(self).html(xhr.responseText).dialog({
+                alert("Bam!");
+                var self = this,
+                    response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
+
+
+                $(self).html(response).dialog({
                     modal: true,
                     title: "Server Error",
                     width: "80%",
@@ -114,6 +121,7 @@
             return o;
         };
 	}
+
 
 
 	WebApp.prototype.getController = function () {

@@ -33,12 +33,8 @@
     };
 
 
-    View.prototype.hideView = function () {
-        this.view.removeClass("activeContentView");
-    };
-
     View.prototype.showView = function () {
-        this.view.addClass("activeContentView");
+        webapp.controller.setActiveView(this);
     };
 
     View.prototype.showViewFirstTime = function () {
@@ -130,10 +126,6 @@
         this.target_url = target_url;
         return this;
     }
-
-    RedirectView.prototype.hideView = function () {
-        // Nothing to do
-    };
 
     RedirectView.prototype.showView = function () {
         webapp.log("Redirecting to " + this.target_url);
