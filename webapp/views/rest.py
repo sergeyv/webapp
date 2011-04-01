@@ -31,6 +31,9 @@ def json_rest_empty(context, request):
 def _create_item(context, request):
     """
     """
+    if hasattr(context, "before_item_created"):
+        context.before_item_created
+
     print "+JSON_REST_CREATE: request body %s" % (request.body)
 
     params = json.loads(request.body)
@@ -143,7 +146,11 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
+    if hasattr(context, "before_item_deleted"):
+        context.before_item_deleted(request)
+
     result = context.delete_item(request) # returns task_id
+    
 
     if hasattr(context, "after_item_deleted"):
         context.after_item_deleted(request)
@@ -158,6 +165,9 @@ def json_rest_delete_item(context, request):
 def json_rest_update(context, request):
     """
     """
+    if hasattr(context, "before_item_updated"):
+        context.before_item_updated(request)
+
     print "JSON_REST_UPDATE: request body %s" % (request.body)
     params = json.loads(request.body)
 
@@ -165,6 +175,9 @@ def json_rest_update(context, request):
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
     context.deserialize(params)
+
+    #Flush session so changes have been applied for the after context hook
+    get_session().flush()
 
     if hasattr(context, "after_item_updated"):
         context.after_item_updated(request)
