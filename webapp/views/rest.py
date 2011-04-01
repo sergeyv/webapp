@@ -7,7 +7,6 @@ from webob import Response
 
 import formish
 import schemaish as sc
-import validatish as v
 import dottedish
 
 import crud

@@ -37,18 +37,18 @@ Forms are also used to define "data formats" to serialize data coming to and fro
     class StudentListing(sc.Structure):
         last_name=sc.String()
         initial=sc.String()
-        age=sc.String() 
+        age=sc.String()
 
     @webapp.loadable
     class StudentViewForm(sc.Structure):
         first_name = sc.String()
         last_name = sc.String()
         date_of_birth = sc.String()
-        # Schemas can contain other schemas, 
+        # Schemas can contain other schemas,
         # which will be serialized recursively
         favourite_book = sc.Structure(attrs=dict(
             id=sc.String(),
-            title=sc.String(), 
+            title=sc.String(),
         ))
 
 Then we register these two forms as 'data formats' of StudentResurce::
@@ -77,6 +77,6 @@ The client part of webapp is a jQuery-based framework. The main concepts are:
  - Controller, which is a JS class which registers some _routes_, much like Django or Pylons do
  - route is a mapping of URL's "hash slack", i.e. the anchor part which comes after #, to a View.
  - a View is a JS object which displays data on the page. Generally a view is associated to some <div /> on the page.
- - Application object, which monitors the changes in the hash slack and notifies Controller, which shows/hides views 
+ - Application object, which monitors the changes in the hash slack and notifies Controller, which shows/hides views
    according to its registered routes
 

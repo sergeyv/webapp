@@ -16,63 +16,65 @@ The client part of webapp is a jQuery-based framework. The main concepts are:
   notifies Controller, which shows/hides views
   according to its registered routes.
 
-Basically, the only JS file in your application will be ``controller.js``:
+Basically, the only JS file in your application will be ``routes.js``:
 
 .. code-block:: javascript
 
 
-    webapp.addController((function( $, webapp ){
+    (function ($, webapp) {
 
-        function Controller(){
-            this.currentView = null;
-        };
+        var c = webapp.getController();
 
-        Controller.prototype = new webapp.Controller();
+        /* PROVIDERS */
+        c.route("/providers/", new webapp.Listing({
+            identifier: "providers-listing",
+            rest_service_root: "/rest/providers/"
+        }));
 
-        Controller.prototype.init = function(){
-            var self = this;
-            this.$menu = $("#top-tabs");
 
-            this.route( "/users/", new webapp.Listing({
-                    identifier: "users-listing",
-                    rest_service_root: "/rest/users/",
-                }));
+        c.route("/providers/add", new webapp.Form({
+            add_button_title: "Add Provider",
+            identifier: "ProviderAddForm",
+            rest_service_root: "/rest/providers/:item_id"
+        }));
 
-            this.route( "/users/add", new webapp.Form({
-                    add_button_title: "Add User",
-                    identifier: "UserAddForm",
-                    rest_service_root: "/rest/users/:item_id",
-                }));
+        c.route("/providers/:item_id", new webapp.Template({
+            identifier: "provider-view",
+            rest_service_root: "/rest/providers/:item_id",
+            ann: true
+        }));
 
-            this.route( "/users/:item_id", new webapp.Template({
-                    identifier: "user-view",
-                    rest_service_root: "/rest/users/:item_id",
-                }) );
+        c.route("/providers/:item_id/edit", new webapp.Form({
+            edit_form_title: "Edit Provider",
+            identifier: "ProviderEditForm",
+            rest_service_root: "/rest/providers/:item_id"
+        }));
 
+        /// we need to run this after the DOM is loaded
+        $(function () {
             webapp.renderMenu(
                 "#top-tabs",
                 [
-                    {title:'Home', path:'', id: 'default'},
-                    {title:'Users'},
+                    {title: 'Home', path: '', id: 'default'},
+                    {title: 'Providers'},
                 ]
-            )
-        };
+            );
 
-        // Return a new contoller singleton instance.
-        return( new Controller() );
+            c.$menu = $("#top-tabs");
+        });
 
-    })( jQuery, webapp ));
+    }(jQuery, webapp));
 
 
-Here it configures an application which will display a listing of Users at
-``http://mysite.com/#/users``; a user add form at ``http://mysite.com/#/users/add``,
-a view page for a User at ``http://mysite.com/#/users/<user_id>`` and an edit page
-at ``http://mysite.com/#/users/<user_id>/edit``
+Here it configures an application which will display a listing of Providers at
+``http://mysite.com/#/providers``; a user add form at ``http://mysite.com/#/providers/add``,
+a view page for a Provider at ``http://mysite.com/#/providers/<provider_id>`` and an edit page
+at ``http://mysite.com/#/providers/<provider_id>/edit``
 
 There are currently a few types of "views" built in:
 
-View
-----
+webapp.View
+-----------
 
 ``View`` is linked to some html emelent in the page; when Controller matches
 the current URL hash slack to a route which leads to a View, that html
@@ -99,7 +101,7 @@ A "404 view" is a built-in view so there's no need to configure a route for it,
 yet there should be a div inside contect-views for it. But yes, 404 view is a
 View too.
 
-Form
+webapp.Form
 -----------
 
 A Form uses server-generated forms to represent data to the user - the
@@ -159,7 +161,7 @@ On the server side, ``new`` maps to a couple of view functions registered on IRe
 
 
 webapp.Template
--------------
+----------------
 
 webapp.Template loads a jqote2 template from ``/t/<view-identifier>.html`` and
 uses that template to render json data received from the server.
@@ -236,15 +238,15 @@ in the template. The <th> elements inside that table which have 'sortable' and
 force the framework to re-query the data with the new sorting settings and
 re-display the view.
 
-.. code-block:: mako
+.. code-block:: html
 
     <table class="listingTable">
     <thead>
         <th>x</th>
         <th class="sortable id-status">Status</th>
         <th class="sortable id-name">Server Name</th>
-        <th class="sortable id-provider_id">Provider</th>
-        <th class="sortable id-retailer_id">Retailer</th>
+        <th class="sortable id-provider.name">Provider</th>
+        <th class="sortable id-retailer.name">Retailer</th>
         <th class="sortable id-type">Server Type</th>
         <th class="sortable id-public_ip">IP Address</th>
         <th class="sortable id-hostname">Hostname</th>
@@ -262,6 +264,26 @@ re-display the view.
         <!-- etc. -->
     <% } %>
     </table>
+
+*On sorting by a computed attribute*: Sorting by a computed property, while looking like a good idea at first sight, does not look as bright if we give it a bit of thought... to sort by a computed attribute, we'd need to query _all_ objects of a given class from the database - not 10 or 20 displayed on the current page, but all of them, potentially hundreds or thousands. Then, calculating a computed attribute  would potentially involve making more sql queries for _each_ of the thousands of objects. Then we do a sort in Python and discard 99% of our objects, returning only 10 or 20. This can't be fast, and it'll get slower the more data we have in the database.
+
+So I think this feature, while allowing us to solve some problems short-term, may lead to difficulties in the future as the amount of data in the database grows. For that reason, I would object to adding this feature to the framework - if in some particular case this is absolutely unavoidable, a developer can do it manually by overriding Collection's get_items_listing method.
+
+However, there are other alternatives to that:
+
+- Tyrone implemented sorting by a *related object's property*, so <th class="sortable id-client.name">Client</th> will sort by client name - using an efficient JOIN instead of manual sotring.
+
+- for other things, such as... hmm, I'm even having trouble to give you an example... ok, if say we want to sort by a *reverse name*, so "zebrA" comes before "gorillaZ", a solution would be to add another field to the model and populate it with the calculated value::
+
+    def deserialize(self, **kwargs):
+        super(AnimalResource, self).deserialize(**kwargs)
+        self.model.reversed_name = reversed(item.name) # stores "Arbez" or "Zallirog"
+
+Then, in the template, you can sort by the reversed name:
+
+.. code-block:: html
+
+    <th class="sortable id-reversed_name">Name</th>
 
 *How paging works:* Just add a div with a class 'pager' somewhere in the template:
 
@@ -283,7 +305,7 @@ in ``kitovu_admin/client/helpers.js``:
 
     /// Helpers
     (function($, webapp) {
-        
+
         var h = webapp.helpers;
         h.simple_value = function(title, value) {
             /*
@@ -308,27 +330,26 @@ The helpers then can be used in templates, so instead of tedious
         <a href="#/clients/<%=item.client.id %>"><%=item.client.name %></a>
     </div>
     <% } %>
-    
+
 we can now use
 
 .. code-block:: html
 
     <%=webapp.helpers.name_and_id("Client", item.client, "#/clients/") %>
-    
+
 The current list of helpers is as follows:
 
     * simple_value(title, value) - renders a string value with a header
-    
+
     * name_and_id(title, obj, root) - renders a link to a related object (see example above)
-    
+
     * email_value(title, value) - renders a mailto: link
-    
+
     * uri_value(title, value) - renders a link witha header
-    
-    * time_ago(date_str) - renders a "about 3 hours ago" auto-updating block. Expects a correct timestamp 
-    
+
+    * time_ago(date_str) - renders a "about 3 hours ago" auto-updating block. Expects a correct timestamp
+
     * calendar_date(date_str) - renders a date formatted as "28 Mar 2011"
-    
+
 Developers are encouraged to re-use the existing helpers and add new ones.
-    
-    
+

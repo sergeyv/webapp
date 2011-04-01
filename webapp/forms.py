@@ -3,8 +3,8 @@
 import json # In the standard library as of Python 2.6
 import formish
 import schemaish as sc
-import validatish as v
 
+import webapp.validators as v
 
 from pkg_resources import resource_filename
 
@@ -205,14 +205,25 @@ class LoadableForm(formish.Form):
         # TODO: Add remote validation support
         for field in self.fields:
             validators = {}
-            if v.validation_includes(field.attr.validator, v.Required):
-                validators['required'] = True
 
             if v.validation_includes(field.attr.validator, v.Email):
                 validators['email'] = True
 
+            if v.validation_includes(field.attr.validator, v.Number):
+                validators['number'] = True
+
+            if v.validation_includes(field.attr.validator, v.Required):
+                validators['required'] = True
+
             if v.validation_includes(field.attr.validator, v.URL):
                 validators['url'] = True
+
+            if v.validation_includes(field.attr.validator, v.DomainName):
+                validators['hostname'] = True
+
+            if v.validation_includes(field.attr.validator, v.IPAddress):
+                validators['ip_address'] = True
+
 
             if len(validators.keys()):
                 rules[field.name] = validators
@@ -230,6 +241,6 @@ class LoadableForm(formish.Form):
         (function(app) {
             var rules = %(rules)s;
             app.addValidationRules("%(name)s", rules);
-        })(window.application);
+        })(webapp);
         </script>""" % {'name': self.name, 'rules':self.get_js_validation_rules()}
         return js + self()

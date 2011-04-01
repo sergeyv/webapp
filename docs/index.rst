@@ -10,4 +10,5 @@ on the client and server.
    overview.rst
    api.rst
    client.rst
+   validation.rst
    HISTORY.rst

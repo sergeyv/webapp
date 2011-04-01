@@ -79,7 +79,7 @@
             });
             /// Error message box
             $("#ajax-error").ajaxError(function (event, xhr, ajaxOptions, thrownError) {
-            
+
                 var self = this,
                     response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
 
@@ -399,6 +399,36 @@
 
 	// When the DOM is ready, run the webapp.
 	$(function () {
+
+        /// Set up additional validators
+        /// NOTE: Keep these in sync with the python side
+        var HOSTNAME_RE = /^[a-z0-9][a-z0-9\.\-_]*\.[a-z]+$/i,
+            IPADDRESS_RE = /^((\d|\d\d|[0-1]\d\d|2[0-4]\d|25[0-5])\.(\d|\d\d|[0-1]\d\d|2[0-4]\d|25[0-5])\.(\d|\d\d|[0-1]\d\d|2[0-4]\d|25[0-5])\.(\d|\d\d|[0-1]\d\d|2[0-4]\d|25[0-5]))$/i;
+        $.validator.addMethod("hostname", function (value, elem, params) {
+            if (!value) {
+                return true;
+            }
+            if (value.match(HOSTNAME_RE)) {
+                return true;
+            }
+            return false;
+        },
+            "Enter a valid hostname"
+            );
+        $.validator.addMethod("ip_address", function (value, elem, params) {
+            if (!value) {
+                return true;
+            }
+            if (value.match(IPADDRESS_RE)) {
+                return true;
+            }
+            return false;
+        },
+            "Enter a valid IP address"
+            );
+
+        /// end validators setup
+
 		webapp.run();
 	});
 

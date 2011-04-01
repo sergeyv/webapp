@@ -11,7 +11,6 @@ import uuid
 
 from formish import util
 from formish.filestore import CachedTempFilestore
-from validatish import Invalid
 
 from formish.widgets import Widget, SelectChoice
 
