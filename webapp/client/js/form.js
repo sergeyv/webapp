@@ -204,7 +204,11 @@
         */
         var self = this,
             validator = self.form.validate();
-        validator.resetForm();
+        if (validator) {
+            validator.resetForm();
+        } else {
+            webapp.log("Validator is NULL for " + self.form);
+        }
 
     };
 
