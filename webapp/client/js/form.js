@@ -237,9 +237,6 @@
                 value = '';
             }
 
-            console.log("Setting " + name + " >-->> ");
-            console.log(value);
-
             id = id_root + '-' + name;
             if (typeof value === "string" ||
                     typeof value === "number" ||

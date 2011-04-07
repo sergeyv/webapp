@@ -98,8 +98,6 @@ class WebappBase(object):
 
 Base = declarative_base(cls=WebappBase)
 
-
-
 def initialize_sql(db_string, db_echo, populate_fn=None):
 
     engine = create_engine(db_string, echo=db_echo)
