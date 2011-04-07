@@ -113,7 +113,7 @@
 
         // TODO: Move somewhere - webapp does not need to know
         // about jquery.timeago at all.
-        $("time.timeago").timeago();
+        $("abbr.timeago").timeago();
         $.timeago.settings.allowFuture = true;
 
     };
