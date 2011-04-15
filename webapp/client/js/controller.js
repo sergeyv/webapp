@@ -40,7 +40,7 @@
             parameters: parameters,
             test: new RegExp(("^" + pattern + "$"), "i"),
             view : view,
-            default_parameters : default_parameters
+            default_parameters : default_parameters || {}
         });
     };
 

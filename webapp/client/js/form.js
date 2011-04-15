@@ -4,18 +4,18 @@
 
         /* Options are:
         identifier
+        title
+        button_title
         rest_service_root
         redirect_after_add
         redirect_after_edit
         */
         this.options = $.extend({
-            data_format: "default",
-            add_form_title: "Add Item",
-            edit_form_title: "Edit Item",
-            add_button_title: "Add Item",
-            edit_button_title: "Save Changes"
+            title: "Add/Edit Item",
+            button_title: "Save Changes"
         }, options);
 
+        this.options.data_format = this.options.data_format || this.options.identifier;
     }
 
     Form.prototype = new webapp.View();
@@ -23,7 +23,7 @@
 
     Form.prototype.isAddForm = function () {
         /*
-        * Check if we either have 'item_id' parameter, which
+        * Check if we have 'item_id' parameter, which
         * would mean we're editing an existing item. Otherwise
         * we're adding
         */
@@ -156,25 +156,24 @@
 
     // I get called when the view needs to be shown.
     Form.prototype.showView = function () {
-        var self = this;
+        /*
+         * title and button_title attributes can be overridden on a per-route
+         * basis using route's default_parameters dict:
+         *     c.route("/servers/register", new webapp.Form({
+         *         title: "Register Existing Server",
+         *         identifier: "ServerRegisterForm",
+         *         rest_service_root: "/rest/servers/new"
+         *     }), {title: "Overridden!", button_title:"Yee-hha!"});
+         */
+        var self = this,
+            title = self.event.parameters.title || self.options.title,
+            button_title = self.event.parameters.button_title || self.options.button_title;
 
         /// Cancel link points to the page we came from
         self.cancelLink.attr('href', webapp.previousPageUrl());
 
-
-        //self.parameters = parameters;
-
-        /// Change the form's title depending on whether we're adding or editing
-
-        if (self.isAddForm()) {
-            self.view.find(".formTitle").text(self.options.add_form_title);
-            self.view.find("#" + self.options.identifier + "-action").val(self.options.add_button_title);
-        } else {
-            self.view.find(".formTitle").text(self.options.edit_form_title);
-            self.view.find("#" + self.options.identifier + "-action").val(self.options.edit_button_title);
-        }
-
-
+        self.view.find(".formTitle").text(title);
+        self.view.find("#" + self.options.identifier + "-action").val(button_title);
 
         self.populateLoadables();
         /// if it's the first showing, DOM does not exist at this point yet

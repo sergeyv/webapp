@@ -87,18 +87,24 @@
                 var self = this,
                     response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
 
+                if (! webapp.testmode) {
 
-                $(self).html(response).dialog({
-                    modal: true,
-                    title: "Server Error",
-                    width: "80%",
-                    height: 600,
-                    buttons: {
-                        Ok: function () {
-                            $(this).dialog('close');
+                    $(self).html(response).dialog({
+                        modal: true,
+                        title: "Server Error",
+                        width: "80%",
+                        height: 600,
+                        buttons: {
+                            Ok: function () {
+                                $(this).dialog('close');
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    alert(response);
+                    webapp.getController().showView(webapp.serverErrorView, webapp.getController().currentView.event);
+                    $("div.activeContentView").html(response);
+                }
             });
 
         });
@@ -202,6 +208,7 @@
 	WebApp.prototype.initViews = function () {
         /// a "Page not found" view - displayed when a page is not found
         this.pageNotFoundView = new webapp.View({identifier: "404"});
+        this.serverErrorView = new webapp.View({identifier: "500"});
 	};
 
 

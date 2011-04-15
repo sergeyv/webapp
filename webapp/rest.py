@@ -177,13 +177,22 @@ class RestResource(crud.Resource):
         """
 
         form_name = self.data_formats.get(format, None)
-        if form_name is None:
-            from pyramid.exceptions import ExceptionResponse
-            e = ExceptionResponse("Format '%s' is not registered for %s" % (format, self.__class__))
-            e.status = '444 Data Format Not Found'
-            raise e
+        if form_name is not None:
+            form = get_form(self.data_formats[format])
+        else:
+            # A client can either pass a format name (i.e. 'add'),
+            # or, as a shortcut for forms, directly the form name (i.e. 'ServerAddForm')
+            # so we don't need to specify the format in the route's definition.
+            # in the latter case we still want to make sure the form is listed as
+            # on of our formats.
+            if format in self.data_formats.values():
+                form = get_form(format)
+            else:
+                from pyramid.exceptions import ExceptionResponse
+                e = ExceptionResponse("Format '%s' is not registered for %s" % (format, self.__class__))
+                e.status = '444 Data Format Not Found'
+                raise e
 
-        form = get_form(self.data_formats[format])
 
         if form is None:
             raise ValueError("%s form is not registered, but is listed as the"\

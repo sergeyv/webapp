@@ -236,7 +236,7 @@ class LoadableForm(formish.Form):
         Returns html representation of the form, along with a small JS snippet
         which sets up validation rules
         """
-        #form = form_class.get_form()
+
         js = """<script language="javascript">
         (function(app) {
             var rules = %(rules)s;
