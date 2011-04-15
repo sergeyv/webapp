@@ -42,6 +42,10 @@
 
         this.visitedUrlsLog = [];
 
+        this.testmode = false; // do not show error dialogs when running in testmode
+
+        this.after_view_fully_loaded = null;
+
         this.showMessage = function (msg, title) {
             /*
             Displays a message - a nicer replacement for
@@ -235,15 +239,16 @@
 	};
 
 
-
-    $.address.change(function (address_change_event) {
+    WebApp.prototype.getEventContextForRoute = function (hash) {
         /*
-        Find a route which matches the URL hash we've given and show the view
-        which is registered for that route
+        Find a route which matches the URL hash we've given
+        Returns an eventContext object - if a mapping matched, it'll have
+        'mapping' attribute set to that mapping, otherwise the 'mapping'
+        attribute will be null.
         */
-		var self = webapp,
-            hash = self.normalizeHash(address_change_event.value),
-            parts = hash.split('|'),
+        var self = this,
+            normalized_hash = self.normalizeHash(hash),
+            parts = normalized_hash.split('|'),
             uri_args = {},
             i,
             pair,
@@ -261,12 +266,10 @@
             uri_args[pair[0]] = pair[1];
         }
 
-        // remember the url
-        self.visitedUrlsLog.push(hash);
-
         // Define the default event context.
         eventContext = {
             webapp: self,
+            hash: normalized_hash,
             /// `location` is the current hash slack
             location: parts[0],
             /// `parameters` are filled from the matching route
@@ -277,20 +280,21 @@
             /// uri_args filled from our 'slack's slack' - the part of hash slack after the first | symbol
             /// is treated as a |-separated list of name:value pairs, for example
             /// /clients/10/contacts|sort_by:name|filter_status:active
-            uri_args: uri_args
+            uri_args: uri_args,
+            mapping: null
         };
 
-		// Iterate over the route mappings.
+        // Iterate over the route mappings.
         // Using a for loop here is much cleaner then using JQuery's $.each
-		for (i = 0; i < self.routeMappings.length; i += 1) {
+        for (i = 0; i < self.routeMappings.length; i += 1) {
             mapping = self.routeMappings[i];
             self.log("Hash: " + hash + " test: " + mapping.test);
             matches = eventContext.location.match(mapping.test);
 
             // Get the matches from the location (if the route mapping does
             // not match, this will return null) and check to see if this route
-            // mapping applies to the current location (if no matches are returned,
-            // matches array will be null).
+            // mapping applies to the current location (if no matches are
+            // returned, matches array will be null).
             if (matches) {
                 self.log("MATCH: " + matches);
                 // The route mapping will handle this location change. Now, we
@@ -303,43 +307,47 @@
 
                 /// push the default parameters into the parameters dict
                 $.extend(eventContext.parameters, mapping.default_parameters);
-                /*if (mapping.default_parameters)
-                {
-                    $.each(
-                        mapping.default_parameters,
-                        function( index, value ){
-                            eventContext.parameters[ index ] = value;
-                        }
-                    );
-                }*/
 
                 // Map the captured group matches to the ordered parameters defined
                 // in the route mapping.
                 $.each(matches, push_to_event_context);
 
-                mapping.controller.showView(mapping.view, eventContext);
-
-
-                // Check to see if this controller has a post-handler.
-                if (mapping.controller.afterViewShown) {
-                    // Execute the post-handler.
-                    mapping.controller.afterViewShown(eventContext);
-                }
-
-                // The view has been found, try no further
-                self.log("Returning!");
-                return;
+                eventContext.mapping = mapping;
+                break;
             }
         }
 
-        /// If we arrived here then no route was found; display a 404 message
-        if (self.pageNotFoundView) {
-            self.getController().showView(self.pageNotFoundView, eventContext);
-        } else {
-            self.showMessage("NOT FOUND");
-        }
-	});
+        return eventContext;
+    };
 
+    WebApp.prototype.onAddressChange = function (address_change_event) {
+        /*
+         * Invoked by jquery.address when the hash slack changes
+         */
+
+        var self = webapp,
+            context = self.getEventContextForRoute(address_change_event.value);
+
+        if (context.mapping) {
+            // remember the url
+            webapp.visitedUrlsLog.push(context.hash);
+            context.mapping.controller.showView(context.mapping.view, context);
+
+
+            // Check to see if this controller has a post-handler.
+            if (context.mapping.controller.afterViewShown) {
+                // Execute the post-handler.
+                context.mapping.controller.afterViewShown(context);
+            }
+        } else {
+            /// If we arrived here then no route was found; display a 404 message
+            if (self.pageNotFoundView) {
+                self.getController().showView(self.pageNotFoundView, context);
+            } else {
+                self.showMessage("NOT FOUND");
+            }
+        }
+    };
 
     /*
      * Relocates the webapp to the given location.
@@ -400,8 +408,12 @@
 	// When the DOM is ready, run the webapp.
 	$(function () {
 
+        /// install the address change handler
+        $.address.change(webapp.onAddressChange);
+
         /// Set up additional validators
         /// NOTE: Keep these in sync with the python side
+        /// TODO: Move them somewhere
         var HOSTNAME_RE = /^[a-z0-9][a-z0-9\.\-_]*\.[a-z]+$/i,
             IPADDRESS_RE = /^((\d|\d\d|[0-1]\d\d|2[0-4]\d|25[0-5])\.(\d|\d\d|[0-1]\d\d|2[0-4]\d|25[0-5])\.(\d|\d\d|[0-1]\d\d|2[0-4]\d|25[0-5])\.(\d|\d\d|[0-1]\d\d|2[0-4]\d|25[0-5]))$/i;
         $.validator.addMethod("hostname", function (value, elem, params) {

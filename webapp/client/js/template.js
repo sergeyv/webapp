@@ -98,23 +98,36 @@
     };
 
     Template.prototype.renderData = function () {
-        var self = this;
+        var self = this,
+            txt;
 
         if (!self.template.length) {
             alert("Template not found!");
         }
 
-        self.view.html(self.template.jqote({data: self.data, view: self}));
-        self.augmentView();
 
-        if (self.options.after_data_loaded) {
-            self.options.after_data_loaded(self);
+        try {
+            self.view.html(self.template.jqote({data: self.data, view: self}));
         }
+        catch(err) {
+            self.view.text(err);
+            if (!webapp.testmode) {
+                txt="There was an error on this page.<br />";
+                txt+="Error description: <strong>" + err.message + "</strong>";
+                webapp.showMessage(txt, "Template error: " + err.name);
+            }
+         }
+
+        self.augmentView();
 
         // TODO: Move somewhere - webapp does not need to know
         // about jquery.timeago at all.
         $("abbr.timeago").timeago();
         $.timeago.settings.allowFuture = true;
+
+        if (self.options.after_data_loaded) {
+            self.options.after_data_loaded(self);
+        }
 
     };
 

@@ -11,7 +11,18 @@
      path="client"
      />
 
-   <scan package="."/>
+
+  <!--
+    avoid scanning directories other than those which use decorators initialized
+    during startup because, for one thing,
+    we don't want tests and other unrelated stuff to be imported
+    during application startup.
+
+    .views - uses Pyramid's @view_config
+
+  -->
+
+   <scan package=".views"/>
 
     <route
         name="form-loader"

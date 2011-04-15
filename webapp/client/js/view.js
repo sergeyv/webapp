@@ -39,6 +39,7 @@
 
     View.prototype.showViewFirstTime = function () {
         this.init();
+        this.showView();
     };
 
 

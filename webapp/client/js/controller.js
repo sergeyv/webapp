@@ -113,6 +113,17 @@
     Controller.prototype.setActiveView = function ($view) {
         $(".activeContentView").removeClass("activeContentView");
         $view.view.addClass("activeContentView");
+
+        // a local callback
+        if ($view.after_view_fully_loaded) {
+            $view.after_view_fully_loaded($view);
+        }
+
+        // a global callback
+        if (webapp.after_view_fully_loaded) {
+            webapp.after_view_fully_loaded($view);
+        }
+
     }
 
     webapp.controller = new Controller();
