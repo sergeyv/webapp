@@ -149,7 +149,7 @@ def json_rest_delete_item(context, request):
         context.before_item_deleted(request)
 
     result = context.delete_item(request) # returns task_id
-    
+
 
     if hasattr(context, "after_item_deleted"):
         context.after_item_deleted(request)

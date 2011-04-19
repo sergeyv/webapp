@@ -29,7 +29,6 @@
         /// find or create the view container
         self.view = $("#" + node_id);
         if (!self.view.length) {
-            webapp.log("Can't find a node for #" + node_id + ", creating a new one");
             /// Create and append a node if not found
             $node = ($('<div id="' + node_id + '" class="contentView">'));
 
@@ -41,7 +40,6 @@
         node_id = self.options.identifier + '-template';
         self.template = $("#" + node_id);
         if (!self.template.length) {
-            webapp.log("Can't find a node for #" + node_id + ", creating a new one");
             /// Create and append a node if not found
             $node = ($('<script type="text/x-jquote-template" id="' + node_id + '">'));
 
@@ -254,7 +252,6 @@
                     typeof value === "boolean") {
 
                 elem = $('#' + id);
-                webapp.log(id + " ===> " + elem);
                 if (elem.length) {
                     /// support read-only fields
                     if (elem[0].tagName.toLowerCase() === 'div') {

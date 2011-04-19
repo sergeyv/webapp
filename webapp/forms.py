@@ -243,4 +243,5 @@ class LoadableForm(formish.Form):
             app.addValidationRules("%(name)s", rules);
         })(webapp);
         </script>""" % {'name': self.name, 'rules':self.get_js_validation_rules()}
+
         return js + self()

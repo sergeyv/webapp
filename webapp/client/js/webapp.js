@@ -164,7 +164,6 @@
 
 	// I return an instance of the class with the given name.
 	WebApp.prototype.getView = function (name, initArguments) {
-        this.log("Asked for " + name + ", found " + name);
         return this.views[name];
 	};
 
@@ -295,7 +294,6 @@
         // Using a for loop here is much cleaner then using JQuery's $.each
         for (i = 0; i < self.routeMappings.length; i += 1) {
             mapping = self.routeMappings[i];
-            self.log("Hash: " + hash + " test: " + mapping.test);
             matches = eventContext.location.match(mapping.test);
 
             // Get the matches from the location (if the route mapping does
@@ -303,7 +301,6 @@
             // mapping applies to the current location (if no matches are
             // returned, matches array will be null).
             if (matches) {
-                self.log("MATCH: " + matches);
                 // The route mapping will handle this location change. Now, we
                 // need to prepare the event context and invoke the route handler.
 

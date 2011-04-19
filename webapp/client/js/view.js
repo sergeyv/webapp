@@ -18,7 +18,6 @@
 
         self.view = $("#" + self.options.identifier + "-view");
         if (!self.view.length) {
-            webapp.log("Can't find a node for #" + self.options.identifier + "-view, creating a new one");
             /// Create and append a node if not found
 
             $node = $('<div id="' + nodeId + '" class="contentView">');
@@ -129,7 +128,6 @@
     }
 
     RedirectView.prototype.showView = function () {
-        webapp.log("Redirecting to " + this.target_url);
         webapp.relocateTo(this.target_url);
     };
 

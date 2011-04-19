@@ -70,7 +70,7 @@
         this.currentView = view;
 
         // TODO: just logging - delete later
-        $.each(event.parameters || [], function (idx, value) {
+        /*$.each(event.parameters || [], function (idx, value) {
             webapp.log("PARAMETER: " + idx + "->" + value);
         });
 
@@ -78,7 +78,7 @@
             $.each(event, function (idx, value) {
                 webapp.log("EVENT: " + idx + "->" + value);
             });
-        }
+        } */
 
         // reflect the change in the navigation
         this.updateMenu(event);

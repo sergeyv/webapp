@@ -30,7 +30,6 @@
         node_id = self.options.identifier + '-row-template';
         self.row_template = $("#" + node_id);
         if (!self.row_template.length) {
-            webapp.log("Can't find a node for #" + node_id + ", creating a new one");
             /// Create and append a node if not found
             $node = ($('<script type="text/x-jquote-template" id="' + node_id + '">'));
 

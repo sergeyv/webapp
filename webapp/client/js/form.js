@@ -241,7 +241,6 @@
                     typeof value === "number" ||
                     typeof value === "boolean") {
                 elem = $(id);
-                webapp.log(id + " (" + elem.length + ") ===> " + elem);
 
                 if (elem.length) {
                     if (elem.hasClass("calendar")) {
@@ -277,9 +276,6 @@
 
                 // should go before the === "object" section
                 $.each(value, function (idx, subvalue) {
-                    webapp.log("VALUE");
-                    webapp.log("ID: " + idx);
-                    webapp.log(subvalue);
                     add_new_items(link, self.view);
                     self.fill_form(id + '-' + idx, subvalue);
                     //add_new_items(link, self.view);
