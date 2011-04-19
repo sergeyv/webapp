@@ -108,9 +108,9 @@
             var args = self.event.uri_args;
             if (args.sort_on === id) {
                 if (args.sort_order === 'desc') {
-                    return 'sortedAsc';
-                } else {
                     return 'sortedDesc';
+                } else {
+                    return 'sortedAsc';
                 }
             }
             return "";

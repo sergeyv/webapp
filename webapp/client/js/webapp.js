@@ -101,7 +101,7 @@
                         }
                     });
                 } else {
-                    alert(response);
+                    //alert(response);
                     webapp.getController().showView(webapp.serverErrorView, webapp.getController().currentView.event);
                     $("div.activeContentView").html(response);
                 }
