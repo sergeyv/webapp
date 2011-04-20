@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 import sqlalchemy as sa
 import schemaish as sc
 
@@ -10,28 +12,54 @@ from nose.tools import raises
 
 session = None
 
-class TestModel(webapp.Base):
-    __tablename__ = "test_models"
+
+# Our test models
+
+class School(webapp.Base):
+    __tablename__ = "schools"
     id = sa.Column(sa.Integer, primary_key = True)
     name = sa.Column(sa.String)
+    established = sa.Column(sa.DateTime)
+
+class Student(webapp.Base):
+    __tablename__ = "students"
+    id = sa.Column(sa.Integer, primary_key = True)
+    name = sa.Column(sa.String)
+    school_id = sa.Column(sa.Integer, sa.ForeignKey("schools.id"))
+    school = sa.orm.relationship(School, backref="students")
 
 
-@webapp.loadable
-class TestForm(sc.Structure):
+# forms
+
+class StudentForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
 
 @webapp.loadable
-class DefaultsForm(sc.Structure):
+class SchoolForm(sc.Structure):
+    id = sc.Integer()
+    name = sc.String()
+    established = sc.DateTime()
+
+@webapp.loadable
+class SchoolWithStudentsForm(sc.Structure):
+    id = sc.Integer()
+    name = sc.String()
+    students = sc.Sequence(StudentForm())
+    established = sc.DateTime()
+
+@webapp.loadable
+class SchoolDefaultsForm(sc.Structure):
     id = sc.Integer(default=999)
     name = sc.String(default="DEFAULT")
 
-@crud.resource(TestModel)
-class TestResource(webapp.RestResource):
+@crud.resource(School)
+class SchoolResource(webapp.RestResource):
 
     data_formats = {
-        'test': 'TestForm',
-        'defaults': 'DefaultsForm',
+        'test': 'SchoolForm',
+        'defaults': 'SchoolDefaultsForm',
+        'students': 'SchoolWithStudentsForm',
         }
 
 
@@ -49,28 +77,28 @@ def test_serialize():
     """
     Serialize an object and see if it contains the values
     """
-
-    m = TestModel(id=123, name="TEST!")
-    r = TestResource("123", None, m)
+    est = datetime.now()
+    s = School(id=123, name="TEST!", established = est)
+    r = SchoolResource("123", None, s)
 
     data = r.serialize(format="test")
 
     assert data['id'] == 123
     assert data['name'] == "TEST!"
+    assert data['established'] == est
 
 def test_defaults():
     """
     Serialize an object using a form with defaults set and see if they come through
     """
 
-    m = TestModel()
-    r = TestResource("123", None, m)
+    m = School()
+    r = SchoolResource("123", None, m)
 
 
     data = r.serialize(format="defaults")
     assert data['id'] == 999
     assert data['name'] == "DEFAULT"
-
 
 def test_defaults_value():
     """
@@ -78,8 +106,8 @@ def test_defaults_value():
     fields override the defaults
     """
 
-    m = TestModel(id=123, name="TEST!")
-    r = TestResource("123", None, m)
+    m = School(id=123, name="TEST!")
+    r = SchoolResource("123", None, m)
 
     # If the model has some data then it should be used instead
 
@@ -89,3 +117,24 @@ def test_defaults_value():
     assert data['id'] == 123
     assert data['name'] == "TEST!"
 
+
+def test_sequences():
+    """
+    Serialize an object with some subobjects
+    Also, see if fields coming after the sequence
+    are serialized properly
+    """
+
+    est = datetime.now()
+    s = School(id=123, name="TEST!", established = est)
+
+    s.students.append(Student(id=1, name="Student One"))
+    s.students.append(Student(id=2, name="Student Two"))
+
+    r = SchoolResource("123", None, s)
+
+    data = r.serialize(format="students")
+
+    assert isinstance(data['students'], list)
+    assert len(data['students']) == 2
+    assert data['established'] == est

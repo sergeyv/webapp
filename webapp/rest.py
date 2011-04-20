@@ -221,6 +221,7 @@ class RestResource(crud.Resource):
             value = getattr(item, name, default)
             structure_field = getattr(structure, name, default)
 
+            print "Starting with %s of %s" % (name, item)
             if value is not default:
 
                 # if it's a callable then call it
@@ -236,8 +237,9 @@ class RestResource(crud.Resource):
 
                     subitems_schema = structure_field.attr
                     subitems = []
-                    for item in value:
-                        subitems.append(self._extract_data_from_item(item, subitems_schema))
+                    for subitem in value: # take care not to name it "item" or it'll override the function-wide variable
+                        subitems.append(self._extract_data_from_item(subitem, subitems_schema))
+                        pass
                     value = subitems
                 elif isinstance(structure_field, sc.Structure):
                     print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
