@@ -178,7 +178,7 @@ in templates:
 
     <a class="webappAsyncAction"
        href="<%=this.view.getRestServiceUrl() %>/<%=server.id %>/start">
-        <img src="kitovu.client/images/start.png" alt="Start" />
+        <img src="/images/start.png" alt="Start" />
     </a>
 
 - ``webappInvokeOnLoad`` - the URL will be pinged when the view is shown

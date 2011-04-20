@@ -37,25 +37,6 @@ class Literal(LeafAttribute):
     """
     pass
 
-class loadable_form(object):
-    """
-    A decorator to declare the form object as loadable
-    The decorator returns a _form object_, not a function
-    (but thre form object is callable anyway)
-
-    However, the decorated function is not supposed to be called
-    """
-
-    def __init__(self, name):
-        self.name = name
-
-    def __call__(self, f):
-        print "DEPRECATED: loadable_form decorator is deprecated"
-        form = f()
-        form.name = self.name
-        gsm.registerUtility(form, ILoadableForm, self.name)
-        return form
-
 
 def reflect(cls):
     from sqlalchemy.orm import compile_mappers, object_session, class_mapper
@@ -118,23 +99,17 @@ class AutoSchema(sc.Structure):
 def _recursively_augment(form):
     # Find any subforms and call their
     # augment_form methods so we can set up widgets etc.
-    try:
-        print "Schema: %s" % form.name
-    except AttributeError:
-        print "FCJK!: %s" % form
-        #import pdb; pdb.set_trace();
-        return
+    #try:
+        #print "Schema: %s" % form.name
+    #except AttributeError:
+        #print "FCJK!: %s" % form
+        ##import pdb; pdb.set_trace();
+        #return
 
     for field in form.fields:
-        #if key.startswith('_'):
-        #    continue
-        #schema_field =  getattr(schema, key)
         if isinstance(field.attr, sc.Structure):
             _recursively_augment(field)
         elif isinstance(field.attr, sc.Sequence):
-            print "TADA, a Sequence!"
-
-            #subform = form[key]
             _recursively_augment(field)
 
     # Augment the form itself. We can override
@@ -150,15 +125,15 @@ def _recursively_augment(form):
 
 def loadable(cls):
     """
-    Registers a formish structure class as a loadable form
+    Registers a formish structure class as a loadable form::
 
-    @loadable
-    class TestForm(schemaish.Structure):
-        attr1 = sc.String(title="Attribute 1")
-        attr2 = sc.String(title="Attribute 2")
+        @loadable
+        class TestForm(schemaish.Structure):
+            attr1 = sc.String(title="Attribute 1")
+            attr2 = sc.String(title="Attribute 2")
 
-        def augment_form(self, form):
-            form['client'].widget = webapp.widgets.FieldsetSwitcher(options=(("1", "One"), ("2", "Two")))
+            def augment_form(self, form):
+                form['client'].widget = webapp.widgets.FieldsetSwitcher(options=(("1", "One"), ("2", "Two")))
 
     Then the template can be loaded from /forms/ClassName
     """
@@ -173,7 +148,6 @@ def loadable(cls):
     _recursively_augment(form)
 
     gsm.registerUtility(form, ILoadableForm, name)
-    print "Registered loadable form %s" % name
     return cls
 
 

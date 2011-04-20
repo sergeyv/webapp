@@ -168,12 +168,13 @@ class RestResource(crud.Resource):
     def serialize(self, format='default', annotate=False):
         """
         - requires 'format' parameter - which must correspond to one of formats
-        registered in `data_formats` property. This will determine which fields
-        will be serialized
+          registered in `data_formats` property. This will determine which
+          fields will be serialized
 
         - optionally takes an "annotate" parameter - in this case the returned
-        dict will have `_ann` attribute, which will be a list of a schema fields:
-        _ann: [{name:'fieldname', title: 'Field Title'}, ...]
+          dict will have `_ann` attribute, which will be a list of a schema
+          fields: _ann: [{name:'fieldname', title: 'Field Title'}, ...]
+
         """
 
         form_name = self.data_formats.get(format, None)
@@ -229,9 +230,6 @@ class RestResource(crud.Resource):
                 if callable(value):
                     value = value()
 
-                if value is None:
-                    pass
-
                 # Recursively serialize lists of subitems
                 if isinstance(structure_field, sc.Sequence):
                     print "SERIALIZING A SEQUENCE: %s -> %s" % (name, structure_field)
@@ -247,6 +245,7 @@ class RestResource(crud.Resource):
                     value = self._extract_data_from_item(value, subitems_schema)
                 elif isinstance(structure_field, sc.String):
                     print "SERIALIZING A STRING ATTRIBUTE: %s -> %s" % (name, structure_field)
+
                     if value is not None:
                         value = str(value)
                 elif isinstance(structure_field, sc.Integer):
@@ -255,21 +254,21 @@ class RestResource(crud.Resource):
                         value = int(value)
                 elif isinstance(structure_field, sc.Date):
                     print "SERIALIZING A DATE ATTRIBUTE: %s -> %s = %s" % (name, structure_field, value)
-                    #if value is not None:
-                    #    value = value.strftime("%d %b %Y")
                 elif isinstance(structure_field, sc.DateTime):
                     print "SERIALIZING A DATETIME ATTRIBUTE: %s -> %s" % (name, structure_field)
-                    #if value is not None:
-                    #    value = value.strftime(self.default_datetime_format)
-                    pass
                 elif isinstance(structure_field, Literal):
                     print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                     pass
                 else:
                     print "Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value)
-                    #raise AttributeError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
+                    raise AttributeError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
             else:
                 value = None
+
+            # If the model does not provide a value, use
+            # form's default
+            if value is None:
+                value = getattr(structure_field, 'default', None)
 
             data[name] = value
 
