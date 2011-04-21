@@ -1,0 +1,16 @@
+<%page args="field" />
+<%!
+from webapp.forms import get_field_class_with_validators
+%>
+
+<select id="${field.cssname}" name="${field.name}"
+${get_field_class_with_validators(field, classes)|n}
+>
+%if field.widget.none_option:
+  <option value="${field.widget.none_value}">${field.widget.none_option[1]}</option>
+%endif
+%for option in field.widget.get_options(field):
+  <option value="${option[0]}" ${field.widget.selected(option,field)|n}>${option[1]}</option>
+%endfor
+</select>
+

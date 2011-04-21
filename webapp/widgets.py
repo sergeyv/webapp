@@ -2,7 +2,7 @@
 Commonly needed form widgets.
 """
 
-__all__ = ['LoadableListbox', 'FieldsetSwitcher', 'Calendar']
+__all__ = ['LoadableListbox', 'FieldsetSwitcher', 'Calendar', 'Input']
 
 from convertish.convert import string_converter, \
         datetuple_converter,ConvertError
@@ -80,3 +80,11 @@ class Calendar(Widget):
         #self.load_from = k.pop('load_from', '')
 
         Widget.__init__(self, **k)
+
+#class Input(Widget):
+    #"""
+    #"""
+
+    #type = 'Input'
+    #template = 'field.Input'
+

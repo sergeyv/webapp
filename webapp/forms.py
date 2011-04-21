@@ -150,6 +150,57 @@ def loadable(cls):
     gsm.registerUtility(form, ILoadableForm, name)
     return cls
 
+def get_validators_for_field(field):
+    """
+    Return a dict with validation rules for a field
+    """
+
+    # TODO: Add more validation methods
+    # TODO: Add remote validation support
+
+    validators = {}
+    if v.validation_includes(field.attr.validator, v.Email):
+        validators['email'] = True
+
+    if v.validation_includes(field.attr.validator, v.Number):
+        validators['number'] = True
+
+    if v.validation_includes(field.attr.validator, v.Required):
+        validators['required'] = True
+
+    if v.validation_includes(field.attr.validator, v.URL):
+        validators['url'] = True
+
+    if v.validation_includes(field.attr.validator, v.DomainName):
+        validators['hostname'] = True
+
+    if v.validation_includes(field.attr.validator, v.IPAddress):
+        validators['ip_address'] = True
+
+    return validators
+
+def get_field_class_with_validators(field, classes, include=None):
+    """
+    Returns a string suitable to be used as field's class attribute
+    so JQuery.validate can use it
+    """
+
+    if not include:
+        include = []
+
+    classes_list = include
+    classes_list.extend(get_validators_for_field(field))
+    if classes:
+        if isinstance(classes, basestring):
+            classes_list.extend(classes.split(' '))
+        else:
+            for c in classes:
+                if isinstance(c, basestring):
+                    cs = c.split(' ')
+                else:
+                    cs = c
+                classes_list.extend(cs)
+    return ' class="%s" style="border:1px solid red"'%' '.join(classes_list)
 
 
 def get_form(name):
@@ -175,32 +226,11 @@ class LoadableForm(formish.Form):
         """
 
         rules = {}
-        # TODO: Add more validation methods
-        # TODO: Add remote validation support
-        for field in self.fields:
-            validators = {}
-
-            if v.validation_includes(field.attr.validator, v.Email):
-                validators['email'] = True
-
-            if v.validation_includes(field.attr.validator, v.Number):
-                validators['number'] = True
-
-            if v.validation_includes(field.attr.validator, v.Required):
-                validators['required'] = True
-
-            if v.validation_includes(field.attr.validator, v.URL):
-                validators['url'] = True
-
-            if v.validation_includes(field.attr.validator, v.DomainName):
-                validators['hostname'] = True
-
-            if v.validation_includes(field.attr.validator, v.IPAddress):
-                validators['ip_address'] = True
-
-
-            if len(validators.keys()):
-                rules[field.name] = validators
+        #for field in self.fields:
+        #    validators = get_validators_for_field(field)
+        #
+        #    if validators: # empty dict is false-ish
+        #        rules[field.name] = validators
 
         return json.dumps(rules)
 

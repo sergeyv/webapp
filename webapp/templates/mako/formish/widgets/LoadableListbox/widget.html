@@ -1,14 +1,12 @@
 <%page args="field" />
 <%!
-from formish import util
+from webapp.forms import get_field_class_with_validators
 %>
 
 <div class="loadableListbox">
 
 <select id="${field.cssname}" type="text" name="${field.name}"
-% if classes:
-${util.classes_from_vars(classes)|n}
-% endif
+${get_field_class_with_validators(field, classes)|n}
 
 href="${field.widget.load_from}"
 >
