@@ -44,16 +44,11 @@ def _create_item(context, request):
     # TODO: Add validation here
     new_item = context.create_subitem(params=params, request=request)
 
-    if new_item is not None:
-        # The context may choose not to return the item added
-        # and do everything itself
-        session = get_session()
-        session.add(new_item)
-        session.flush()
+    #if new_item is not None:
+    #    # The context may choose not to return the item added
+    #    # and do everything itself
+    #    session = get_session()
 
-    resource = context.wrap_child(model=new_item, name=str(new_item.id))
-    if hasattr(resource, "after_item_created"):
-        resource.after_item_created(request)
 
     return {'result':"HELLO FROM THE SERVER"}
 
@@ -133,7 +128,7 @@ def json_rest_delete_subitems(context, request):
     except ValueError:
         ids=None
 
-    context.delete_subitems(ids)
+    context.delete_subitems(ids, request)
 
     return {'result':"OK"}
 
@@ -145,9 +140,6 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
-    if hasattr(context, "before_item_deleted"):
-        context.before_item_deleted(request)
-
     result = context.delete_item(request) # returns task_id
 
 
@@ -173,13 +165,7 @@ def json_rest_update(context, request):
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
-    context.deserialize(params)
-
-    #Flush session so changes have been applied for the after context hook
-    get_session().flush()
-
-    if hasattr(context, "after_item_updated"):
-        context.after_item_updated(request)
+    context.update(params, request)
 
     return {'result':"HELLO FROM THE SERVER"}
 

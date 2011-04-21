@@ -254,6 +254,10 @@ class RestResource(crud.Resource):
                     print "SERIALIZING AN INTEGER ATTRIBUTE: %s -> %s" % (name, structure_field)
                     if value is not None:
                         value = int(value)
+                elif isinstance(structure_field, sc.Boolean):
+                    print "SERIALIZING A BOOLEAN ATTRIBUTE: %s -> %s" % (name, structure_field)
+                    if value is not None:
+                        value = bool(value)
                 elif isinstance(structure_field, sc.Date):
                     print "SERIALIZING A DATE ATTRIBUTE: %s -> %s = %s" % (name, structure_field, value)
                 elif isinstance(structure_field, sc.DateTime):
@@ -295,7 +299,7 @@ class RestResource(crud.Resource):
 
 
 
-    def deserialize(self, params):
+    def deserialize(self, params, request):
         """
         Recursively applies data from a Formish form to an SA model,
         using the form's schema to ensure only the attributes from the form are set.
@@ -338,10 +342,12 @@ class RestResource(crud.Resource):
 
                 # Sequences of structures
                 elif isinstance(attr, sc.Sequence):
-                    collection = getattr(item, name)
-                    subitems_cls = _get_attribute_class(item, name)
-
-                    _save_sequence(collection, subitems_cls, attr.attr, value)
+                    #collection = getattr(item, name)
+                    #subitems_cls = _get_attribute_class(item, name)
+                    # __getitem__ takes care about inserting a collection
+                    # into the traversal context etc.
+                    collection = self[name]
+                    _save_sequence(collection, attr.attr, value)
 
 
                 # Simple attributes
@@ -385,10 +391,12 @@ class RestResource(crud.Resource):
                 else:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 
-        def _save_sequence(collection, subitems_cls, schema, data):
+        def _save_sequence(collection, schema, data):
 
 
-            existing_items = { str(item.id):item for item in collection }
+            existing_items = { str(item.model.id):item for item in collection.get_items() }
+
+            seen_ids = []
 
             for (order_idx, value) in data.items():
                 if order_idx == '*':
@@ -397,30 +405,26 @@ class RestResource(crud.Resource):
                 # the data must contain 'id' parameter
                 # if the data should be saved into an existing item
                 item = existing_items.get(item_id, None)
-                if item is not None:
-                    item.__webapp_existing__ = True
-                else:
-                    item = subitems_cls()
-                    item.__webapp_new__ = True
-                    collection.append(item)
-
                 del value['id']
-                _save_structure(item, schema, value)
+                value['__schema__'] = schema
+                if item is not None:
+                    seen_ids.append(str(item_id))
+                    item.update(value, request)
+                else:
+                    item = collection.create_subitem(params=value, request=request, wrap=True)
 
-            for item in collection:
-                # remove items which were not marked as 'seen'
-                if not hasattr(item, '__webapp_existing__')\
-                    and not hasattr(item, '__webapp_new__'):
 
-                    session = object_session(item)
-                    session.delete(item)
+            ids_to_delete = [id for id in existing_items.keys() if id not in seen_ids]
+            collection.delete_subitems(ids_to_delete, request)
 
 
         item = self.model
 
-        form_name = params.get('__formish_form__')
-        form = get_form(form_name)
-        schema = form.structure
+        schema = params.get('__schema__')
+        if schema is None:
+            form_name = params.get('__formish_form__')
+            form = get_form(form_name)
+            schema = form.structure
 
         _save_structure(item, schema, params)
 
