@@ -200,8 +200,17 @@ def get_field_class_with_validators(field, classes, include=None):
                 else:
                     cs = c
                 classes_list.extend(cs)
-    return ' class="%s" style="border:1px solid red"'%' '.join(classes_list)
+    return ' class="%s"'%' '.join(classes_list)
 
+def is_option_selected(option, field):
+    """
+    Returns selected="selected" if the option value
+    matches field's default
+    """
+    if field.attr.default and option[0] == field.attr.default: # and option[0] != self.empty:
+        return ' selected="selected"'
+    else:
+        return ''
 
 def get_form(name):
     return queryUtility(ILoadableForm, name)
