@@ -254,6 +254,10 @@ class RestResource(crud.Resource):
                     print "SERIALIZING AN INTEGER ATTRIBUTE: %s -> %s" % (name, structure_field)
                     if value is not None:
                         value = int(value)
+                elif isinstance(structure_field, sc.Decimal):
+                    print "SERIALIZING A DECIMAL ATTRIBUTE: %s -> %s" % (name, structure_field)
+                    if value is not None:
+                        value = float(value)
                 elif isinstance(structure_field, sc.Boolean):
                     print "SERIALIZING A BOOLEAN ATTRIBUTE: %s -> %s" % (name, structure_field)
                     if value is not None:
