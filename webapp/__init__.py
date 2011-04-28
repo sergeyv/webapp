@@ -9,6 +9,8 @@ from theme import AssetRegistry
 
 from forms import loadable, LoadableForm, get_form, AutoSchema, Literal
 
+from .defaults import *
 
 from rest import RestCollection, RestResource, IRestRootCollection
+
 

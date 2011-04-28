@@ -8,6 +8,7 @@ import crud
 
 from webapp.db import get_session
 from webapp.forms import get_form, Literal
+from webapp import DynamicDefault
 
 from datetime import datetime, date
 from decimal import Decimal
@@ -278,7 +279,11 @@ class RestResource(crud.Resource):
             # If the model does not provide a value, use
             # form's default
             if value is None:
+                #import pdb; pdb.set_trace()
                 value = getattr(structure_field, 'default', None)
+
+                if isinstance(value, DynamicDefault):
+                    value = value(item, name)
 
             data[name] = value
 

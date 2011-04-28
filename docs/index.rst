@@ -11,4 +11,5 @@ on the client and server.
    api.rst
    client.rst
    validation.rst
+   defaults.rst
    HISTORY.rst
