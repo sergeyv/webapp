@@ -28,7 +28,7 @@ class RestCollection(crud.Collection):
 
     ### Some 'sane' defaults for an unlikely case the frontent does not tell
     ### us how much results it wants or asks for an unrelistic or stupid number
-    DEFAULT_RECORDS_PER_BATCH = 10
+    DEFAULT_RECORDS_PER_BATCH = 50
     MIN_RECORDS_PER_BATCH = 3
     MAX_RECORDS_PER_BATCH = 400
     LIMIT_INCREMENTAL_RESULTS = 25
