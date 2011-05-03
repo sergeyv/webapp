@@ -21,19 +21,6 @@
     Form.prototype = new webapp.View();
 
 
-    Form.prototype.isAddForm = function () {
-        /*
-        * Check if we have 'item_id' parameter, which
-        * would mean we're editing an existing item. Otherwise
-        * we're adding
-        */
-        var self = this;
-        if (self.event.parameters.item_id) {
-            return false;
-        }
-        return true;
-    };
-
 
     Form.prototype.decorateView = function () {
         /// this is called by View.init and allows us to
@@ -118,7 +105,7 @@
 
         /// convert the "fake" fields which are marked with
         /// 'section_title' class into titles
-        this.view.find(".section_title").each(function () {
+        /*this.view.find(".section_title").each(function () {
             var text = "",
                 t = $(this).children("label"),
                 st = $(this).children("span.description");
@@ -126,8 +113,30 @@
             if (st.length) { text += '<p class="description">' + st.html() + '</p>'; }
 
             $(this).replaceWith(text);
-        });
+        });*/
 
+        self.view.find(".activatePopupLink").click(function() {
+            var $link = $(this);
+                hash = webapp.normalizeHash($link.attr("href")),
+                context = webapp.getEventContextForRoute(hash);
+
+
+            context.popup_success_callback = function (added_id) {
+                //alert("Success: " + added_id);
+                var $select = $link.parent().children("select");
+                $select.attr("original_value", added_id);
+                self.reloadLoadable($select);
+            }
+
+            if (context.mapping) {
+                context.mapping.controller.popupView(context.mapping.view, context);
+            } else {
+                self.showMessage("POPUP VIEW NOT FOUND: " +hash);
+            }
+
+            //webapp.controller.popupView(view);
+            return false;
+        });
         // Init formish form
         add_sortables(self.view);
         create_addlinks(self.view);
@@ -167,12 +176,25 @@
          */
         var self = this,
             title = self.event.parameters.title || self.options.title,
-            button_title = self.event.parameters.button_title || self.options.button_title;
+            button_title = self.event.parameters.button_title || self.options.button_title,
+            form_title_elem = self.view.find(".formTitle");
 
-        /// Cancel link points to the page we came from
-        self.cancelLink.attr('href', webapp.previousPageUrl());
 
-        self.view.find(".formTitle").text(title);
+
+        /// We don't need the form title in a popup because
+        /// the popup has its own title
+        if (self.event.is_popup) {
+            form_title_elem.hide().text("");
+            self.cancelLink.click(function() {
+                self.view.dialog('close');
+                return false;
+            });
+        } else {
+            form_title_elem.show().text(title);
+            /// Cancel link points to the page we came from
+            self.cancelLink.attr('href', webapp.previousPageUrl());
+            self.cancelLink.click(function() {});
+        }
         self.view.find("#" + self.options.identifier + "-action").val(button_title);
 
         self.populateLoadables();
@@ -426,8 +448,15 @@
 
         $.Update(self.getRestServiceUrl("", {item_id: item_id}), form_data,
             function (data) {
-                var url = redirect_to || webapp.previousPageUrl();
-                webapp.relocateTo(url);
+                if (self.event.is_popup) {
+                    self.view.dialog("close");
+                    if (self.event.popup_success_callback) {
+                        self.event.popup_success_callback(data);
+                    }
+                } else {
+                    var url = redirect_to || webapp.previousPageUrl();
+                    webapp.relocateTo(url);
+                }
 
             });
 

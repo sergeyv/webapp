@@ -236,12 +236,11 @@
 	};
 
 
-	// I normalize a hash value for comparison.
 	WebApp.prototype.normalizeHash = function (hash) {
 		// Strip off front hash and slashses as well as trailing slash. This will
 		// convert hash values like "#/section/" into "#/section".
         //hash.replace( new RegExp( "^[#/]+|/$", "g" ), "" )
-		return hash.replace(new RegExp("/$", "g"), "");
+		return hash.replace(new RegExp("^#|/$", "g"), "");
 	};
 
 

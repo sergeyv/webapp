@@ -13,4 +13,8 @@ href="${field.widget.load_from}"
 <option></option>
 </select>
 
+% if field.widget.add_popup:
+    <a class="activatePopupLink" href="${field.widget.add_popup}">ADD</a>
+% endif
+
 </div>

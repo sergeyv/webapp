@@ -44,6 +44,40 @@
         });
     };
 
+    Controller.prototype.getViewById = function (id) {
+        var i,
+            mapping;
+
+        for (i = 0; i < webapp.routeMappings.length; i++) {
+            mapping = webapp.routeMappings[i];
+            if (mapping.view &&  mapping.view.options && mapping.view.options.identifier === id) {
+                return mapping.view;
+            }
+        }
+    }
+
+    Controller.prototype.popupView = function (view, event) {
+
+        event.is_popup = true;
+        view.event = event;
+
+        if (!view.alreadyInitialized && view.showViewFirstTime) {
+            view.showViewFirstTime();
+            view.alreadyInitialized = true;
+        } else {
+            // Show the given view.
+            view.showView();
+        }
+
+        //var $container = $("#" + view.options.identifier);
+        view.view.dialog({
+            modal: true,
+            width: "80%",
+            title: view.options.title
+        });
+    }
+
+
     Controller.prototype.showView = function (view, event) {
 
         view.controller = this;
@@ -110,20 +144,26 @@
         }
     };
 
-    Controller.prototype.setActiveView = function ($view) {
+    Controller.prototype.setActiveView = function (view) {
+
+        /// if the view is shown in a popup, we don't need
+        /// to hide the previous view etc.
+        if (view.event.is_popup) {
+            return;
+        }
+
         $(".activeContentView").removeClass("activeContentView");
-        $view.view.addClass("activeContentView");
+        view.view.addClass("activeContentView");
 
         // a local callback
-        if ($view.after_view_fully_loaded) {
-            $view.after_view_fully_loaded($view);
+        if (view.after_view_fully_loaded) {
+            view.after_view_fully_loaded(view);
         }
 
         // a global callback
         if (webapp.after_view_fully_loaded) {
-            webapp.after_view_fully_loaded($view);
+            webapp.after_view_fully_loaded(view);
         }
-
     }
 
     webapp.controller = new Controller();

@@ -50,7 +50,7 @@ def _create_item(context, request):
     #    session = get_session()
 
 
-    return {'result':"HELLO FROM THE SERVER"}
+    return new_item.id
 
 
 @view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="PUT", renderer="better_json", accept="text/plain")
