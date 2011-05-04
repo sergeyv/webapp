@@ -115,7 +115,7 @@
             $(this).replaceWith(text);
         });*/
 
-        self.view.find(".activatePopupLink").click(function() {
+        self.view.find(".webappPopup").click(function() {
             var $link = $(this);
                 hash = webapp.normalizeHash($link.attr("href")),
                 context = webapp.getEventContextForRoute(hash);

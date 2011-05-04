@@ -233,6 +233,37 @@
             return undefined; // if we return false the iteration stops
         });
 
+        self.view.find("a.webappPopup").click(function () {
+
+            var $link = $(this);
+                hash = webapp.normalizeHash($link.attr("href")),
+                context = webapp.getEventContextForRoute(hash);
+
+
+            context.popup_success_callback = function (added_id) {
+                /// find all classes which start with webappOnSuccess
+                /// if found, it expects it to be in a form webappOnSuccess-methodName.
+                /// If the view has such method, it is invoked when the call succeeds
+                $($link.attr('class').split(' ')).each(function (idx, val) {
+                    var parts = val.split('-');
+                    if (parts.length === 2 &&
+                            parts[0] === "webappOnSuccess" &&
+                            self[parts[1]]) {
+                        self[parts[1]]();
+                    }
+                });
+            }
+
+            if (context.mapping) {
+                context.mapping.controller.popupView(context.mapping.view, context);
+            } else {
+                self.showMessage("POPUP VIEW NOT FOUND: " +hash);
+            }
+
+            return false;
+
+
+        });
     };
 
 

@@ -130,10 +130,10 @@ the data will be converted into a JSON structure and POSTed to the same url.
 Add form vs. Edit form
 ......................
 
-Here's how the framework tells if a form is an Edit form, i.e. displaying
-the data of an existing item and updating the existing item, or it's an Add form which initially is empty and when submitted a new item will be created.
-
-For an edit form the route should contain ``:item_id`` placeholder. Also, rest_service_root should contain that placeholder too:
+It used to be much more complex, but that's how it works now: the REST backend
+defines a /new view on every collection, which represents a "virtual" item -
+GETting it would return a dict with empty/default values, and POSTing would create a new item. This way, the client-side forms need not to worry if they
+create a new item or update an existing one.
 
 .. code-block:: javascript
 
@@ -142,17 +142,12 @@ For an edit form the route should contain ``:item_id`` placeholder. Also, rest_s
             rest_service_root: "/rest/users/:item_id"
         }));
 
-This way, when we open a form at #/users/123/edit, the framework will query
-the initial form values from /rest/users/123 and when the form is submitted
-it'll PUT data to the same URL.
-
-An Add form has no ``:item_id`` placeholder in its route. When invoked, it queries object's initial data from a url where ``:item_id`` is substituted by 'new', and when submitted it PUTs to that url:
 
 .. code-block:: javascript
 
     this.route( "/users/add", new webapp.Form({
             identifier: "UserAddForm",
-            rest_service_root: "/rest/users/:item_id"
+            rest_service_root: "/rest/users/new"
         }));
 
 The form above will GET its initial values from ``/rest/users/new`` and when submitted will PUT the data to the same URL.
@@ -215,6 +210,12 @@ in templates:
         <a class="webappAsyncAction webappConfirmDialog webappMethodDelete webappOnSuccess-populateView" href="#/clients/<%=client.id %>"
         title="Do you really want to delete this client?">X</a>
     </td>
+
+- ``webappPopup`` - instead of going to the link, displays it in a popup
+  dialog. The address match to one of the views registered in webapp, i.e.,
+  it just shows views which are already defined, not pulling pages from
+  other sites or something. If ``webappOnSuccess-<method_name>`` class is specified, the method will be invoked after the dialog is closed.
+
 
 webapp.Listing
 --------------
