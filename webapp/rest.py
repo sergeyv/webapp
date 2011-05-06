@@ -210,20 +210,26 @@ class RestResource(crud.Resource):
 
 
     def _extract_data_from_item(self, item, structure):
+
         data = {}
-        # structure.attrs is a list of (name,field) tuples
-        fieldnames = [ i[0] for i in structure.attrs ]
         default = object()
 
-        print "=========="
-        print "Serializing %s values of %s" % (fieldnames, item, )
-        print "----------"
-        for name in fieldnames:
+        flattened = getattr(structure, "__flatten_subforms__", [])
+
+        for (name, structure_field) in structure.attrs:
+
             value = getattr(item, name, default)
             structure_field = getattr(structure, name, default)
 
             print "Starting with %s of %s" % (name, item)
-            if value is not default:
+
+
+            if name in flattened:
+                # This is to support __flatten_subforms__ attrubute of a schema
+                # - we may choose to build a form from several sc.Structure blocks to separate the data logically (and visually) but still
+                # be able to save it as it was a sigle flat form
+                value = self._extract_data_from_item(item, structure_field)
+            elif value is not default:
 
                 # if it's a callable then call it
                 # (using @property to imitate an attribute
@@ -329,7 +335,12 @@ class RestResource(crud.Resource):
             return related_class
 
         def _save_structure(item, schema, data):
+
             attrs = schema.attrs
+
+            print "SAVING %s INTO %s USING %s" % (data, item, schema)
+            flattened = getattr(schema, "__flatten_subforms__", [])
+
 
             for (name, attr) in attrs:
                 value = data.get(name, _marker)
@@ -337,17 +348,21 @@ class RestResource(crud.Resource):
                     print "### No data passed for attr %s <%s>" % (name, data)
                     continue
 
-                print "### Saving attribute %s (type %s) with value %s" % (name, attr, value)
                 # Nested structures
                 if isinstance(attr, sc.Structure):
                     print "STRUCTURE!"
                     subschema = attr
-                    subitem = getattr(item, name, None)
-                    if subitem is None:
-                        cls = _get_attribute_class(item, name)
-                        subitem = cls()
-                        setattr(item, name, subitem)
-                    _save_structure(subitem, subschema, value)
+                    if name in flattened:
+                        # Flattened subforms are saved directly into the item
+                        _save_structure(item, subschema, value)
+                    else:
+                        subitem = getattr(item, name, None)
+                        print "SUBITEM: %s" % (value)
+                        if subitem is None:
+                            cls = _get_attribute_class(item, name)
+                            subitem = cls()
+                            setattr(item, name, subitem)
+                        _save_structure(subitem, subschema, value)
 
                 # Sequences of structures
                 elif isinstance(attr, sc.Sequence):
@@ -433,7 +448,7 @@ class RestResource(crud.Resource):
         if schema is None:
             form_name = params.get('__formish_form__')
             form = get_form(form_name)
-            schema = form.structure
+            schema = form.structure.attr
 
         _save_structure(item, schema, params)
 

@@ -227,6 +227,15 @@ class LoadableForm(formish.Form):
 
     renderer = formish.renderer.Renderer([resource_filename('webapp', 'templates/mako')])
 
+    @classmethod
+    def add_overrides_directory(cls, module_name, dir_name):
+        res = [
+            resource_filename(module_name, dir_name),
+            resource_filename('webapp', 'templates/mako'),
+            ]
+        cls.renderer = formish.renderer.Renderer(res)
+
+
     def get_js_validation_rules(self):
         """
         Generates a bit of JS which is suitable for
@@ -248,13 +257,35 @@ class LoadableForm(formish.Form):
         """
         Returns html representation of the form, along with a small JS snippet
         which sets up validation rules
+        (template takes care of that now)
         """
+        return self()
 
-        js = """<script language="javascript">
-        (function(app) {
-            var rules = %(rules)s;
-            app.addValidationRules("%(name)s", rules);
-        })(webapp);
-        </script>""" % {'name': self.name, 'rules':self.get_js_validation_rules()}
 
-        return js + self()
+from schemaish.attr import Container
+
+class Group(Container):
+
+    attrs = []
+
+    def __init__(self, attrs=None, **k):
+        """
+        Create a new structure.
+
+        @params attrs: List of (name, attribute) tuples defining the name and
+            type of the structure's attributes.
+        """
+        super(Group, self).__init__(**k)
+        # If attrs has been passed as an arg then use that as the attrs of the
+        # structure. Otherwise use the class's attrs, making a copy to ensure
+        # that any added attrs to the instance do not get appended to te
+        # class's attrs.
+        if attrs is not None:
+            self.attrs = attrs
+        else:
+            self.attrs = list(self.attrs)
+
+    @property
+    def default(self):
+        return dict( [(name, getattr(a,'default',None)) for name, a in self.attrs] )
+

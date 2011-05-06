@@ -94,3 +94,15 @@ span.required-marker {
     background: transparent url("images/ajax-spinner-small.gif") right center no-repeat;
     padding-right: 16px;
 }
+
+a.iconAdd {
+    display: inline-block;
+    vertical-align:text-bottom;
+    width: 16px;
+    height: 16px;
+    background: transparent url("images/add.png") center center no-repeat;
+}
+
+a.iconAdd:hover {
+    background-image: url("images/add_on.png");
+}

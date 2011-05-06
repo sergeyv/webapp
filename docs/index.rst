@@ -12,4 +12,4 @@ on the client and server.
    client.rst
    validation.rst
    defaults.rst
-   HISTORY.rst
+   form_customisation.rst

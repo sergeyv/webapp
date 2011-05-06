@@ -52,8 +52,9 @@
         * Adds batch_size to the params which are sent to the Rest backend
         */
         // this is how to call a 'super' method in JS
-        var params = webapp.Template.prototype.collectRestParams.call(this);
-        params.push('batch_size=' + this.options.batch_size);
+        var params = webapp.Template.prototype.collectRestParams.call(this),
+            bs = this.event.uri_args.batch_size || this.options.batch_size;
+        params.push('batch_size=' + bs);
         return params;
     };
 
@@ -119,7 +120,7 @@
 
         function render_pager() {
             var total = self.data.total_count,
-                batch_size = self.options.batch_size,
+                batch_size = self.event.uri_args.batch_size || self.options.batch_size,
                 pages = Math.floor(total / batch_size + 0.5),
                 batch_start = self.event.uri_args.batch_start || 0,
                 current = Math.floor(batch_start / batch_size),
@@ -128,7 +129,7 @@
                 bs,
                 $pager = self.view.find("div.pager");
 
-            if (pages > 1) { // no need a pager for just a single page
+            if (pages > 1) { // don't need a pager for just a single page
                 for (i = 0; i < pages; i += 1) {
                     if (i === current) {
                         output.push('<span class="current">' + (i + 1) + '</span>');
@@ -137,7 +138,36 @@
                         output.push('<a href="#' + new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a>');
                     }
                 }
+
+                /// next link
+                if (current < pages-1) {
+                    bs = (current + 1) * batch_size;
+                    output.push('<a href="#' + new_filter_url('batch_start', bs) + '"> next </a>');
+                } else {
+                    output.push('<span class="discreet">(last)</span>');
+                }
+            } else {
+                output.push('<span class="discreet">all ' + total + ' items shown</span>');
             }
+
+            /// the current batch size
+            output.push('<div class="batchSize">' + batch_size + ' per page');
+
+            /// more link
+            if (pages > 1 && batch_size < 200) {
+                bs = Math.min(Math.floor(batch_size*2), 200);
+                output.push('<a href="#' + new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">more</a>');
+            }
+
+            /// less link is shown even if there's just one page
+            if (batch_size > 10) {
+                bs = Math.max(Math.floor(batch_size / 2), 10);
+                output.push('<a href="#' + new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">less</a>');
+            }
+
+            output.push("</div>");
+
+
             $pager.html(output.join('\n'));
         }
 
@@ -148,11 +178,13 @@
             var $cell = $(this),
                 title = $cell.html(),
                 id = get_column_id($cell);
-            //alert(id);
             $cell.html('<a href="#' + new_sort_url(id) + '" class="' + get_sort_class(id) + '">' + title + '</a>');
         });
 
         render_pager();
+
+        /* TODO: This needs to be rewritten from scratch! */
+        ResizableColumns();
     };
 
     webapp.Listing = Listing;

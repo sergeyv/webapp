@@ -28,7 +28,7 @@
         /// <div class="contentView" />
         /// This happens before the content is loaded
         var self = this;
-        self.view.append($('<h1><span class="formTitle">###</span></h1>'))
+        self.view.append($('<h1><span class="primaryPageHeading">###</span></h1>'))
             .append($('<div class="formPlaceholder"></div>'));
     };
 
@@ -151,6 +151,13 @@
         */
 
         /// do nothing, override in subclasses
+
+        var id = this.options.identifier,
+            afl = webapp.callbacks.afterFormLoaded;
+        if (afl.hasOwnProperty(id)) {
+            afl[id](this);
+        }
+
     };
 
     Form.prototype.setHandlers = function () {
@@ -177,7 +184,7 @@
         var self = this,
             title = self.event.parameters.title || self.options.title,
             button_title = self.event.parameters.button_title || self.options.button_title,
-            form_title_elem = self.view.find(".formTitle");
+            form_title_elem = self.view.find(".primaryPageHeading");
 
 
 

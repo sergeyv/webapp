@@ -1,0 +1,14 @@
+${form.header()|n}
+${form.metadata()|n}
+${form.alert()|n}
+${form.error_list()|n}
+${form.fields()|n}
+${form.actions()|n}
+${form.footer()|n}
+
+<script language="javascript">
+    (function(app) {
+        var rules = ${form.get_js_validation_rules()};
+        app.addValidationRules("${form.name}", rules);
+    })(webapp);
+</script>
