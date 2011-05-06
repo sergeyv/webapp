@@ -150,7 +150,7 @@
         Modify the form appearance after it is loaded
         */
 
-        /// do nothing, override in subclasses
+        /// invoke hooks defined in the application
 
         var id = this.options.identifier,
             afl = webapp.callbacks.afterFormLoaded;
