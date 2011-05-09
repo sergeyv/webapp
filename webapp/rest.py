@@ -203,8 +203,7 @@ class RestResource(crud.Resource):
             " '%s' format for %s class" % (form_name, format, self.__class__) )
         structure = form.structure.attr
 
-        data = {}
-        self._extract_data_from_item(self.model, structure, data)
+        data = self._extract_data_from_item(self.model, structure)
 
         if annotate:
             data['_ann'] = self._annotate_fields(structure)
@@ -212,8 +211,9 @@ class RestResource(crud.Resource):
         return data
 
 
-    def _extract_data_from_item(self, item, structure, data):
+    def _extract_data_from_item(self, item, structure):
 
+        data = {}
         default = object()
 
         flattened = getattr(structure, "__flatten_subforms__", [])
@@ -233,7 +233,7 @@ class RestResource(crud.Resource):
                 # - we may choose to build a form from several sc.Structure blocks to separate the data logically (and visually) but still
                 # be able to save it as it was a sigle flat form
                 print "FLAT!"
-                value = self._extract_data_from_item(item, structure_field, data)
+                value = self._extract_data_from_item(item, structure_field)
             elif value is not default:
 
                 # if it's a callable then call it
@@ -250,16 +250,12 @@ class RestResource(crud.Resource):
                     subitems_schema = structure_field.attr
                     subitems = []
                     for subitem in value: # take care not to name it "item" or it'll override the function-wide variable
-                        subitem_data = {}
-                        self._extract_data_from_item(subitem, subitems_schema, subitem_data)
-                        subitems.append(subitem_data)
+                        subitems.append(self._extract_data_from_item(subitem, subitems_schema))
                     value = subitems
                 elif isinstance(structure_field, sc.Structure):
                     print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
                     subitems_schema = structure_field
-                    subitem_data = {}
-                    self._extract_data_from_item(value, subitems_schema, subitem_data)
-                    value = subitem_data
+                    value = self._extract_data_from_item(value, subitems_schema)
                 elif isinstance(structure_field, sc.String):
                     print "SERIALIZING A STRING ATTRIBUTE: %s -> %s" % (name, structure_field)
 

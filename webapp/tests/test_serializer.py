@@ -62,7 +62,7 @@ class SchoolFlattenForm(sc.Structure):
     id = sc.Integer()
     details = SchoolDetailsSubform()
 
-    __flatten_subforms__ = ("organization", "details")
+    __flatten_subforms__ = ("details")
 
 @crud.resource(School)
 class SchoolResource(webapp.RestResource):
@@ -173,7 +173,8 @@ def test_html_escape():
 
 def test_form_flattening():
     """
-    Test if __flatten_subforms__ attribute works
+    Test if __flatten_subforms__ attribute works - it should take the data from the item instead of trying to find a subobject... so
+    data["details"]['name'] come from obj.name, not from (non-existent) obj.details.name
     """
     est = datetime.now()
     s = School(id=123, name="TEST!", established = est)
@@ -182,6 +183,6 @@ def test_form_flattening():
     data = r.serialize(format="flat")
 
     assert data['id'] == 123
-    assert data['name'] == "TEST!"
-    assert data['established'] == est
+    assert data["details"]['name'] == "TEST!"
+    assert data["details"]['established'] == est
 
