@@ -53,6 +53,17 @@ class SchoolDefaultsForm(sc.Structure):
     id = sc.Integer(default=999)
     name = sc.String(default="DEFAULT")
 
+class SchoolDetailsSubform(sc.Structure):
+    name = sc.String()
+    established = sc.DateTime()
+
+@webapp.loadable
+class SchoolFlattenForm(sc.Structure):
+    id = sc.Integer()
+    details = SchoolDetailsSubform()
+
+    __flatten_subforms__ = ("organization", "details")
+
 @crud.resource(School)
 class SchoolResource(webapp.RestResource):
 
@@ -60,6 +71,7 @@ class SchoolResource(webapp.RestResource):
         'test': 'SchoolForm',
         'defaults': 'SchoolDefaultsForm',
         'students': 'SchoolWithStudentsForm',
+        'flat': 'SchoolFlattenForm',
         }
 
 
@@ -138,3 +150,38 @@ def test_sequences():
     assert isinstance(data['students'], list)
     assert len(data['students']) == 2
     assert data['established'] == est
+
+def test_html_escape():
+    """
+    Try to serialize some html and see if it gets escaped
+    """
+
+    m = School(id=123, name="<h1>Nasty Hacker!</h1>")
+    r = SchoolResource("123", None, m)
+
+    # check < >
+    data = r.serialize(format="defaults")
+
+    #assert data['id'] == 123
+    assert "<" not in data['name']
+    assert ">" not in data['name']
+
+    m.name="&laquo;Nice quotes!&raquo;"
+    data = r.serialize(format="defaults")
+    assert "&laquo;" not in data['name']
+    assert "&raquo;" not in data['name']
+
+def test_form_flattening():
+    """
+    Test if __flatten_subforms__ attribute works
+    """
+    est = datetime.now()
+    s = School(id=123, name="TEST!", established = est)
+    r = SchoolResource("123", None, s)
+
+    data = r.serialize(format="flat")
+
+    assert data['id'] == 123
+    assert data['name'] == "TEST!"
+    assert data['established'] == est
+
