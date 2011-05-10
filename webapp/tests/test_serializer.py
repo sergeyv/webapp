@@ -20,6 +20,7 @@ class School(webapp.Base):
     id = sa.Column(sa.Integer, primary_key = True)
     name = sa.Column(sa.String)
     established = sa.Column(sa.DateTime)
+    is_school = sa.Column(sa.Boolean)
 
 class Student(webapp.Base):
     __tablename__ = "students"
@@ -27,7 +28,6 @@ class Student(webapp.Base):
     name = sa.Column(sa.String)
     school_id = sa.Column(sa.Integer, sa.ForeignKey("schools.id"))
     school = sa.orm.relationship(School, backref="students")
-
 
 # forms
 
@@ -52,6 +52,7 @@ class SchoolWithStudentsForm(sc.Structure):
 class SchoolDefaultsForm(sc.Structure):
     id = sc.Integer(default=999)
     name = sc.String(default="DEFAULT")
+    is_school = sc.Boolean(default=True)
 
 class SchoolDetailsSubform(sc.Structure):
     name = sc.String()
@@ -128,6 +129,8 @@ def test_defaults_value():
 
     assert data['id'] == 123
     assert data['name'] == "TEST!"
+    assert data['is_school'] == True
+
 
 
 def test_sequences():
