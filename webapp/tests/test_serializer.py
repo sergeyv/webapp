@@ -110,6 +110,7 @@ def test_defaults():
 
 
     data = r.serialize(format="defaults")
+
     assert data['id'] == 999
     assert data['name'] == "DEFAULT"
 
@@ -130,6 +131,7 @@ def test_defaults_value():
     assert data['id'] == 123
     assert data['name'] == "TEST!"
     assert data['is_school'] == True
+
 
 
 

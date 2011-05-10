@@ -420,6 +420,8 @@ class RestResource(crud.Resource):
                         if value not in (None, ''):
                             raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
 
+                    setattr(item, name, value)
+
                 else:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 
