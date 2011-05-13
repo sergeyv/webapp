@@ -170,6 +170,7 @@ class RestResource(crud.Resource):
     def _find_form_for_data_format(cls, format):
 
         form_name = cls.data_formats.get(format, None)
+        form = None
         if form_name is not None:
             form = get_form(cls.data_formats[format])
         else:
