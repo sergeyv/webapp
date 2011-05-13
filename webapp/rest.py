@@ -166,7 +166,45 @@ class RestResource(crud.Resource):
     Some additional methods for formatting
     """
 
-    #default_datetime_format = "%d %b %Y %M:%I %p"
+    @classmethod
+    def _find_form_for_data_format(cls, format):
+
+        form_name = cls.data_formats.get(format, None)
+        if form_name is not None:
+            form = get_form(cls.data_formats[format])
+        else:
+            # A client can either pass a format name (i.e. 'add'),
+            # or, as a shortcut for forms, directly the form name (i.e. 'ServerAddForm')
+            # so we don't need to specify the format in the route's definition.
+            # in the latter case we still want to make sure the form is listed as
+            # on of our formats.
+            if format in cls.data_formats.values():
+                form = get_form(format)
+            else:
+                from crud.registry import get_resource_for_model, get_model_for_resource
+                model_cls = get_model_for_resource(cls)
+                for parent_class in model_cls.__bases__:
+                    resource_class = get_resource_for_model(parent_class)
+                    print "GOT PARENT RESOURCE: %s" % resource_class
+                    if hasattr(resource_class, "_find_form_for_data_format"):
+                        form = resource_class._find_form_for_data_format(format)
+                        if form is not None:
+                            break
+
+
+                if form is None:
+                    from pyramid.exceptions import ExceptionResponse
+                    e = ExceptionResponse("Format '%s' is not registered for %s" % (format, cls))
+                    e.status = '444 Data Format Not Found'
+                    raise e
+
+
+
+        if form is None:
+            raise ValueError("%s form is not registered, but is listed as the"\
+                " '%s' format for %s class" % (form_name, format, cls) )
+        return form
+
 
     def serialize(self, format='default', annotate=False):
         """
@@ -180,27 +218,8 @@ class RestResource(crud.Resource):
 
         """
 
-        form_name = self.data_formats.get(format, None)
-        if form_name is not None:
-            form = get_form(self.data_formats[format])
-        else:
-            # A client can either pass a format name (i.e. 'add'),
-            # or, as a shortcut for forms, directly the form name (i.e. 'ServerAddForm')
-            # so we don't need to specify the format in the route's definition.
-            # in the latter case we still want to make sure the form is listed as
-            # on of our formats.
-            if format in self.data_formats.values():
-                form = get_form(format)
-            else:
-                from pyramid.exceptions import ExceptionResponse
-                e = ExceptionResponse("Format '%s' is not registered for %s" % (format, self.__class__))
-                e.status = '444 Data Format Not Found'
-                raise e
+        form = self._find_form_for_data_format(format)
 
-
-        if form is None:
-            raise ValueError("%s form is not registered, but is listed as the"\
-            " '%s' format for %s class" % (form_name, format, self.__class__) )
         structure = form.structure.attr
 
         data = self._extract_data_from_item(self.model, structure)
@@ -457,7 +476,7 @@ class RestResource(crud.Resource):
         schema = params.get('__schema__')
         if schema is None:
             form_name = params.get('__formish_form__')
-            form = get_form(form_name)
+            form = self._find_form_for_data_format(form_name)
             schema = form.structure.attr
 
         _save_structure(item, schema, params)

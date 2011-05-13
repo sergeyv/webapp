@@ -71,12 +71,56 @@ which will return::
         ...
     ]}
 
-Forms are also used to de-serialize data comig from the client and create/update SA models
+Forms are also used to de-serialize data coming from the client and create/update SA models
+
+Data formats inheritance
+""""""""""""""""""""""""
+
+Data formats defined in parent classes can be used in descendent classes too. Inheritance is only needed on the level of SA models, Resource classes do not need to relate to each other::
+
+    class Institution(webapp.Base):
+        ...
+
+    class School(Institution):
+        ...
+
+
+Define some forms::
+
+    @webapp.loadable
+    class InstitutionView(sc.Structure):
+        ...
+
+    @webapp.loadable
+    class SchoolEdit(sc.Structure):
+        ...
+
+Now on to resources declaration::
+
+    @crud.resource(models.Institution)
+    class InstitutionResource(webapp.RestResource):
+        data_formats = {
+            'view': 'InstitutionView',
+        }
+
+    @crud.resource(models.School)
+    class SchoolResource(webapp.RestResource):
+        data_formats = {
+            'edit': 'SchoolEdit',
+        }
+
+As you can see, SchoolResource does not define ``view`` data format. However, if we request ``/rest/schools/123?format=view``, the framework will detect that SchoolResource is a resource for the School model, and School model is a subclass of Institution, and the resource registered for Institution (InstitutionResource) does indeed define that format, so it will be used to serialize the data.
+
+Client
+""""""
 
 The client part of webapp is a jQuery-based framework. The main concepts are:
- - Controller, which is a JS class which registers some _routes_, much like Django or Pylons do
- - route is a mapping of URL's "hash slack", i.e. the anchor part which comes after #, to a View.
- - a View is a JS object which displays data on the page. Generally a view is associated to some <div /> on the page.
- - Application object, which monitors the changes in the hash slack and notifies Controller, which shows/hides views
-   according to its registered routes
+    - Controller, which is a JS class which registers some _routes_, much like Django or Pylons do
+
+    - route is a mapping of URL's "hash slack", i.e. the anchor part which comes after #, to a View.
+
+    - a View is a JS object which displays data on the page. Generally a view is associated to some <div /> on the page.
+
+    - Application object, which monitors the changes in the hash slack and notifies Controller, which shows/hides views
+    according to its registered routes
 
