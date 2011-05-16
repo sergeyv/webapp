@@ -106,15 +106,15 @@
 
         try {
             self.view.html(self.template.jqote({data: self.data, view: self}));
-        }
-        catch(err) {
+        } catch (err) {
             self.view.text(err);
             if (!webapp.testmode) {
-                txt="There was an error on this page.<br />";
-                txt+="Error description: <strong>" + err.message + "</strong>";
+                txt = "There was an error on this page.<br />"
+                    + "Error description: <strong>"
+                    + err.message + "</strong>";
                 webapp.showMessage(txt, "Template error: " + err.name);
             }
-         }
+        }
 
         self.augmentView();
 
@@ -235,15 +235,17 @@
 
         self.view.find("a.webappPopup").click(function () {
 
-            var $link = $(this);
+            var $link = $(this),
                 hash = webapp.normalizeHash($link.attr("href")),
                 context = webapp.getEventContextForRoute(hash);
 
 
             context.popup_success_callback = function (added_id) {
                 /// find all classes which start with webappOnSuccess
-                /// if found, it expects it to be in a form webappOnSuccess-methodName.
-                /// If the view has such method, it is invoked when the call succeeds
+                /// if found, it expects it to be in a form
+                /// webappOnSuccess-methodName.
+                /// If the view has such method,
+                /// it is invoked when the call succeeds
                 $($link.attr('class').split(' ')).each(function (idx, val) {
                     var parts = val.split('-');
                     if (parts.length === 2 &&
@@ -252,12 +254,12 @@
                         self[parts[1]]();
                     }
                 });
-            }
+            };
 
             if (context.mapping) {
                 context.mapping.controller.popupView(context.mapping.view, context);
             } else {
-                self.showMessage("POPUP VIEW NOT FOUND: " +hash);
+                self.showMessage("POPUP VIEW NOT FOUND: "  + hash);
             }
 
             return false;

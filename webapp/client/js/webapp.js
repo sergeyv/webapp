@@ -94,7 +94,7 @@
                 var self = this,
                     response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
 
-                if (! webapp.testmode) {
+                if (!webapp.testmode) {
 
                     $(self).html(response).dialog({
                         modal: true,
@@ -223,10 +223,10 @@
 	// to the body of the page (in paragraph tags).
 	WebApp.prototype.log = function () {
 		// Check to see if there is a console to log to.
-		if (window.console && window.console.log) {
+		if (console && console.log) {
 
 			// Use the built-in logger.
-			window.console.log.apply(window.console, arguments);
+			console.log.apply(console, arguments);
 
 		} else {
 
@@ -369,11 +369,11 @@
 
 	WebApp.prototype.relocateTo = function (location) {
 
-        // Clear the location.
-        location = this.normalizeHash(location);
+//         // Clear the location.
+//         loc =
 
         // Change the location
-        window.location.hash = (location);
+        location.hash =  this.normalizeHash(location);
 
 	};
 

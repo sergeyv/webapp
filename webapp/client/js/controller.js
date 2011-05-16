@@ -48,13 +48,13 @@
         var i,
             mapping;
 
-        for (i = 0; i < webapp.routeMappings.length; i++) {
+        for (i = 0; i < webapp.routeMappings.length; i += 1) {
             mapping = webapp.routeMappings[i];
             if (mapping.view &&  mapping.view.options && mapping.view.options.identifier === id) {
                 return mapping.view;
             }
         }
-    }
+    };
 
     Controller.prototype.popupView = function (view, event) {
 
@@ -75,7 +75,7 @@
             width: "80%",
             title: view.options.title
         });
-    }
+    };
 
 
     Controller.prototype.showView = function (view, event) {
@@ -164,7 +164,7 @@
         if (webapp.after_view_fully_loaded) {
             webapp.after_view_fully_loaded(view);
         }
-    }
+    };
 
     webapp.controller = new Controller();
 

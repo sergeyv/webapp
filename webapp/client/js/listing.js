@@ -140,7 +140,7 @@
                 }
 
                 /// next link
-                if (current < pages-1) {
+                if (current < pages - 1) {
                     bs = (current + 1) * batch_size;
                     output.push('<a href="#' + new_filter_url('batch_start', bs) + '"> next </a>');
                 } else {
@@ -155,7 +155,7 @@
 
             /// more link
             if (pages > 1 && batch_size < 200) {
-                bs = Math.min(Math.floor(batch_size*2), 200);
+                bs = Math.min(Math.floor(batch_size * 2), 200);
                 output.push('<a href="#' + new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">more</a>');
             }
 
@@ -182,9 +182,6 @@
         });
 
         render_pager();
-
-        /* TODO: This needs to be rewritten from scratch! */
-        ResizableColumns();
     };
 
     webapp.Listing = Listing;

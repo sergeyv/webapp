@@ -115,8 +115,8 @@
             $(this).replaceWith(text);
         });*/
 
-        self.view.find(".webappPopup").click(function() {
-            var $link = $(this);
+        self.view.find(".webappPopup").click(function () {
+            var $link = $(this),
                 hash = webapp.normalizeHash($link.attr("href")),
                 context = webapp.getEventContextForRoute(hash);
 
@@ -126,12 +126,12 @@
                 var $select = $link.parent().children("select");
                 $select.attr("original_value", added_id);
                 self.reloadLoadable($select);
-            }
+            };
 
             if (context.mapping) {
                 context.mapping.controller.popupView(context.mapping.view, context);
             } else {
-                self.showMessage("POPUP VIEW NOT FOUND: " +hash);
+                self.showMessage("POPUP VIEW NOT FOUND: " + hash);
             }
 
             //webapp.controller.popupView(view);
@@ -192,7 +192,7 @@
         /// the popup has its own title
         if (self.event.is_popup) {
             form_title_elem.hide().text("");
-            self.cancelLink.click(function() {
+            self.cancelLink.click(function () {
                 self.view.dialog('close');
                 return false;
             });
@@ -200,7 +200,7 @@
             form_title_elem.show().text(title);
             /// Cancel link points to the page we came from
             self.cancelLink.attr('href', webapp.previousPageUrl());
-            self.cancelLink.click(function() {});
+            self.cancelLink.click(function () {});
         }
         self.view.find("#" + self.options.identifier + "-action").val(button_title);
 
