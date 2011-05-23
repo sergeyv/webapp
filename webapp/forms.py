@@ -244,11 +244,11 @@ class LoadableForm(formish.Form):
         """
 
         rules = {}
-        #for field in self.fields:
-        #    validators = get_validators_for_field(field)
-        #
-        #    if validators: # empty dict is false-ish
-        #        rules[field.name] = validators
+        for field in self.fields:
+            validators = get_validators_for_field(field)
+
+            if validators: # empty dict is false-ish
+                rules[field.name] = validators
 
         return json.dumps(rules)
 

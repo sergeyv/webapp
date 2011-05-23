@@ -367,13 +367,13 @@
      * for example by clicking on a link
      */
 
-	WebApp.prototype.relocateTo = function (location) {
+	WebApp.prototype.relocateTo = function (loc) {
 
-//         // Clear the location.
-//         loc =
+        // Clear the location.
+        loc = this.normalizeHash(loc);
 
         // Change the location
-        location.hash =  this.normalizeHash(location);
+        window.location.hash = loc;
 
 	};
 
