@@ -137,11 +137,15 @@
             //webapp.controller.popupView(view);
             return false;
         });
-        // Init formish form
+        /*
         add_sortables(self.view);
         create_addlinks(self.view);
         add_mousedown_to_addlinks(self.view);
         add_remove_buttons(self.view);
+        */
+
+        // Init formish form
+        self.view.formish();
 
     };
 
@@ -298,14 +302,14 @@
                 * previous showing of the form
                 */
                 elem = $(id + '--field');
-                link = elem.find('a.adderlink');
+                link = $(elem.find('a.adderlink'));
 
                 // remove existing fieldsets
                 elem.find('.field').remove();
 
                 // should go before the === "object" section
                 $.each(value, function (idx, subvalue) {
-                    add_new_items(link, self.view);
+                    self.view.formish('add_new_items', $(link));
                     self.fill_form(id + '-' + idx, subvalue);
                     //add_new_items(link, self.view);
                 });

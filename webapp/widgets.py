@@ -9,10 +9,11 @@ from convertish.convert import string_converter, \
 from schemaish.type import File as SchemaFile
 import uuid
 
+
 from formish import util
 from formish.filestore import CachedTempFilestore
 
-from formish.widgets import Widget, SelectChoice
+from formish.widgets import Widget, SelectChoice, SequenceDefault, StructureDefault, Hidden
 
 
 
@@ -98,3 +99,31 @@ class Calendar(Widget):
     #type = 'Input'
     #template = 'field.Input'
 
+
+class Tabular(SequenceDefault):
+    """
+    Tabular widget for a sequence
+    """
+    type = 'Tabular'
+    template = 'tabular.-'
+
+    def child_schema_as_a_row(self, field):
+
+        child_schema = field
+        output = ['<tr id="%s--field" class="%s">' % (field.cssname, field.classes)]
+        for f in child_schema.fields:
+            output.append('<td id="%s--field" class="%s">%s</td>' % (f.cssname, f.classes, f.inputs()))
+        output.append('</tr>')
+
+        return "".join(output)
+
+
+    def column_visibility(self, field):
+        """
+        Checks if the column is hidden and outputs a bit of css to hide it
+        """
+
+        # field.widget is a BoundWidget instance here, and it has .widget attribute
+        if isinstance(field.widget.widget, Hidden):
+            return "display: none"
+        return ""

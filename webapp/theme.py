@@ -44,7 +44,7 @@ class AssetRegistry(object):
     "/webapp.client/core_js/jquery.jqote2.js",
 
     # Formish
-    "/formish.js/formish.js",
+    #"/formish.js/formish.js",
 
     # from http://flowplayer.org/tools/
 
@@ -67,6 +67,10 @@ class AssetRegistry(object):
     "/webapp.client/core_js/jquery.cookie.js",
 
 
+    # Formish
+    "/webapp.client/js/formish_support.js",
+    
+    
     # Our framework stuff
     "/webapp.client/js/webapp.js",
     "/webapp.client/js/controller.js",

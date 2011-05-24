@@ -33,10 +33,10 @@
 
 
   <!-- Publish formish javascript assets -->
-  <static
+  <!-- static
       name="formish.js"
       path="formish:js"
-  />
+  / -->
 
   <!-- Publish formish javascript assets -->
   <static
