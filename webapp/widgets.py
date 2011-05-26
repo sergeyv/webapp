@@ -110,9 +110,13 @@ class Tabular(SequenceDefault):
     def child_schema_as_a_row(self, field):
 
         child_schema = field
-        output = ['<tr id="%s--field" class="%s">' % (field.cssname, field.classes)]
+        output = ['<tr id="%s--field" class="%s sequenceItem">' % (field.cssname, field.classes)]
         for f in child_schema.fields:
-            output.append('<td id="%s--field" class="%s">%s</td>' % (f.cssname, f.classes, f.inputs()))
+            output.append('<td style="%s" id="%s--field" class="%s">%s</td>' % (self.column_visibility(f), f.cssname, f.classes, f.inputs()))
+
+        output.append("""<td class="field">
+            <input type="hidden" class="deletedMarker" name="{f.name}.__delete__" id="{f.cssname}-__delete__" value="" />
+            <input type="hidden" class="newMarker" name="{f.name}.__new__" id="{f.cssname}-__new__" value="" />{seqdelete}</td>""".format(f=field, seqdelete=field.seqdelete()))
         output.append('</tr>')
 
         return "".join(output)

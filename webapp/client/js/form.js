@@ -306,13 +306,16 @@
 
                 // remove existing fieldsets
                 elem.find('.field').remove();
+                // remove stuff which is not fields (i.e. separators etc.)
+                elem.find('.nonField').remove();
 
                 // should go before the === "object" section
                 $.each(value, function (idx, subvalue) {
                     self.view.formish('add_new_items', $(link));
                     self.fill_form(id + '-' + idx, subvalue);
-                    //add_new_items(link, self.view);
                 });
+                self.view.formish('add_new_items_header_row', $(link));
+
             } else if (typeof value === "object") {
                 if (data) {
                     self.fill_form(id, value);

@@ -29,6 +29,9 @@ class Student(webapp.Base):
     school_id = sa.Column(sa.Integer, sa.ForeignKey("de_schools.id"))
     school = sa.orm.relationship(School, backref="students")
 
+    def __repr__(self):
+        return "<Student %s (%s) from school #%s>" % (self.name, self.id, self.school_id)
+
 # forms
 
 class StudentForm(sc.Structure):
@@ -76,10 +79,20 @@ class SchoolResource(webapp.RestResource):
         'flat': 'SchoolFlattenForm',
         }
 
+    subsections = {
+        'students': webapp.RestCollection("Students", 'students')
+        }
+
+@crud.resource(Student)
+class StudentResource(webapp.RestResource):
+    pass
+
 
 def setUp():
     global session
     session = webapp.get_session()
+    crud_root = crud.Collection( "test" )
+    crud.crud_init(session, crud_root)
 
 
 def tearDown():
@@ -113,4 +126,59 @@ def test_deserialize():
     assert s.name == "HELLO"
     print "IS SCHOOL: %s" % s.is_school
     assert s.is_school == True
+
+
+
+def test_sequences():
+
+    s = School(id=321, name="School")
+    r = SchoolResource("321", None, s)
+    session.add(s)
+    session.add(Student(id=234, name="Joe Bloggs", school_id=321))
+    session.add(Student(id=235, name="John Smith", school_id=321))
+
+    session.flush()
+    session.commit()
+
+    s = session.query(School).filter(School.id==321).one()
+    assert len(s.students) == 2
+    assert s.students[0].id == 234
+    assert s.students[1].id == 235
+
+    data = {
+        'id': 321,
+        'name': 'New School!',
+        '__schema__': SchoolWithStudentsForm,
+        'students': {
+            0: { 'id': '234',
+              '__delete__': 1,
+            },
+            1: { 'id': '235',
+              'name': 'Ivan Ivanoff',
+              '__delete__': '',
+              '__new__': False,
+            },
+            2:{ 'id': '999',
+              'name': 'Arnie',
+              '__delete__': None,
+              '__new__': "1",
+            },
+        },
+        }
+
+    data = r.deserialize(data, DummyRequest())
+
+    session.flush()
+    session.commit()
+    s = session.query(School).filter(School.id==321).one()
+
+    assert s.name == 'New School!'
+    print "GOT STUDENTS: %s" % s.students
+    assert len(s.students) == 2
+
+    s1 = s.students[0]
+    s2 = s.students[1]
+
+    assert s1.name == 'Ivan Ivanoff'
+    assert s2.name == 'Arnie'
 

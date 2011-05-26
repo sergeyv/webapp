@@ -81,7 +81,6 @@
 
                 $view.formish('add_sortables')
                     .formish('create_addlinks')
-                    .formish('add_mousedown_to_addlinks')
                     .formish('add_remove_buttons');
             });
         },
@@ -99,47 +98,47 @@
         },
 
         create_addlinks: function () {
-            var o = this;
+            var o = this,
+                form_modifier = function (subform) {
+                    subform.addClass('newlyAdded');
+                    subform.find("input.newMarker").val("1");
+
+                };
             o.find('.adder').each(function () {
-                $(this).before('<a class="adderlink">Add</a>');
+                $('<a class="adderlink">Add</a>').insertBefore(this).click(function () {
+                    o.formish('add_new_items', $(this), form_modifier);
+                });
             });
             return this;
         },
 
-        add_mousedown_to_addlinks: function () {
-            var o = this;
-            o.each(function () {
-                var form = $(this);
-                form.find('.adderlink').mousedown(function () { form.formish('add_new_items', $(this)); });
-            });
-            return this;
-        },
-
-        add_new_item: function (t) {
+        add_new_item: function (t, modifier) {
             var o = this,
                 formid = o.attr('id'),
-                code = t.next('.adder').val(),// Get the encoded template
-                l = t.next('.adder').prevAll('.field').length, // Find out how many fields we already have
-                originalname = t.next('.adder').attr('name'), // Get some variable to help with replacing (originalname, originalid, name, id)
-                /* doesn't seem to be used
-                new_originalname = t.closest('.type-container').attr('id');
-                new_originalname = new_originalname.substr(0,new_originalname.length-6);
-                new_originalname = convert_id_to_name(new_originalname,formid);
-                */
+                $adder = t.next('.adder'),
+                code = $adder.val(),// Get the encoded template
+                num_items_already_there = function () {
+                    // Find out how many fields we already have
+                    if (t.prev('table').length) {
+                        return t.prev('table').children('tbody').find('tr.field').length;
+                    } else {
+                        return $adder.prevAll('.field').length;
+                    }
+                }(),
+                originalname = $adder.attr('name'), // Get some variable to help with replacing (originalname, originalid, name, id)
                 segments = originalname.split('.'),
-                seqnums = get_sequence_numbers(segments, l), // Get the numbers used in the originalname
-                //originalid = formid + '-' + segments.join('-'),
+                seqnums = get_sequence_numbers(segments, num_items_already_there), // Get the numbers used in the originalname
                 name,
                 id,
-                html = decodeURIComponent(code),// Decode the template.
+                html = decodeURIComponent(code), // Decode the template.
                 h = $(html),
                 newid;
-            segments[segments.length - 1] = l;
+            segments[segments.length - 1] = num_items_already_there;
             name = segments.join('.');
             id = formid + '-' + segments.join('-');
 
             // Add the links and mousedowns to this generated code
-            h.formish('create_addlinks').formish('add_mousedown_to_addlinks');
+            h.formish('create_addlinks');
 
             h.find("[name]").each(function () {
                 var newname = replace_stars($(this).attr('name'), seqnums, '.');
@@ -157,18 +156,29 @@
                 var newid = replace_stars($(this).attr('for'), seqnums, '-');
                 $(this).attr('for', newid);
                 if ($(this).text() === '*') {
-                    $(this).text(l);
+                    $(this).text(num_items_already_there);
                 }
             });
-            h.find("label[for='" + id + "']").text(l);
-            h.find("legend:contains('*')").text(l);
+            h.find("label[for='" + id + "']").text(num_items_already_there);
+            h.find("legend:contains('*')").text(num_items_already_there);
 
-            t.before(h);
+            if (modifier) {
+                modifier(h);
+            }
+
+            /// For the Tabular widget: check if we have a table immediately
+            /// before the link. If found, then the row need to be added into the table
+            if (t.prev('table').length) {
+                t.prev('table').children('tbody').append(h);
+            } else {
+                t.before(h);
+            }
+
             t.parent().parent().formish('add_remove_buttons');
             $('form').formish('add_sortables');
         },
 
-        add_new_items: function (t) {
+        add_new_items: function (t, modifier) {
             var o = this,
                 i,
                 terms,
@@ -185,8 +195,24 @@
                 }
             }
             for (i = 0; i < value; i += 1) {
-                o.formish('add_new_item', t);
+                o.formish('add_new_item', t, modifier);
             }
+        },
+
+         add_new_items_header_row: function (t) {
+            var o = this,
+                h;
+
+            /// For the Tabular widget: check if we have a table immediately
+            /// before the link. If found, then the row need to be added into the table
+            if (t.prev('table').length) {
+                h = $('<tr class="nonField"><td colspan="0"><h3>New items</h3></td></tr>');
+                t.prev('table').children('tbody').append(h);
+            } else {
+                h = '<h3>New Items</h3>';
+                t.before(h);
+            }
+            return this;
         },
 
 
@@ -246,15 +272,35 @@
 
         add_remove_buttons: function () {
             var o = this;
+            /// TODO: Comment those out and find why multiple links are being added
+            /// there probably is a bug somewhere
             o.find('.remove').remove();
+            o.find('.undeleteLink').remove();
             o.find('.seqdelete').each(function () {
-                var x;
+                var x, y;
                 if ($(this).next().text() !== 'delete') {
                     x = $('<span class="remove">delete</span>');
                     $(this).after(x);
-                    x.mousedown(function () {
-                        $(this).closest('.field').remove();
-                        o.formish('renumber_sequences').formish('add_sortables');
+                    y = $('<span class="undeleteLink">undelete</span>');
+                    x.after(y);
+                    /// a callback for the "delete" link
+                    x.click(function () {
+                        var $field = $(this).closest('.sequenceItem');
+                        if ($field.hasClass('newlyAdded')) {
+                            $field.remove();
+                        } else {
+                            $field.addClass('toBeDeleted');
+                            $field.find("input.deletedMarker").val("1");
+                        }
+                        // o.formish('renumber_sequences').formish('add_sortables');
+                    });
+                    /// a callback for the "undelete" link
+                    y.click(function () {
+                        var $field = $(this).closest('.field');
+                        $field.removeClass('toBeDeleted');
+                        $field.find("input.deletedMarker").val("");
+
+                        // o.formish('renumber_sequences').formish('add_sortables');
                     });
                 }
             });

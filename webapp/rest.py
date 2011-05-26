@@ -450,25 +450,43 @@ class RestResource(crud.Resource):
 
             existing_items = { str(item.model.id):item for item in collection.get_items() }
 
-            seen_ids = []
+            #seen_ids = []
+            ids_to_delete = []
 
+            print "EXISTING ITEMS: %s" % (existing_items,)
             for (order_idx, value) in data.items():
                 if order_idx == '*':
                     continue;
-                item_id = value.get('id', None)
                 # the data must contain 'id' parameter
                 # if the data should be saved into an existing item
-                item = existing_items.get(item_id, None)
-                del value['id']
-                value['__schema__'] = schema
-                if item is not None:
-                    seen_ids.append(str(item_id))
-                    item.update(value, request)
+                item_id = value.get('id', None)
+                print "PROCESSING ITEM %s" % item_id
+
+                if value.get('__delete__', False):
+                    # Existing item must be deleted
+                    ids_to_delete.append(item_id)
+                    print "WILL_BE_DELETED: %s" % item_id
+
                 else:
-                    item = collection.create_subitem(params=value, request=request, wrap=True)
+                    item = existing_items.get(item_id, None)
+                    del value['id']
+                    value['__schema__'] = schema
+                    if item is not None:
+                        # update an existing item
+                        #seen_ids.append(str(item_id))
+                        item.update(value, request)
+                    else:
+                        if value.get('__new__', False):
+                            # create a new item
+                            item = collection.create_subitem(params=value, request=request, wrap=True)
+                        else:
+                            # Item has not been found and the client does not indicate
+                            # that it's a new item - something is wrong
+                            raise ValueError("Nowhere to save data: %s" % (value,))
 
 
-            ids_to_delete = [id for id in existing_items.keys() if id not in seen_ids]
+            #ids_to_delete = [id for id in existing_items.keys() if id not in seen_ids]
+            print "DELETING: %s" % ids_to_delete
             collection.delete_subitems(ids_to_delete, request)
 
 
