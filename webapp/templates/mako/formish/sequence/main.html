@@ -1,0 +1,23 @@
+<%page args="field" />
+<%
+if field.widget.addremove is True:
+    addremoveclass = ' addremove'
+else:
+    addremoveclass = ''
+if field.widget.sortable is True:
+    sortableclass = ' sortable'
+else:
+    sortableclass = ''
+
+%>
+<fieldset id="${field.cssname}--field" class="${field.classes}${addremoveclass}${sortableclass}">
+  <span class="formish-sequencedata" title="batch_add_count=${field.widget.batch_add_count}"> </span>
+
+${field.seqdelete()|n}
+${field.seqgrab()|n}
+${field.label()|n}
+${field.error()|n}
+
+${field.description()|n}
+${field.metadata()|n}
+</fieldset>

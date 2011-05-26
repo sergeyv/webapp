@@ -1,0 +1,24 @@
+<%page args="field" />
+
+<%!
+from urllib import quote
+%>
+
+<%def name="fieldtemplate(field)" buffered="True">
+    <fieldset id="${field.cssname}--field" class="sequenceItem ${field.classes}">
+    <input type="hidden" class="deletedMarker" name="${field.name}.__delete__" id="${field.cssname}-__delete__" value="" />
+    <input type="hidden" class="newMarker" name="${field.name}.__new__" id="${field.cssname}-__new__" value="" />
+    ${field.seqdelete()|n}
+    ${field.seqgrab()|n}
+    ${field.label()|n}
+    ${field.error()|n}
+    ${field.fields()|n}
+    ${field.description()|n}
+    </fieldset>
+</%def>
+
+<%def name="quoted_ft(f)">
+  ${quote(fieldtemplate(f).encode('utf-8'))|n}
+</%def>
+
+<input type="hidden" name="${field.template.name}" class="adder" value="${quoted_ft(field.template)}" />
