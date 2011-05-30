@@ -298,9 +298,8 @@ TODO: Filtering and search are not currently implemented
 Template Helpers
 ----------------
 
-``webapp`` has ``helpers`` object which can be populated by the application with
-methods to simplify building templates. In kitovu, the helpers are defined
-in ``kitovu_admin/client/helpers.js``:
+``webapp`` has a ``helpers`` object which can be populated by the application with
+methods to simplify building templates:
 
 .. code-block:: javascript
 
@@ -308,7 +307,7 @@ in ``kitovu_admin/client/helpers.js``:
     (function($, webapp) {
 
         var h = webapp.helpers;
-        h.simple_value = function(title, value) {
+        h.field = function(title, value) {
             /*
              Returns a nicely-formatted bit of html for a view page
             */
@@ -336,21 +335,23 @@ we can now use
 
 .. code-block:: html
 
-    <%=webapp.helpers.name_and_id("Client", item.client, "#/clients/") %>
+    <% var h = webapp.helpers; %>
+    ...
+    <%=h.field("Client", (h.link_to(item.client, "#/clients/")) %>
 
 The current list of helpers is as follows:
 
-    * simple_value(title, value) - renders a string value with a header
+    * field(title, value) - renders a string value with a header
 
-    * name_and_id(title, obj, root) - renders a link to a related object (see example above)
+    * link_to(title, obj, root) - renders a link to a related object (see example above)
 
-    * email_value(title, value) - renders a mailto: link
+    * email(title, value) - renders a mailto: link
 
-    * uri_value(title, value) - renders a link witha header
+    * uri(title, value) - renders a link witha header
 
     * time_ago(date_str) - renders a "about 3 hours ago" auto-updating block. Expects a correct timestamp
 
-    * calendar_date(date_str) - renders a date formatted as "28 Mar 2011"
+    * date(date_str) - renders a date formatted as "28 Mar 2011"
 
 Developers are encouraged to re-use the existing helpers and add new ones.
 

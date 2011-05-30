@@ -255,7 +255,32 @@
                 return (arg && typeof arg === 'object' &&
                         typeof arg.length === 'number' &&
                         !(arg.propertyIsEnumerable('length')));
+            },
+            format_date = function (date_str) {
+                /*
+                Converts a date parsable by the Date class (i.e. in ISO-whatever format)
+                to a 27 Mar 2001 format
+                */
+                if (webapp.helpers.date) {
+                    // webapp.helpers.date overrides this
+                    return webapp.helpers.date(date_str);
+                }
+
+                if (!date_str) { return ""; }
+
+                var d = new Date(date_str),
+                    MONTH_NAMES = [
+                        'Jan', 'Feb', 'Mar',
+                        'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep',
+                        'Oct', 'Nov', 'Dec'
+                    ],
+                    day = d.getDate();
+
+                if (day < 10) { day = "0" + day; }
+                return String(day) + " " + MONTH_NAMES[d.getMonth()] + " " + d.getFullYear();
             };
+
         if (!data) { return; }
 
         $.each(data, function (name, value) {
@@ -283,7 +308,7 @@
                         display_elem = $(id + "-display");
                         elem.val(value);
                         elem.change();
-                        display_elem.val(webapp.helpers.calendar_date(value));
+                        display_elem.val(format_date(value));
                         display_elem.change();
                     } else if (elem[0].tagName.toLowerCase() === 'div') {
                         /// support read-only fields
