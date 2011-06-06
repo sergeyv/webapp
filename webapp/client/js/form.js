@@ -103,18 +103,6 @@
 
         self.cancelLink = self.view.find("a.formCancelLink");
 
-        /// convert the "fake" fields which are marked with
-        /// 'section_title' class into titles
-        /*this.view.find(".section_title").each(function () {
-            var text = "",
-                t = $(this).children("label"),
-                st = $(this).children("span.description");
-            if (t.length) { text = "<h2>" + t.html() + "</h2>"; }
-            if (st.length) { text += '<p class="description">' + st.html() + '</p>'; }
-
-            $(this).replaceWith(text);
-        });*/
-
         self.view.find(".webappPopup").click(function () {
             var $link = $(this),
                 hash = webapp.normalizeHash($link.attr("href")),
@@ -293,6 +281,10 @@
             if (value === null) {
                 value = '';
             }
+
+            // The app can provide default values to pre-fill the form
+            // by invoking a url in format #/view|key1:value1|key2:value2
+            value = value || self.event.uri_args[name];
 
             id = id_root + '-' + name;
             if (typeof value === "string" ||

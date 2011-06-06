@@ -12,12 +12,14 @@ import dottedish
 import crud
 
 from webapp.db import get_session
-from webapp.rest import IRestRootCollection
+from webapp.rest import IRestRootCollection, RestCollection
 from webapp.forms import get_form
 
 from webapp.testing import sluggish, explode
 
-@view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json")
+@view_config(name="new", context=crud.ICollection, containment=IRestRootCollection,
+permission="rest.list", request_method="GET",
+renderer="better_json")
 def json_rest_empty(context, request):
     """
     Returns an empty item with all fields set to default values
