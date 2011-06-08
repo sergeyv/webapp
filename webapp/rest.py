@@ -243,7 +243,7 @@ class RestResource(crud.Resource):
         for (name, structure_field) in structure.attrs:
 
             value = getattr(item, name, default)
-            structure_field = getattr(structure, name, default)
+            #structure_field = getattr(structure, name, default)
 
             print "Starting with %s of %s" % (name, item)
 
@@ -301,6 +301,7 @@ class RestResource(crud.Resource):
                     print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                     pass
                 else:
+                    #import pdb; pdb.set_trace();
                     print "Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value)
                     raise AttributeError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
             else:
@@ -369,6 +370,7 @@ class RestResource(crud.Resource):
             print "SAVING %s INTO %s USING %s" % (data, item, schema)
             flattened = getattr(schema, "__flatten_subforms__", [])
 
+            #import pdb; pdb.set_trace()
 
             for (name, attr) in attrs:
                 value = data.get(name, _marker)
@@ -437,7 +439,9 @@ class RestResource(crud.Resource):
                     elif str(value).lower() in ('false', 'no', '0'):
                         value = False
                     else:
-                        if value not in (None, ''):
+                        if value == '':
+                            value = None
+                        if value is not None:
                             raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
 
                     setattr(item, name, value)
