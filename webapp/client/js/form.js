@@ -18,11 +18,12 @@
         this.options.data_format = this.options.data_format || this.options.identifier;
     }
 
-    Form.prototype = new webapp.View();
+    Form.prototype = new webapp.Template();
+    Form.prototype.constructor = Form;
 
 
 
-    Form.prototype.decorateView = function () {
+    /*Form.prototype.decorateView = function () {
         /// this is called by View.init and allows us to
         /// insert arbitrary content into the newly-created
         /// <div class="contentView" />
@@ -30,7 +31,7 @@
         var self = this;
         self.view.append($('<h1><span class="primaryPageHeading">###</span></h1>'))
             .append($('<div class="formPlaceholder"></div>'));
-    };
+    };*/
 
 
     Form.prototype.bindFormControls = function () {
@@ -58,7 +59,7 @@
 
     };
 
-    Form.prototype.showViewFirstTime = function () {
+    /*Form.prototype.showViewFirstTime = function () {
         var self = this,
             load_from = "/forms/" + self.options.identifier,
             $placeholder;
@@ -91,15 +92,31 @@
             self.showView();
         });
 
+    };*/
+
+    Form.prototype.showViewFirstTime = function () {
+
+        var self = this,
+            load_from = "/forms/" + self.options.identifier;
+
+
+        self.init();
+
+        // $.get does not process the data, and $(elem).load does some processing
+        $.get(load_from, function (data) {
+            //
+            self.template.text(data);
+            self.showView();
+        });
     };
 
 
     Form.prototype.genericAugmentForm = function () {
         /// Do stuff we want on every form
         var self = this;
-
-        /// TODO: Add option/condition "add_cancel_link"?
-        self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
+            title = self.event.parameters.title || self.options.title,
+            button_title = self.event.parameters.button_title || self.options.button_title,
+            form_title_elem = self.view.find(".primaryPageHeading");
 
         self.cancelLink = self.view.find("a.formCancelLink");
 
@@ -121,16 +138,24 @@
             } else {
                 self.showMessage("POPUP VIEW NOT FOUND: " + hash);
             }
-
-            //webapp.controller.popupView(view);
             return false;
         });
-        /*
-        add_sortables(self.view);
-        create_addlinks(self.view);
-        add_mousedown_to_addlinks(self.view);
-        add_remove_buttons(self.view);
-        */
+
+
+        if (self.event.is_popup) {
+            self.cancelLink.click(function () {
+                self.view.dialog('close');
+                return false;
+            });
+        } else {
+            self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'))
+            /// TODO: Add option/condition "add_cancel_link"?
+            self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
+            /// Cancel link points to the page we came from
+            self.cancelLink.attr('href', webapp.previousPageUrl());
+            self.cancelLink.click(function () {});
+        }
+        self.view.find("#" + self.options.identifier + "-action").val(button_title);
 
         // Init formish form
         self.view.formish();
@@ -163,7 +188,7 @@
 
 
     // I get called when the view needs to be shown.
-    Form.prototype.showView = function () {
+    Form.prototype.__showView = function () {
         /*
          * title and button_title attributes can be overridden on a per-route
          * basis using route's default_parameters dict:
@@ -198,10 +223,52 @@
 
         self.populateLoadables();
         /// if it's the first showing, DOM does not exist at this point yet
-        self.populateForm();
+        //self.populateForm();
 
     };
 
+
+    Form.prototype.populateView = function () {
+        var self = this,
+            item_id,
+            id_root;
+
+
+        self.data = {};
+        // This renders the template
+        self.renderData();
+
+        self.bindFormControls();
+        self.populateLoadables();
+
+
+        self.genericAugmentForm();
+
+        /// Form is loaded, we can now adjust form's look
+        self.augmentForm();
+
+        // and bind stuff
+        self.bindFormControls();
+
+        // Set validation
+        self.setValidationRules();
+
+        // attach event handlers
+        self.setHandlers();
+
+
+        id_root = '#' + self.options.identifier;
+        item_id = self.event.parameters.item_id || 'new';
+
+        $.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
+            self.fill_form(id_root, data);
+
+            // Only show the view after all the data is set.
+            webapp.controller.setActiveView(self);
+        });
+
+
+    };
 
     // ----------------------------------------------------------------------- //
 
@@ -342,7 +409,7 @@
 
     };
 
-    Form.prototype.populateForm = function () {
+    /*Form.prototype.populateForm = function () {
 
         var self = this,
             item_id,
@@ -362,7 +429,7 @@
             // Only show the view after all the data is set.
             webapp.controller.setActiveView(self);
         });
-    };
+    };*/
 
     Form.prototype.mangle_url = function (path, $elem) {
         /*

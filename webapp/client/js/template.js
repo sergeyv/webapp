@@ -31,7 +31,7 @@
         self.template = $("#" + node_id);
         if (!self.template.length) {
             /// Create and append a node if not found
-            $node = ($('<script type="text/x-jquote-template" id="' + node_id + '">'));
+            $node = ($('<script type="text/x-jqote-template" id="' + node_id + '">'));
 
             $("body").append($node);
             self.template = $("#" + node_id);

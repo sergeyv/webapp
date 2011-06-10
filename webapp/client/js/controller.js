@@ -68,13 +68,6 @@
             // Show the given view.
             view.showView();
         }
-
-        //var $container = $("#" + view.options.identifier);
-        view.view.dialog({
-            modal: true,
-            width: "80%",
-            title: view.options.title
-        });
     };
 
 
@@ -146,21 +139,29 @@
 
     Controller.prototype.setActiveView = function (view) {
 
+        var old_views;
+
         /// if the view is shown in a popup, we don't need
         /// to hide the previous view etc.
         if (view.event.is_popup) {
-            return;
+            view.view.dialog({
+                modal: true,
+                width: "80%",
+                title: view.options.title
+            });
+        } else {
+            old_views = $(".activeContentView");
+            $.each(old_views, function (idx, elem) {
+                var $elem = $(elem);
+                if ($elem.attr('id') !== view.view.attr('id')) {
+                    if ($elem.hasClass('preserve')) {
+                        $elem.removeClass("activeContentView")
+                    } else {
+                        $elem.remove();
+                    }
+                }
+            });
         }
-
-        var old_views = $(".activeContentView");
-        $.each(old_views, function (idx, elem) {
-            var $elem = $(elem);
-            if ($elem.hasClass('preserve')) {
-                $elem.removeClass("activeContentView")
-            } else {
-                $elem.remove();
-            }
-        });
 
         view.view.addClass("activeContentView");
 

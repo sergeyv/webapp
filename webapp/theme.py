@@ -69,14 +69,14 @@ class AssetRegistry(object):
 
     # Formish
     "/webapp.client/js/formish_support.js",
-    
-    
+
+
     # Our framework stuff
     "/webapp.client/js/webapp.js",
     "/webapp.client/js/controller.js",
     "/webapp.client/js/view.js",
-    "/webapp.client/js/form.js",
     "/webapp.client/js/template.js",
+    "/webapp.client/js/form.js",
     "/webapp.client/js/listing.js",
     )
 
