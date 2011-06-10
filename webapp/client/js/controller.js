@@ -152,7 +152,16 @@
             return;
         }
 
-        $(".activeContentView").removeClass("activeContentView");
+        var old_views = $(".activeContentView");
+        $.each(old_views, function (idx, elem) {
+            var $elem = $(elem);
+            if ($elem.hasClass('preserve')) {
+                $elem.removeClass("activeContentView")
+            } else {
+                $elem.remove();
+            }
+        });
+
         view.view.addClass("activeContentView");
 
         // a local callback

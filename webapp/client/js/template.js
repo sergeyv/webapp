@@ -26,16 +26,6 @@
             node_id = self.options.identifier + '-view',
             $node;
 
-        /// find or create the view container
-        self.view = $("#" + node_id);
-        if (!self.view.length) {
-            /// Create and append a node if not found
-            $node = ($('<div id="' + node_id + '" class="contentView">'));
-
-            $("#content-views").append($node);
-            self.view = $("#" + node_id);
-        }
-
         /// find or create the template container
         node_id = self.options.identifier + '-template';
         self.template = $("#" + node_id);
@@ -54,6 +44,7 @@
         var self = this,
             load_from = "/t/" + self.options.identifier + ".html";
 
+
         self.init();
 
         self.template.load(load_from, function () {
@@ -62,6 +53,20 @@
     };
 
     Template.prototype.showView = function () {
+
+        var self = this,
+            node_id = self.options.identifier + '-view',
+            $node;
+
+        /// find or create the view container
+        self.view = $("#" + node_id);
+        if (!self.view.length) {
+            /// Create and append a node if not found
+            $node = ($('<div id="' + node_id + '" class="contentView">'));
+
+            $("#content-views").append($node);
+            self.view = $("#" + node_id);
+        }
 
         //this.parameters = parameters;
         this.populateView();
