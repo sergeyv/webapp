@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+##########################################
+#     This file forms part of WEBAPP
+#     Copyright: refer to COPYRIGHT.txt
+#     License: refer to LICENSE.txt
+##########################################
 
 import json
 
@@ -143,7 +148,7 @@ def json_rest_delete_item(context, request):
     it attempts to delete the item itself
     """
     result = context.delete_item(request) # returns task_id
-    
+
     return result
 
 

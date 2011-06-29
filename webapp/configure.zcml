@@ -1,3 +1,10 @@
+<!--
+##########################################
+#     This file forms part of WEBAPP
+#     Copyright: refer to COPYRIGHT.txt
+#     License: refer to LICENSE.txt
+##########################################
+-->
 <configure xmlns="http://pylonshq.com/pyramid"
     xmlns:crud="http://namespaces.mooball.com/crud">
 

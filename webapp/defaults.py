@@ -1,3 +1,8 @@
+##########################################
+#     This file forms part of WEBAPP
+#     Copyright: refer to COPYRIGHT.txt
+#     License: refer to LICENSE.txt
+##########################################
 
 from datetime import datetime
 

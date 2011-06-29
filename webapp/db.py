@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+##########################################
+#     This file forms part of WEBAPP
+#     Copyright: refer to COPYRIGHT.txt
+#     License: refer to LICENSE.txt
+##########################################
+
 from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session

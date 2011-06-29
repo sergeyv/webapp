@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -*-
-
-
-#from crud.views.theme import Theme as BasicTheme
-
-#class Theme(BasicTheme):
-
-    #def __init__(self, context, request, page_title=None, registry=None):
-        #self.context = context
-        #self.request = request
-        #self.page_title = page_title
-        #self.registry = registry
-
-
+##########################################
+#     This file forms part of WEBAPP
+#     Copyright: refer to COPYRIGHT.txt
+#     License: refer to LICENSE.txt
+##########################################
 
 _theme_registry = {}
 

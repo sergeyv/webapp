@@ -1,3 +1,8 @@
+##########################################
+#     This file forms part of WEBAPP
+#     Copyright: refer to COPYRIGHT.txt
+#     License: refer to LICENSE.txt
+##########################################
 
 # This module import some suppoted validators from validatish,
 # and also defines a few of its own.

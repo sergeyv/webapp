@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+##########################################
+#     This file forms part of WEBAPP
+#     Copyright: refer to COPYRIGHT.txt
+#     License: refer to LICENSE.txt
+##########################################
+
+
 import datetime
 import json
 import re
