@@ -435,6 +435,12 @@ class RestResource(crud.Resource):
 
                 # Simple attributes
                 elif isinstance(attr, sc.String):
+                    # Convert empty strings to NULLs
+                    # - otherwise it fails with empty values
+                    # in enums
+                    if value == '':
+                        value = None
+
                     setattr(item, name, value)
                 elif isinstance(attr, sc.Integer):
                     if value:
