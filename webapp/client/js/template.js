@@ -47,9 +47,13 @@
 
         self.init();
 
-        self.template.load(load_from, function () {
+        // $.get does not process the data, and $(elem).load does some processing
+        $.get(load_from, function (data) {
+            //
+            self.template.text(data);
             self.showView();
         });
+
     };
 
     Template.prototype.showView = function () {
