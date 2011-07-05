@@ -1,24 +1,5 @@
 
 
-
-.listingEntry {
-    border-bottom: 1px solid #D0D0D0;
-}
-
-.listingEntry .actions {
-    list-style-type:none;
-    margin:0;
-    padding:0;
-    font-size:80%;
-    text-align:right;
-}
-
-.listingEntry .actions li {
-    display:inline;
-    padding: 0 0.5em;
-    border-left: 1px solid #D0D0D0;
-}
-
 label {
     float:left;
     width:150px;
