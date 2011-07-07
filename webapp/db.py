@@ -5,6 +5,8 @@
 #     License: refer to LICENSE.txt
 ##########################################
 
+import threading
+
 from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
@@ -20,17 +22,20 @@ from sqlalchemy.orm.exc import NoResultFound
 
 #DBEngine = None
 
-_DBSession = None
+#_DBSession = None
+
+local_storage = threading.local()
 
 def get_session():
-    return _DBSession()
+    return local_storage._DBSession()
 
 def get_session_class():
-    return _DBSession
+    return local_storage._DBSession
 
 def set_dbsession(session):
-    global _DBSession
-    _DBSession = session
+    if hasattr(local_storage, "_DBSession"):
+        raise AttributeError("_DBSession is already set in this thread!")
+    local_storage._DBSession = session
 
 class WebappBase(object):
     """
