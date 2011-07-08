@@ -22,20 +22,27 @@ from sqlalchemy.orm.exc import NoResultFound
 
 #DBEngine = None
 
-#_DBSession = None
+_DBSession = None
 
-local_storage = threading.local()
+#local_storage = threading.local()
 
 def get_session():
-    return local_storage._DBSession()
+    return _DBSession()
+    #return local_storage._DBSession()
 
 def get_session_class():
-    return local_storage._DBSession
+    return _DBSession
+    #return local_storage._DBSession
 
 def set_dbsession(session):
-    if hasattr(local_storage, "_DBSession"):
-        raise AttributeError("_DBSession is already set in this thread!")
-    local_storage._DBSession = session
+    global _DBSession
+    if _DBSession is not None:
+        raise AttributeError("_DBSession has been already set!")
+
+    _DBSession = session
+    #if hasattr(local_storage, "_DBSession"):
+    #    raise AttributeError("_DBSession is already set in this thread!")
+    #local_storage._DBSession = session
 
 class WebappBase(object):
     """
