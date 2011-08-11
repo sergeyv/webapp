@@ -228,8 +228,8 @@ class RestResource(crud.Resource):
 
 
                 if form is None:
-                    from pyramid.exceptions import ExceptionResponse
-                    e = ExceptionResponse("Format '%s' is not registered for %s" % (format, cls))
+                    from pyramid.httpexceptions import HTTPBadRequest
+                    e = HTTPBadRequest("Format '%s' is not registered for %s" % (format, cls))
                     e.status = '444 Data Format Not Found'
                     raise e
 

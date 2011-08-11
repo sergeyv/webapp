@@ -126,7 +126,7 @@
             var o = {},
                 a = this.serializeArray();
             $.each(a, function () {
-                // remove formish templates - the name contain *
+                // remove formish templates - template's name contains *
                 if (this.name.indexOf('*') === -1) {
                     if (o[this.name]) {
                         if (!o[this.name].push) {
@@ -136,6 +136,16 @@
                     } else {
                         o[this.name] = this.value || '';
                     }
+                }
+            });
+
+            /// unchecked checkboxes are not serialized by serializeArray
+            /// which conforms to HTML standards but is quite annoying
+            /// we send 'false' if a checkbox is unchecked
+            $.each(this.find('input:checkbox'), function() {
+                    if (!this.checked) {
+                    console.log("Hi");
+                    o[this.name] = false;
                 }
             });
             return o;

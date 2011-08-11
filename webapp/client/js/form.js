@@ -372,6 +372,15 @@
                     } else if (elem[0].tagName.toLowerCase() === 'div') {
                         /// support read-only fields
                         elem.html(value || '&mdash;');
+                    } else if (elem.attr('type') === 'checkbox') {
+                        /// support checkboxes - set "checked" attribute instead of "value"
+                        console.log("CB!" + elem.html());
+                        elem.val('true');
+                        if (value) {
+                            // see http://stackoverflow.com/questions/426258/how-do-i-check-a-checkbox-with-jquery-or-javascript
+                            elem.each(function(){ this.checked = true; });
+                        }
+                        elem.change();
                     } else {
                         elem.val(value);
                         elem.attr("original_value", value);
