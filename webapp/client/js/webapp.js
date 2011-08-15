@@ -142,6 +142,8 @@
             /// unchecked checkboxes are not serialized by serializeArray
             /// which conforms to HTML standards but is quite annoying
             /// we send 'false' if a checkbox is unchecked
+            /// this actually may be wrong if we use checkboxes for lists etc.
+
             $.each(this.find('input:checkbox'), function() {
                     if (!this.checked) {
                     console.log("Hi");
