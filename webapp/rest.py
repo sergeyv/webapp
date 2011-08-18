@@ -10,8 +10,8 @@ from datetime import datetime, date
 from decimal import Decimal
 
 
+import sqlalchemy as sa
 import schemaish as sc
-from sqlalchemy.orm import object_session
 
 import crud
 
@@ -26,33 +26,6 @@ class IRestRootCollection(crud.ICollection):
 _marker = []
 
 
-def _dict_diff(before, after):
-    """
-    Compares two dictionaries and returns a tuple with two dictionaries
-    which contain only the keys which have changed
-
-    Note: preliminary implementation!
-    """
-
-    import dottedish
-
-    before_flat = { k:v for (k, v) in dottedish.flatten(before) }
-    after_flat = { k:v for (k, v) in dottedish.flatten(after) }
-    #b = {}
-    #a = {}
-    diff = {}
-
-    # Some keys may be missing before but present after (i.e. added)
-    for k in after_flat:
-        if k not in before_flat:
-            #before_flat[k] = None
-           diff[k] = (None, after_flat[k])
-
-    for k in before_flat:
-        if before_flat[k] != after_flat[k]:
-           diff[k] = (before_flat[k], after_flat[k])
-
-    return diff
 
 class RestCollection(crud.Collection):
     """
@@ -573,21 +546,15 @@ class RestResource(crud.Resource):
         form_name = params.get('__formish_form__')
         #form = self._find_form_for_data_format(form_name)
 
-        old_data = self.serialize(format=form_name)
-
+        #old_data = self.serialize(format=form_name)
         self.deserialize(params, request)
+        #new_data = self.serialize(format=form_name)
+        #diff = _dict_diff(old_data, new_data)
+        #request['webapp_update_diff'] = diff
 
-        new_data = self.serialize(format=form_name)
-
-        diff = _dict_diff(old_data, new_data)
-
-        #print diff
-        #import pdb; pdb.set_trace()
-
-        request['webapp_update_diff'] = diff
         #Flush session so changes have been applied
         # before we call the after context hook
-        object_session(self.model).flush()
+        sa.orm.object_session(self.model).flush()
 
         if hasattr(self, "after_item_updated"):
             self.after_item_updated(request)
