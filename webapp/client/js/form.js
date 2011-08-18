@@ -12,7 +12,8 @@
         */
         this.options = $.extend({
             title: "Add/Edit Item",
-            button_title: "Save Changes"
+            button_title: "Save Changes",
+            http_method: "PUT"
         }, options);
 
         this.options.data_format = this.options.data_format || this.options.identifier;
@@ -551,9 +552,14 @@
         var self = this,
             form_data = self.form.serializeObject(),
             item_id = self.event.parameters.item_id || 'new',
-            redirect_to = (item_id === 'new') ? self.options.redirect_after_add : self.options.redirect_after_edit;
+            redirect_to = (item_id === 'new') ? self.options.redirect_after_add : self.options.redirect_after_edit,
+            meth = $.Update;
 
-        $.Update(self.getRestServiceUrl("", {item_id: item_id}), form_data,
+        if (self.options.http_method === "POST") {
+            meth = $.Create;
+        }
+
+        meth(self.getRestServiceUrl("", {item_id: item_id}), form_data,
             function (data) {
                 if (self.event.is_popup) {
                     self.view.dialog("close");
