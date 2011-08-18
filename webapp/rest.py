@@ -55,6 +55,7 @@ class RestCollection(crud.Collection):
         batch_size = min(batch_size, self.MAX_RECORDS_PER_BATCH)
         batch_start = int(request.GET.get('batch_start', 0))
 
+        search_criterion = request.GET.get('search', None)
 
         # See if a subclass defines a hook for processing this format
         resource = self.wrap_child(self.create_transient_subitem(), name="empty")
@@ -85,11 +86,17 @@ class RestCollection(crud.Collection):
 
         query = self.get_items_query(filter_condition = filter_condition, order_by=order_by)
 
+
+        # TODO: LIKE parameters need escaping
+        if search_criterion:
+            query = query.filter(model_class.name.ilike('%'+search_criterion+'%'))
+
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
         ## filter settings
         count = query.count()
         data['total_count'] = count
+
 
         # Limit the result set to a single batch only
         # request one record more than needed to see if there are
