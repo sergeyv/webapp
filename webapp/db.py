@@ -127,8 +127,6 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
 
     Base.metadata.bind = engine
 
-    # Not anymore, sqlalchemy-migrate should do this
-    #Base.metadata.create_all(engine)
 
     if populate_fn is not None:
         try:

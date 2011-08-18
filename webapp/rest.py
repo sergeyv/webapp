@@ -83,6 +83,15 @@ class RestCollection(crud.Collection):
         batch_start = int(request.GET.get('batch_start', 0))
 
 
+        # See if a subclass defines a hook for processing this format
+        resource = self.wrap_child(self.create_transient_subitem(), name="empty")
+
+        hook_name = "serialize_sequence_%s" % format
+        meth = getattr(resource, hook_name, None)
+        if meth is not None:
+            return meth()
+
+        # Proceed with the standard processing
         if order_by is not None:
             if sort_order == 'desc':
                 order_by = "-%s" % order_by
@@ -257,7 +266,10 @@ class RestResource(crud.Resource):
 
         structure = form.structure.attr
 
-        data = self._extract_data_from_item(self.model, structure)
+        # A subclass may define a method serialize_formatname(self, item, stricture) which will be called instead of the standard serializer
+        meth = getattr(self, "serialize_%s" % format, self._extract_data_from_item)
+
+        data = meth(self.model, structure)
 
         if annotate:
             data['_ann'] = self._annotate_fields(structure)
@@ -537,10 +549,17 @@ class RestResource(crud.Resource):
         item = self.model
 
         schema = params.get('__schema__')
+        form_name = schema.__class__.__name__
+
         if schema is None:
             form_name = params.get('__formish_form__')
             form = self._find_form_for_data_format(form_name)
             schema = form.structure.attr
+
+
+        meth = getattr(self, 'deserialize_%s' + form_name, None)
+        if meth is not None:
+            return meth(params)
 
         _save_structure(item, schema, params)
 

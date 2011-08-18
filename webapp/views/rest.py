@@ -29,8 +29,6 @@ def json_rest_empty(context, request):
     """
     Returns an empty item with all fields set to default values
     """
-
-    print "JSON_REST_EMPTY: request body %s" % (request.body)
     return context.get_empty(request)
 
 
@@ -38,15 +36,27 @@ def _create_item(context, request):
     """
     """
     if hasattr(context, "before_item_created"):
-        context.before_item_created
-
-    print "+JSON_REST_CREATE: request body %s" % (request.body)
+        context.before_item_created(request)
 
     params = json.loads(request.body)
     print "+JSON_REST_CREATE: %s" % (params)
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
+
+
+    # See if a subclass defines a hook for processing this format
+    format = params.get('__formish_form__', None)
+
+    if format is not None:
+        # See if a subclass defines a hook for processing this format
+        resource = context.wrap_child(context.create_transient_subitem(), name="empty")
+
+        hook_name = "deserialize_sequence_%s" % format
+        meth = getattr(resource, hook_name, None)
+        if meth is not None:
+            return meth(params)
+
 
     # TODO: Add validation here
     new_item = context.create_subitem(params=params, request=request)
