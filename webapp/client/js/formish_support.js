@@ -184,7 +184,12 @@
                 terms,
                 key,
                 value,
-                data = t.closest('.field').find('.formish-sequencedata').attr('title').split(',');
+                data;
+
+            if (!t.length) {
+                return;
+            }
+            data = t.closest('.field').find('.formish-sequencedata').attr('title').split(',');
 
             for (i = 0; i < data.length; i += 1) {
                 terms = data[i].split('=');
