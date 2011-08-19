@@ -5,7 +5,8 @@
         // a nice side-effect of this is that it's doing a deep-copy
         this.options = $.extend({
             batch_size: 50,
-            data_format: 'listing'
+            data_format: 'listing',
+            searchable: true
         }, options);
 
     }
