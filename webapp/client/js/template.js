@@ -37,9 +37,15 @@
             self.template = $("#" + node_id);
         }
 
+        if (self.options.partials) {
+            $.each(self.options.partials, function (idx, partial) {
+                partial.options.is_partial = true;
+            });
+        }
+
     };
 
-    Template.prototype.showViewFirstTime = function () {
+    Template.prototype.showViewFirstTime = function (container) {
 
         var self = this,
             load_from = "/t/" + self.options.identifier + ".html";
@@ -48,28 +54,35 @@
         self.init();
 
         // $.get does not process the data, and $(elem).load does some processing
-        $.get(load_from, function (data) {
+        $.ajax({
+            url: load_from,
+            cache: false,
+            success: function (data) {
             //
             self.template.text(data);
-            self.showView();
-        });
+            self.showView(container);
+        }});
 
     };
 
-    Template.prototype.showView = function () {
+    Template.prototype.showView = function (container) {
 
         var self = this,
             node_id = self.options.identifier + '-view',
             $node;
 
-        /// find or create the view container
-        self.view = $("#" + node_id);
-        if (!self.view.length) {
-            /// Create and append a node if not found
-            $node = ($('<div id="' + node_id + '" class="contentView">'));
-
-            $("#content-views").append($node);
+        if (!container) {
+            /// find or create the view container
             self.view = $("#" + node_id);
+            if (!self.view.length) {
+                /// Create and append a node if not found
+                $node = ($('<div id="' + node_id + '" class="contentView">'));
+
+                $("#content-views").append($node);
+                self.view = $("#" + node_id);
+            }
+        } else {
+            self.view = container;
         }
 
         //this.parameters = parameters;
@@ -79,28 +92,18 @@
     Template.prototype.populateView = function () {
         var self = this;
 
-
-        /*  service_url = self.getRestServiceUrl();  ,
-        params = [];
-        if (self.options.data_format) {
-            params.push("format=" + self.options.data_format);
-        }
-        if (self.options.ann) {
-            params.push("ann=1");
-        }
-
-        params = params.join("&");
-        if (params) {
-            service_url = service_url + "?" + params;
-        }*/
-
         webapp.Read(self.getRestServiceUrl("with-params"), function (data) {
 
             self.data = data;
             self.renderData();
 
-            // Show the view.
-            webapp.controller.setActiveView(self);
+            if (!self.options.is_partial) {
+                // Show the view.
+                console.log("Set active view!");
+                webapp.controller.setActiveView(self);
+            } else {
+                self.view.removeClass("loading");
+            }
         });
 
     };
@@ -143,12 +146,32 @@
     Template.prototype.initPartials = function () {
         var self = this;
         self.view.find(".partial").each(function (idx, val) {
-            var partial = $(this),
-                msg = partial.data("loading_msg");
+            var container = $(this),
+                msg = container.data("loading_msg"),
+                partial_id = container.data("partial"),
+                partial;
 
-            alert(msg);
-            partial.addClass("loading").text(msg);
+            container.addClass("loading").text(msg);
+            if (self.options['partials']) {
+                partial = self.options.partials[partial_id];
+            }
 
+            if (!partial) {
+                webapp.log("Partial " + partial_id + " not found!");
+                return;// this actually a 'continue' - breaks the current $.each iteration
+            }
+
+            partial.event = self.event;
+
+            /// Do the initial view set-up before the first showing.
+            /// Allows us, say, to load the view contents on demand
+            if (!partial.alreadyInitialized && partial.showViewFirstTime) {
+                partial.showViewFirstTime(container);
+                partial.alreadyInitialized = true;
+            } /*else {
+                // Show the given view.
+                partial.showView(container);
+            }*/
 
         });
     }

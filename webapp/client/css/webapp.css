@@ -87,3 +87,10 @@ a.iconAdd {
 a.iconAdd:hover {
     background-image: url("images/add_on.png");
 }
+
+
+.partial.loading {
+    border: 1px solid #F0F0F0;
+    background: transparent url("images/ajax-spinner-small.gif") left center no-repeat;
+    padding-left: 24px;
+}

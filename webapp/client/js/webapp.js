@@ -429,6 +429,7 @@
         return $.ajax({
             type: "GET",
             url: url,
+            cache: false, // disable caching. May need to improve
             success: function (data) {
                 return callback(data);
             }

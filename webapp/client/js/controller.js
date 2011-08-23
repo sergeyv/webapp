@@ -96,17 +96,6 @@
         // Store the given view as the current view.
         this.currentView = view;
 
-        // TODO: just logging - delete later
-        /*$.each(event.parameters || [], function (idx, value) {
-            webapp.log("PARAMETER: " + idx + "->" + value);
-        });
-
-        if (event) {
-            $.each(event, function (idx, value) {
-                webapp.log("EVENT: " + idx + "->" + value);
-            });
-        } */
-
         // reflect the change in the navigation
         this.updateMenu(event);
     };
