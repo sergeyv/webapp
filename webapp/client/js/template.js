@@ -94,7 +94,8 @@
             service_url = service_url + "?" + params;
         }*/
 
-        $.Read(self.getRestServiceUrl("with-params"), function (data) {
+        webapp.Read(self.getRestServiceUrl("with-params"), function (data) {
+
             self.data = data;
             self.renderData();
 
@@ -139,6 +140,19 @@
     };
 
 
+    Template.prototype.initPartials = function () {
+        var self = this;
+        self.view.find(".partial").each(function (idx, val) {
+            var partial = $(this),
+                msg = partial.data("loading_msg");
+
+            alert(msg);
+            partial.addClass("loading").text(msg);
+
+
+        });
+    }
+
     /*
         * Template allows links to have some special classes
         * which modify their behaviour:
@@ -169,7 +183,7 @@
 
         var self = this,
             invoke_async_action = function ($link) {
-                var meth = $.Read,
+                var meth = webapp.Read,
                     callback = function () {
 
                         /// find all classes which start with webappOnSuccess
@@ -186,11 +200,11 @@
                     };
 
                 if ($link.hasClass("webappMethodDelete")) {
-                    meth = $.Delete;
+                    meth = webapp.Delete;
                 }
 
                 if ($link.hasClass("webappMethodPut")) {
-                    meth = $.Update;
+                    meth = webapp.Update;
                 }
 
                 meth($link.attr('href'), callback);
@@ -275,6 +289,9 @@
 
 
         });
+
+
+        self.initPartials();
     };
 
 

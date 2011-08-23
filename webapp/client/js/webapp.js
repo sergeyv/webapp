@@ -424,6 +424,68 @@
         $(id).html(output);
     };
 
+    WebApp.prototype.Read =  function (url, callback) {
+
+        return $.ajax({
+            type: "GET",
+            url: url,
+            success: function (data) {
+                return callback(data);
+            }
+
+        });
+    };
+
+    WebApp.prototype.Delete =  function (url, callback) {
+
+        return $.ajax({
+            type: "DELETE",
+            url: url,
+            success: function (data) {
+                return callback(data);
+            }
+
+        });
+    };
+
+    WebApp.prototype.Create =  function (url, data, callback) {
+
+        if (typeof data !== "string") {
+            data = JSON.stringify(data || {});
+        }
+
+        return $.ajax({
+            type: "POST",
+            url: url,
+            contentType: "application/json",
+            processData: false, // tell jQuery not to process
+            data: data,
+            success: function (data) {
+                callback(data);
+            }
+
+        });
+    };
+
+    WebApp.prototype.Update =  function (url, data, callback) {
+
+        if (typeof data !== "string") {
+            data = JSON.stringify(data || {});
+        }
+
+        return $.ajax({
+            type: "PUT",
+            url: url,
+            contentType: "application/json",
+            processData: false, // tell jQuery not to process
+            data: data,
+            success: function (data) {
+                callback(data);
+            }
+
+        });
+    };
+
     // ----------------------------------------------------------------------- //
     // ----------------------------------------------------------------------- //
 

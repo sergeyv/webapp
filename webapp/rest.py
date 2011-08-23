@@ -42,6 +42,8 @@ class RestCollection(crud.Collection):
     MAX_RECORDS_PER_BATCH = 400
     LIMIT_INCREMENTAL_RESULTS = 25
 
+    filter_fields = ()
+
     def get_items_listing(self, request, filter_condition=None):
 
 
@@ -123,6 +125,27 @@ class RestCollection(crud.Collection):
 
         data['items'] = result
         return data
+
+
+    def get_filters(self, request):
+
+        data = {}
+
+        model_class = self.subitems_source
+        session = get_session()
+
+        for col in self.filter_fields:
+            attr = getattr(model_class, col, None)
+            print attr
+            if attr is not None:
+                result = session.query(sa.distinct(attr))
+                d = []
+                for r in result:
+                    d.append(r[0])
+                data[col] = d
+
+        return data
+
 
 
     def get_empty(self, request):

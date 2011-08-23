@@ -24,12 +24,12 @@ class AssetRegistry(object):
     """
 
     core_js_assets = (
-    "/webapp.client/core_js/jquery-1.4.2.js",
+    "/webapp.client/core_js/jquery-1.6.2.js",
 
     # REST support
     # from http://plugins.jquery.com/project/Rest
     "/webapp.client/core_js/json2.js",
-    "/webapp.client/core_js/jquery.rest.js",
+    #"/webapp.client/core_js/jquery.rest.js",
 
     # Client-side templates
     # from http://github.com/aefxx/jQote2
@@ -42,10 +42,10 @@ class AssetRegistry(object):
 
     # Address plugin which deals with the hash part of the url
     # from http://www.asual.com/jquery/address/
-    "/webapp.client/core_js/jquery.address-1.3.2.js",
+    "/webapp.client/core_js/jquery.address-1.4.js",
 
     # Full JQuery UI from http://jqueryui.com/download
-    "/webapp.client/core_js/jquery-ui-1.8.10.custom.min.js",
+    "/webapp.client/core_js/jquery-ui-1.8.16.custom.min.js",
     # Time picker from http://bililite.com/blog/2009/07/09/updating-timepickr/
     "/webapp.client/core_js/jquery.timepickr.js",
 
@@ -75,7 +75,7 @@ class AssetRegistry(object):
 
     core_css_assets = (
     "/crud_static/default.css",
-    "/webapp.client/css/jquery-ui-1.8.10.custom.css",
+    "/webapp.client/css/jquery-ui-1.8.16.custom.css",
     #"/formish.css/formish.css",
     "/webapp.client/css/webapp.css",
     )

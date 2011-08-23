@@ -261,7 +261,7 @@
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
 
-        $.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
+        webapp.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
             self.fill_form(id_root, data);
 
             // Only show the view after all the data is set.
@@ -433,7 +433,7 @@
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
 
-        $.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
+        webapp.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
             self.fill_form(id_root, data);
 
             // Only show the view after all the data is set.
@@ -520,7 +520,7 @@
         /// empty 'from' url signals that we shouldn't attempt to load the data
         /// just yet (i.e. a master listbox was not loaded yet)
         if (from) {
-            $.Read(from, function (data) {
+            webapp.Read(from, function (data) {
                 $select.children().remove();
                 $('<option value="">- choose -</option>').appendTo($select);
                 $.each(data.items, function (idx, value) {
@@ -553,10 +553,10 @@
             form_data = self.form.serializeObject(),
             item_id = self.event.parameters.item_id || 'new',
             redirect_to = (item_id === 'new') ? self.options.redirect_after_add : self.options.redirect_after_edit,
-            meth = $.Update;
+            meth = webapp.Update;
 
         if (self.options.http_method === "POST") {
-            meth = $.Create;
+            meth = webapp.Create;
         }
 
         meth(self.getRestServiceUrl("", {item_id: item_id}), form_data,
