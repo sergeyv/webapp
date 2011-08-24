@@ -1,4 +1,5 @@
 (function ($) {
+    "use strict";
 
     function convert_id_to_name(s, formid) {
         var segments = s.split('-'),
@@ -117,14 +118,14 @@
                 formid = o.attr('id'),
                 $adder = t.next('.adder'),
                 code = $adder.val(),// Get the encoded template
-                num_items_already_there = function () {
+                num_items_already_there = (function () {
                     // Find out how many fields we already have
                     if (t.prev('table').length) {
                         return t.prev('table').children('tbody').find('tr.field').length;
                     } else {
                         return $adder.prevAll('.field').length;
                     }
-                }(),
+                }()),
                 originalname = $adder.attr('name'), // Get some variable to help with replacing (originalname, originalid, name, id)
                 segments = originalname.split('.'),
                 seqnums = get_sequence_numbers(segments, num_items_already_there), // Get the numbers used in the originalname
@@ -204,10 +205,8 @@
             }
         },
 
-         add_new_items_header_row: function (t) {
-            var o = this,
-                h;
-
+        add_new_items_header_row: function (t) {
+            var h;
             /// For the Tabular widget: check if we have a table immediately
             /// before the link. If found, then the row need to be added into the table
             if (t.prev('table').length) {

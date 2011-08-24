@@ -1,4 +1,5 @@
 (function ($, webapp) {
+    "use strict";
 
     function View(options) {
         this.options = $.extend({}, options);
@@ -121,6 +122,7 @@
  */
 
 (function ($, webapp) {
+    "use strict";
 
     function RedirectView(target_url) {
         this.target_url = target_url;

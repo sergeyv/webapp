@@ -2,6 +2,7 @@
 // Create a closed memory space for the webapp definition and instantiation.
 // This way, we keep the global name space clean.
 (function ($) {
+    "use strict";
 
 	// I am the class that controls the Javascript framework.
 	function WebApp() {
@@ -144,8 +145,8 @@
             /// we send 'false' if a checkbox is unchecked
             /// this actually may be wrong if we use checkboxes for lists etc.
 
-            $.each(this.find('input:checkbox'), function() {
-                    if (!this.checked) {
+            $.each(this.find('input:checkbox'), function () {
+                if (!this.checked) {
                     console.log("Hi");
                     o[this.name] = false;
                 }
@@ -481,7 +482,9 @@
             processData: false, // tell jQuery not to process
             data: data,
             success: function (data) {
-                callback(data);
+                if (typeof(callback)==="function") {
+                    callback(data);
+                }
             }
 
         });
@@ -491,7 +494,7 @@
     // ----------------------------------------------------------------------- //
 
 	// Create a new instance of the webapp and store it in the window.
-	webapp = new WebApp();
+	window.webapp = new WebApp();
 
 	// When the DOM is ready, run the webapp.
 	$(function () {

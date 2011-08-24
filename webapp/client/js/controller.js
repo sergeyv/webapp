@@ -1,4 +1,5 @@
 (function ($, webapp) {
+    "use strict"
 
     // ----------------------------------------------------------------------- //
     // ----------------------------------------------------------------------- //
@@ -144,7 +145,7 @@
                 var $elem = $(elem);
                 if ($elem.attr('id') !== view.view.attr('id')) {
                     if ($elem.hasClass('preserve')) {
-                        $elem.removeClass("activeContentView")
+                        $elem.removeClass("activeContentView");
                     } else {
                         $elem.remove();
                     }

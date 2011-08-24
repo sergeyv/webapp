@@ -1,4 +1,5 @@
 (function ($, webapp) {
+    "use strict";
 
     function Listing(options) {
 

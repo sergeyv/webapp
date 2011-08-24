@@ -8,8 +8,7 @@ ${form.footer()|n}
 
 <script language="javascript">
     (function(app) {
-        var rules = ${form.get_js_validation_rules()};
+        var rules = ${form.get_js_validation_rules()|n};
         app.addValidationRules("${form.name}", rules);
-    })(webapp);
+    }(window.webapp));
 </script>
-

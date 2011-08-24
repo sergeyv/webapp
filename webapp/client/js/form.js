@@ -1,4 +1,5 @@
 (function ($, webapp) {
+    "use strict";
 
     function Form(options) {
 
@@ -21,18 +22,6 @@
 
     Form.prototype = new webapp.Template();
     Form.prototype.constructor = Form;
-
-
-
-    /*Form.prototype.decorateView = function () {
-        /// this is called by View.init and allows us to
-        /// insert arbitrary content into the newly-created
-        /// <div class="contentView" />
-        /// This happens before the content is loaded
-        var self = this;
-        self.view.append($('<h1><span class="primaryPageHeading">###</span></h1>'))
-            .append($('<div class="formPlaceholder"></div>'));
-    };*/
 
 
     Form.prototype.bindFormControls = function () {
@@ -114,10 +103,9 @@
 
     Form.prototype.genericAugmentForm = function () {
         /// Do stuff we want on every form
-        var self = this;
+        var self = this,
             title = self.event.parameters.title || self.options.title,
-            button_title = self.event.parameters.button_title || self.options.button_title,
-            form_title_elem = self.view.find(".primaryPageHeading");
+            button_title = self.event.parameters.button_title || self.options.button_title;
 
         self.cancelLink = self.view.find("a.formCancelLink");
 
@@ -130,7 +118,7 @@
             context.popup_success_callback = function (added_id) {
                 //alert("Success: " + added_id);
                 var $select = $link.parent().children("select");
-                $select.attr("original_value", added_id);
+                $select.data("original_value", added_id);
                 self.reloadLoadable($select);
             };
 
@@ -149,7 +137,7 @@
                 return false;
             });
         } else {
-            self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'))
+            self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
             /// TODO: Add option/condition "add_cancel_link"?
             self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
             /// Cancel link points to the page we came from
@@ -187,46 +175,6 @@
         /// do nothing, override in subclasses
     };
 
-
-    // I get called when the view needs to be shown.
-    Form.prototype.__showView = function () {
-        /*
-         * title and button_title attributes can be overridden on a per-route
-         * basis using route's default_parameters dict:
-         *     c.route("/servers/register", new webapp.Form({
-         *         title: "Register Existing Server",
-         *         identifier: "ServerRegisterForm",
-         *         rest_service_root: "/rest/servers/new"
-         *     }), {title: "Overridden!", button_title:"Yee-hha!"});
-         */
-        var self = this,
-            title = self.event.parameters.title || self.options.title,
-            button_title = self.event.parameters.button_title || self.options.button_title,
-            form_title_elem = self.view.find(".primaryPageHeading");
-
-
-
-        /// We don't need the form title in a popup because
-        /// the popup has its own title
-        if (self.event.is_popup) {
-            form_title_elem.hide().text("");
-            self.cancelLink.click(function () {
-                self.view.dialog('close');
-                return false;
-            });
-        } else {
-            form_title_elem.show().text(title);
-            /// Cancel link points to the page we came from
-            self.cancelLink.attr('href', webapp.previousPageUrl());
-            self.cancelLink.click(function () {});
-        }
-        self.view.find("#" + self.options.identifier + "-action").val(button_title);
-
-        self.populateLoadables();
-        /// if it's the first showing, DOM does not exist at this point yet
-        //self.populateForm();
-
-    };
 
 
     Form.prototype.populateView = function () {
@@ -375,16 +323,17 @@
                         elem.html(value || '&mdash;');
                     } else if (elem.attr('type') === 'checkbox') {
                         /// support checkboxes - set "checked" attribute instead of "value"
-                        console.log("CB!" + elem.html());
                         elem.val('true');
                         if (value) {
                             // see http://stackoverflow.com/questions/426258/how-do-i-check-a-checkbox-with-jquery-or-javascript
-                            elem.each(function(){ this.checked = true; });
+                            elem.each(function () {
+                                this.checked = true;
+                            });
                         }
                         elem.change();
                     } else {
                         elem.val(value);
-                        elem.attr("original_value", value);
+                        elem.data("original_value", value);
                         elem.change();
                     }
                 } else {
@@ -533,8 +482,8 @@
                 /// the original value as "original_value" attribute of every
                 /// element. After the listbox has been loaded, we now able
                 /// to select the element we need
-                $select.val($select.attr("original_value"));
-                $select.removeAttr("original_value");
+                $select.val($select.data("original_value"));
+                $select.removeData("original_value");
                 $select.parents("div.field").show();
 
                 $select.change();

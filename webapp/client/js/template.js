@@ -1,5 +1,6 @@
 
 (function ($, webapp) {
+    "use strict";
 
     // Add view to the webapp.
 
@@ -58,10 +59,10 @@
             url: load_from,
             cache: false,
             success: function (data) {
-            //
-            self.template.text(data);
-            self.showView(container);
-        }});
+                self.template.text(data);
+                self.showView(container);
+            }
+        });
 
     };
 
@@ -99,7 +100,7 @@
 
             if (!self.options.is_partial) {
                 // Show the view.
-                console.log("Set active view!");
+                webapp.log("Set active view!");
                 webapp.controller.setActiveView(self);
             } else {
                 self.view.removeClass("loading");
@@ -120,6 +121,7 @@
         try {
             self.view.html(self.template.jqote({data: self.data, view: self}));
         } catch (err) {
+            alert(self.template.html());
             self.view.text(err);
             if (!webapp.testmode) {
                 txt = "There was an error on this page.<br />"
@@ -152,7 +154,7 @@
                 partial;
 
             container.addClass("loading").text(msg);
-            if (self.options['partials']) {
+            if (self.options.partials) {
                 partial = self.options.partials[partial_id];
             }
 
@@ -174,7 +176,7 @@
             }*/
 
         });
-    }
+    };
 
     /*
         * Template allows links to have some special classes
