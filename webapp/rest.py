@@ -59,6 +59,17 @@ class RestCollection(crud.Collection):
 
         search_criterion = request.GET.get('search', None)
 
+
+        filter_values = []
+        # NOTE: this should use self.filter_fields as a basis
+        # so it's not possible to filter by fileds not
+        # explicitly listed in that property.
+        for f in self.filter_fields:
+            val = request.GET.get("filter-%s" % f, None)
+            if val:
+                filter_values.append({'key':f, 'value': val})
+
+
         # See if a subclass defines a hook for processing this format
         resource = self.wrap_child(self.create_transient_subitem(), name="empty")
 
@@ -88,8 +99,26 @@ class RestCollection(crud.Collection):
 
         query = self.get_items_query(filter_condition = filter_condition, order_by=order_by)
 
+        # FILTERING
+        for f in filter_values:
+            field = getattr(model_class, f['key'])
+            if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
+                # The attribute is a simple column
+                query = query.filter(field==f['value'])
+            else:
+                # The attribute is not a simple column so we suppose it's
+                # a relation. TODO: we may need a better check here
+                rel_class = self.get_class_from_relation(field)
+                if not isinstance(rel_class, type):
+                    rel_class = rel_class.__class__
 
-        # TODO: LIKE parameters need escaping
+                id_attr = getattr(rel_class, 'id')
+
+                query = query.join(rel_class).filter(id_attr==f['value'])
+
+
+        # SEARCH
+        # TODO: LIKE parameters need escaping. Or do they?
         if search_criterion:
             query = query.filter(model_class.name.ilike('%'+search_criterion+'%'))
 
@@ -134,15 +163,49 @@ class RestCollection(crud.Collection):
         model_class = self.subitems_source
         session = get_session()
 
-        for col in self.filter_fields:
-            attr = getattr(model_class, col, None)
-            print attr
-            if attr is not None:
-                result = session.query(sa.distinct(attr))
+        for attribute_name in self.filter_fields:
+            field = getattr(model_class, attribute_name, None)
+            if field is None:
+                raise AttributeError("Class %s has no attribute %s" % (model_class.__name__, attribute_name))
+
+
+            if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
+                # The attribute is a simple column
+                result = session.query(field, sa.func.count(field))\
+                    .group_by(field)\
+                    .order_by(field)\
+                    .all()
+
                 d = []
                 for r in result:
-                    d.append(r[0])
-                data[col] = d
+                    d.append( [str(r[0]), str(r[0]), str(r[1])] )
+                data[attribute_name] = d
+            else:
+                # The attribute is not a simple column so we suppose it's
+                # a relation. TODO: we may need a better check here
+                rel_class = self.get_class_from_relation(field)
+                if not isinstance(rel_class, type):
+                    rel_class = rel_class.__class__
+
+                id_attr = getattr(rel_class, 'id')
+                name_attr = getattr(rel_class, 'name')
+                q = session.query(id_attr, name_attr, sa.func.count(model_class.id))\
+                    .join(model_class)\
+                    .group_by(id_attr, name_attr)\
+                    .order_by(name_attr)
+
+                #q = q.with_parent(self.model, attribute_name)
+                result = q.all()
+                r = []
+                for item in result:
+                    r.append( [item.id, item.name, item[2]])
+                data[attribute_name] = r
+
+
+
+                #raise AttributeError("You're trying to order by '%s', which is not a proper column (a relationship maybe?)" % attribute_name)
+
+
 
         return data
 

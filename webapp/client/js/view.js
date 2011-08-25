@@ -43,6 +43,38 @@
     };
 
 
+    View.prototype.modified_url = function (args) {
+        var url = this.event.location,
+            slack = '';
+        $.each(args, function (key, value) {
+            slack += '|' + key + ':' + value;
+        });
+        return url + slack;
+    }
+
+    View.prototype.new_filter_url = function (attr, value) {
+        /* returns the current url with one of the filters changed */
+        // deep-copy
+        var args = $.extend({}, this.event.uri_args);
+        args[attr] = value;
+        return this.modified_url(args);
+    }
+
+    View.prototype.new_sort_url = function (value) {
+        /* returns the current url with sort_on and sort_order values changed */
+        var args = $.extend({}, this.event.uri_args); // deep copy
+        if (args.sort_on === value) {
+            if (args.sort_order === 'desc') {
+                args.sort_order = 'asc';
+            } else {
+                args.sort_order = 'desc';
+            }
+        }
+        args.sort_on = value;
+        return this.modified_url(args);
+    }
+
+
     View.prototype.collectRestParams = function () {
         /*
         * returns a list of 'key=value' strings aggreggated from

@@ -121,8 +121,8 @@
         try {
             self.view.html(self.template.jqote({data: self.data, view: self}));
         } catch (err) {
-            alert(self.template.html());
-            self.view.text(err);
+            //alert(self.template.html());
+            self.view.text(err.message);
             if (!webapp.testmode) {
                 txt = "There was an error on this page.<br />"
                     + "Error description: <strong>"
@@ -146,6 +146,7 @@
 
 
     Template.prototype.initPartials = function () {
+
         var self = this;
         self.view.find(".partial").each(function (idx, val) {
             var container = $(this),
@@ -170,10 +171,10 @@
             if (!partial.alreadyInitialized && partial.showViewFirstTime) {
                 partial.showViewFirstTime(container);
                 partial.alreadyInitialized = true;
-            } /*else {
+            } else {
                 // Show the given view.
                 partial.showView(container);
-            }*/
+            }
 
         });
     };
@@ -314,7 +315,6 @@
 
 
         });
-
 
         self.initPartials();
     };

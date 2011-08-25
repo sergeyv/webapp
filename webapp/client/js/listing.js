@@ -7,8 +7,16 @@
         this.options = $.extend({
             batch_size: 50,
             data_format: 'listing',
-            searchable: true
+            searchable: true,
+            partials: {
+                /// add a default filtering partial - if there's no
+                /// placeholder in the template it's not invoked anyway
+                filters: new webapp.Filters({
+                    rest_service_root: options.rest_service_root + "/filters"
+                })
+            }
         }, options);
+
 
     }
 
@@ -64,37 +72,6 @@
 
         var self = this;
 
-        function modified_url(args) {
-            var url = self.event.location,
-                slack = '';
-            $.each(args, function (key, value) {
-                slack += '|' + key + ':' + value;
-            });
-            return url + slack;
-        }
-
-        function new_filter_url(attr, value) {
-            /* returns the current url with one of the filters changed */
-            // deep-copy
-            var args = $.extend({}, self.event.uri_args);
-            args[attr] = value;
-            return modified_url(args);
-        }
-
-        function new_sort_url(value) {
-            /* returns the current url with sort_on and sort_order values changed */
-            var args = $.extend({}, self.event.uri_args); // deep copy
-            if (args.sort_on === value) {
-                if (args.sort_order === 'desc') {
-                    args.sort_order = 'asc';
-                } else {
-                    args.sort_order = 'desc';
-                }
-            }
-            args.sort_on = value;
-            return modified_url(args);
-        }
-
         function get_column_id(elem) {
             var result = null;
             $(elem.attr('class').split(' ')).each(function (idx, val) {
@@ -137,14 +114,14 @@
                         output.push('<span class="current">' + (i + 1) + '</span>');
                     } else {
                         bs = i * batch_size;
-                        output.push('<a href="#' + new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a>');
+                        output.push('<a href="#' + self.new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a>');
                     }
                 }
 
                 /// next link
                 if (current < pages - 1) {
                     bs = (current + 1) * batch_size;
-                    output.push('<a href="#' + new_filter_url('batch_start', bs) + '"> next </a>');
+                    output.push('<a href="#' + self.new_filter_url('batch_start', bs) + '"> next </a>');
                 } else {
                     output.push('<span class="discreet">(last)</span>');
                 }
@@ -158,13 +135,13 @@
             /// more link
             if (pages > 1 && batch_size < 200) {
                 bs = Math.min(Math.floor(batch_size * 2), 200);
-                output.push('<a href="#' + new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">more</a>');
+                output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">more</a>');
             }
 
             /// less link is shown even if there's just one page
             if (batch_size > 10) {
                 bs = Math.max(Math.floor(batch_size / 2), 10);
-                output.push('<a href="#' + new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">less</a>');
+                output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">less</a>');
             }
 
             output.push("</div>");
@@ -180,7 +157,7 @@
             var $cell = $(this),
                 title = $cell.html(),
                 id = get_column_id($cell);
-            $cell.html('<a href="#' + new_sort_url(id) + '" class="' + get_sort_class(id) + '">' + title + '</a>');
+            $cell.html('<a href="#' + self.new_sort_url(id) + '" class="' + get_sort_class(id) + '">' + title + '</a>');
         });
 
         render_pager();
