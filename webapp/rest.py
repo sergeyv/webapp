@@ -95,7 +95,7 @@ class RestCollection(crud.Collection):
 
         data = {}
 
-        model_class = self.subitems_source
+        model_class = self.get_subitems_class()
 
         query = self.get_items_query(filter_condition = filter_condition, order_by=order_by)
 
@@ -160,13 +160,15 @@ class RestCollection(crud.Collection):
 
         data = {}
 
-        model_class = self.subitems_source
+        model_class = self.get_subitems_class()
+
         session = get_session()
 
         for attribute_name in self.filter_fields:
             field = getattr(model_class, attribute_name, None)
             if field is None:
-                raise AttributeError("Class %s has no attribute %s" % (model_class.__name__, attribute_name))
+
+                raise AttributeError("Class %s has no attribute %s" % (model_class, attribute_name))
 
 
             if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
