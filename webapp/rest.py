@@ -278,12 +278,17 @@ class RestResource(crud.Resource):
     """
 
     @classmethod
-    def _find_form_for_data_format(cls, format):
+    def _find_schema_for_data_format(cls, format):
+
+
+        if isinstance(format, sc.Structure):
+            return format
 
         form_name = cls.data_formats.get(format, None)
         form = None
         if form_name is not None:
             form = get_form(cls.data_formats[format])
+            schema = form.structure.attr
         else:
             # A client can either pass a format name (i.e. 'add'),
             # or, as a shortcut for forms, directly the form name (i.e. 'ServerAddForm')
@@ -292,19 +297,20 @@ class RestResource(crud.Resource):
             # on of our formats.
             if format in cls.data_formats.values():
                 form = get_form(format)
+                schema = form.structure.attr
             else:
                 from crud.registry import get_resource_for_model, get_model_for_resource
                 model_cls = get_model_for_resource(cls)
                 for parent_class in model_cls.__bases__:
                     resource_class = get_resource_for_model(parent_class)
                     print "GOT PARENT RESOURCE: %s" % resource_class
-                    if hasattr(resource_class, "_find_form_for_data_format"):
-                        form = resource_class._find_form_for_data_format(format)
-                        if form is not None:
+                    if hasattr(resource_class, "_find_schema_for_data_format"):
+                        schema = resource_class._find_schema_for_data_format(format)
+                        if schema is not None:
                             break
 
 
-                if form is None:
+                if schema is None:
                     from pyramid.httpexceptions import HTTPBadRequest
                     e = HTTPBadRequest("Format '%s' is not registered for %s" % (format, cls))
                     e.status = '444 Data Format Not Found'
@@ -312,10 +318,10 @@ class RestResource(crud.Resource):
 
 
 
-        if form is None:
+        if schema is None:
             raise ValueError("%s form is not registered, but is listed as the"\
                 " '%s' format for %s class" % (form_name, format, cls) )
-        return form
+        return schema
 
 
     def serialize(self, format='default', annotate=False):
@@ -330,9 +336,7 @@ class RestResource(crud.Resource):
 
         """
 
-        form = self._find_form_for_data_format(format)
-
-        structure = form.structure.attr
+        structure = self._find_schema_for_data_format(format)
 
         # A subclass may define a method serialize_formatname(self, item, stricture) which will be called instead of the standard serializer
         meth = getattr(self, "serialize_%s" % format, self._extract_data_from_item)
@@ -415,7 +419,6 @@ class RestResource(crud.Resource):
                     print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                     pass
                 else:
-                    #import pdb; pdb.set_trace();
                     print "Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value)
                     raise AttributeError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
             else:
@@ -424,7 +427,6 @@ class RestResource(crud.Resource):
             # If the model does not provide a value, use
             # form's default
             if value is None:
-                #import pdb; pdb.set_trace()
                 value = getattr(structure_field, 'default', None)
 
                 if isinstance(value, DynamicDefault):
@@ -483,8 +485,6 @@ class RestResource(crud.Resource):
 
             print "SAVING %s INTO %s USING %s" % (data, item, schema)
             flattened = getattr(schema, "__flatten_subforms__", [])
-
-            #import pdb; pdb.set_trace()
 
             for (name, attr) in attrs:
                 value = data.get(name, _marker)
@@ -621,8 +621,7 @@ class RestResource(crud.Resource):
 
         if schema is None:
             form_name = params.get('__formish_form__')
-            form = self._find_form_for_data_format(form_name)
-            schema = form.structure.attr
+            schema = self._find_schema_for_data_format(form_name)
 
 
         meth = getattr(self, 'deserialize_%s' + form_name, None)
@@ -639,7 +638,7 @@ class RestResource(crud.Resource):
         """
 
         form_name = params.get('__formish_form__')
-        #form = self._find_form_for_data_format(form_name)
+
 
         #old_data = self.serialize(format=form_name)
         self.deserialize(params, request)
