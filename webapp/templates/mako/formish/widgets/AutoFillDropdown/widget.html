@@ -1,0 +1,9 @@
+<%page args="field" />
+
+<div class="loadableListbox autofilldropdown">
+    <select id="${field.cssname}" type="text" name="${field.name}"
+        href="${field.widget.load_from}">
+        <option></option>
+    </select>
+    <div class="autofillform" selector="${field.widget.form_selector}"></div>
+</div>

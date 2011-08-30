@@ -460,6 +460,10 @@
             var $select = $(this).find('select');
             self.reloadLoadable($select);
         });
+
+        self.form.find('div.autofilldropdown').each(function (idx){
+            self.autoFillForm();
+        });
     };
 
     Form.prototype.reloadLoadable = function ($select) {
@@ -489,6 +493,11 @@
                 $select.change();
             });
         }
+    };
+
+    Form.prototype.autoFillForm = function()
+    {
+        alert('Foobar');
     };
 
     Form.prototype.submitForm = function () {
