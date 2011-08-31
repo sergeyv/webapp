@@ -150,7 +150,10 @@ class AutoFillDropdown(LoadableListbox):
     template = "field.AutoFillDropdown"
 
     def __init__(self, **k):
-        self.form_selector = k.pop('form_selector', '')
-        self.form_load_from = k.pop('form_load_from', '')
+        """
+        dependent_fields is a comma-separated list of fields to be pre-filled
+        """
+        self.dependent_fields = k.pop('dependent_fields', '')
+        #self.form_load_from = k.pop('form_load_from', '')
         super(AutoFillDropdown, self).__init__(**k)
 

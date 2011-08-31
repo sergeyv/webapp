@@ -186,12 +186,32 @@ def json_rest_update(context, request):
 @view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
 def json_rest_get(context, request):
     """
+    Returns a json dict representing the given object's data serialized using
+    one of the formats registered for the resource
     """
-
-
-    format_name = request.GET.get('format', 'default')
     annotate = bool(request.GET.get('ann', False))
-    data = context.serialize(format=format_name, annotate=annotate)
 
+
+    # TODO: The code below has a lot of similarities with RestResource.get_empty
+    format_name = request.GET.get('format', 'default')
+
+    session = get_session()
+    session.autoflush = False
+
+    set_field = request.GET.get('set_field', None)
+    if set_field is not None:
+        set_value = request.GET.get('set_value', None)
+        if set_value:
+            # or use the deserialization machinery here?
+            setattr(context.model, set_field, int(set_value))
+            session.flush()
+
+    only_fields = request.GET.get('only', None)
+    if only_fields is not None:
+        only_fields = [ f.strip() for f in only_fields.split(',') ]
+
+    data = context.serialize(format=format_name, annotate=annotate, only_fields=only_fields)
+
+    import transaction; transaction.abort()
     return data
 

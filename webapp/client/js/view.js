@@ -97,7 +97,7 @@
         return params;
     };
 
-    View.prototype.getRestServiceUrl = function (with_params, overrides) {
+    View.prototype.getRestServiceUrl = function (with_params, path_fragments, extra_params) {
         /*
         * Finds and replaces placeholders in the rest_service_root
         * options parameters with the actual values from the 'event.parameters' dict
@@ -105,13 +105,14 @@
         * /rest/companies/:company_id/:person_id, the view will load its data from /rest/companies/123/456
         *
         * @param with_params - if 'with-params' is passed, append arguments collected by collectRestParams
-        * @param overrides - allows to override variables from self.event.parameters for just one call
+        * @param path_fragments - allows to override variables from self.event.parameters for just one call
+        * @param extra_params - allows to override variables from self.event.parameters for just one call
         */
         var self = this,
             root = self.options.rest_service_root,
             // we don't want to modify self.event.parameters here,
             // so we're extending an empty object
-            params = $.extend({}, self.event.parameters, overrides),
+            params = $.extend({}, self.event.parameters, path_fragments),
             url;
 
         /* Not every view needs to load data */
@@ -130,14 +131,21 @@
             }
         );
 
+        if (with_params === "with-params" ) {
+                params = self.collectRestParams();
+        } else {
+            params = [];
+        }
 
-        if (with_params === "with-params") {
-            params = self.collectRestParams();
+        if (extra_params) {
+            $.each(extra_params, function (key, value) {
+                params.push(key + "=" + value);
+            });
+        }
 
-            params = params.join("&");
-            if (params) {
-                url = url + "?" + params;
-            }
+        params = params.join("&");
+        if (params) {
+            url = url + "?" + params;
         }
 
         return url;

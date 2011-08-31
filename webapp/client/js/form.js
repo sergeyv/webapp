@@ -462,10 +462,23 @@
             self.reloadLoadable($select);
         });
 
-        self.form.find('div.autofilldropdown').each(function (idx){
-            var $widget = $(this).find('div.autofillform');
-            self.autoFillForm($widget);
-            $(this).change(self.fillSubForm);
+        self.form.find('div.autoFillDropdown').each(function (idx){
+            //var $widget = $(this).find('div.autofillform');
+            /*self.autoFillForm($widget);*/
+            var $select = $(this).find('select');
+            $select.change(function () {
+                var item_id = self.event.parameters.item_id || 'new',
+                    url = self.getRestServiceUrl("with-params", {item_id: item_id}, {only: $select.data('dependent_fields'), set_field:$select.attr('name'), set_value:$select.val()});
+
+                webapp.Read(url, function (data) {
+                    var id_root = '#' + self.options.identifier;
+                    self.fill_form(id_root, data);
+
+                    // Only show the view after all the data is set.
+                    //webapp.controller.setActiveView(self);
+                });
+
+            });
         });
     };
 
@@ -498,7 +511,7 @@
         }
     };
 
-    Form.prototype.autoFillForm = function($widget)
+    /*Form.prototype.autoFillForm = function($widget)
     {
         var selector = $widget.attr('selector');
         var form = $(selector);
@@ -511,9 +524,9 @@
         var from = $(this).find("");
         if(selected >= 1)
         {
-            
+
         }
-    };
+    };*/
 
     Form.prototype.submitForm = function () {
         /*
