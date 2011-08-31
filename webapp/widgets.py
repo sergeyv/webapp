@@ -137,3 +137,20 @@ class Tabular(SequenceDefault):
         if isinstance(field.widget.widget, Hidden):
             return "display: none"
         return ""
+
+
+class AutoFillDropdown(LoadableListbox):
+    """
+        Widget to be used with a subform that when a value is selected
+        from a dropdown box it will fill the subform with the information
+        from the selected dropdown
+    """
+
+    type = 'AutoFillDropdown'
+    template = "field.AutoFillDropdown"
+
+    def __init__(self, **k):
+        self.form_selector = k.pop('form_selector', '')
+        self.form_load_from = k.pop('form_load_from', '')
+        super(AutoFillDropdown, self).__init__(**k)
+

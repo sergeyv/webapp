@@ -461,6 +461,12 @@
             var $select = $(this).find('select');
             self.reloadLoadable($select);
         });
+
+        self.form.find('div.autofilldropdown').each(function (idx){
+            var $widget = $(this).find('div.autofillform');
+            self.autoFillForm($widget);
+            $(this).change(self.fillSubForm);
+        });
     };
 
     Form.prototype.reloadLoadable = function ($select) {
@@ -489,6 +495,23 @@
 
                 $select.change();
             });
+        }
+    };
+
+    Form.prototype.autoFillForm = function($widget)
+    {
+        var selector = $widget.attr('selector');
+        var form = $(selector);
+        $widget.append(form.detach());
+    };
+
+    Form.prototype.fillSubForm = function()
+    {
+        var selected = $(this).find(":selected:first").val();
+        var from = $(this).find("");
+        if(selected >= 1)
+        {
+            
         }
     };
 
