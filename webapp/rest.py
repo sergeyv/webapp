@@ -120,7 +120,11 @@ class RestCollection(crud.Collection):
         # SEARCH
         # TODO: LIKE parameters need escaping. Or do they?
         if search_criterion:
-            query = query.filter(model_class.name.ilike('%'+search_criterion+'%'))
+            # The search currently depends on the presence of a field
+            # called "name". No field - no search
+            # we may make this configurable in the future
+            if hasattr(model_class, 'name'):
+                query = query.filter(model_class.name.ilike('%'+search_criterion+'%'))
 
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current

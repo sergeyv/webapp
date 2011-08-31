@@ -149,6 +149,7 @@
         // Init formish form
         self.view.formish();
 
+        //self.view.find("select").chosen();
     };
 
     Form.prototype.augmentForm = function () {
