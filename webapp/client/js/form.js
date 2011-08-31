@@ -462,7 +462,9 @@
         });
 
         self.form.find('div.autofilldropdown').each(function (idx){
-            self.autoFillForm();
+            var $widget = $(this).find('div.autofillform');
+            self.autoFillForm($widget);
+            $(this).change(self.fillSubForm);
         });
     };
 
@@ -495,9 +497,21 @@
         }
     };
 
-    Form.prototype.autoFillForm = function()
+    Form.prototype.autoFillForm = function($widget)
     {
-        alert('Foobar');
+        var selector = $widget.attr('selector');
+        var form = $(selector);
+        $widget.append(form.detach());
+    };
+
+    Form.prototype.fillSubForm = function()
+    {
+        var selected = $(this).find(":selected:first").val();
+        var from = $(this).find("");
+        if(selected >= 1)
+        {
+            
+        }
     };
 
     Form.prototype.submitForm = function () {
