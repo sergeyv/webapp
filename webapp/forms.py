@@ -160,7 +160,6 @@ def get_validators_for_field(field):
     """
 
     # TODO: Add more validation methods
-    # TODO: Add remote validation support
 
     validators = {}
     if v.validation_includes(field.attr.validator, v.Email):
