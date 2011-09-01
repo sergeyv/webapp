@@ -24,3 +24,4 @@ from validatish import validation_includes
 # Import our custom validators:
 
 from .ip_address import IPAddress
+from .remote_method import RemoteMethod

@@ -31,7 +31,6 @@ class ILoadableForm(Interface):
     """
 
 from schemaish.attr import LeafAttribute
-
 class Literal(LeafAttribute):
     """
     A schema attribute which means that the serialization framework
@@ -181,6 +180,12 @@ def get_validators_for_field(field):
 
     if v.validation_includes(field.attr.validator, v.IPAddress):
         validators['ip_address'] = True
+
+    if v.validation_includes(field.attr.validator, v.RemoteMethod):
+        for validator in field.attr.validator.validators:
+            if isinstance(validator, v.RemoteMethod):
+                validators['remote'] = validator.remote_method
+
 
     return validators
 
