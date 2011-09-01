@@ -108,7 +108,6 @@ def _recursively_augment(form):
         #print "Schema: %s" % form.name
     #except AttributeError:
         #print "FCJK!: %s" % form
-        ##import pdb; pdb.set_trace();
         #return
 
     for field in form.fields:
@@ -149,7 +148,6 @@ def loadable(cls):
 
     # Find any subforms and call their
     # augment_form methods so we can set up widgets etc.
-    #import pdb; pdb.set_trace()
     _recursively_augment(form)
 
     gsm.registerUtility(form, ILoadableForm, name)
