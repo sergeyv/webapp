@@ -176,5 +176,5 @@ class CombinationField(Widget):
     template = "field.CombinationField"
 
     def __init__(self, **k):
-        self.fields = k.pop('fields', '')
-        super(AutoFillDropdown, self).__init__(**k)
+        self.combination_fields = k.pop('combination_fields', '')
+        super(CombinationField, self).__init__(**k)
