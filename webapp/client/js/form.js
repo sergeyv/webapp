@@ -200,6 +200,8 @@
         // and bind stuff
         self.bindFormControls();
 
+        self.register_combination_changes();
+
         // Set validation
         self.setValidationRules();
 
@@ -570,6 +572,28 @@
         /// a listbox
         $.getJSON(url, function (data) {
             self.populate_listbox(listbox, data, addmore);
+        });
+    };
+
+    Form.prototype.register_combination_changes = function()
+    {
+        this.form.find('div.combinationfield').each(function()
+        {
+            var field_name = $(this).find('input').attr('id');
+            var fields = new Array();
+            var cnt = 0;
+            $(this).find('div.combination-field').each(function(){
+                fields[cnt] = $(this).attr('field');
+                cnt += 1;
+                $('div.' + $(this).attr('field')).change(function(){
+                    var field_input = '';
+                    for(var i = 0; i < cnt; ++i)
+                    {
+                        field_input += $('#' + fields[i]).val();
+                    }
+                    $("input#" + field_name).val(field_input)
+                });
+            });
         });
     };
 

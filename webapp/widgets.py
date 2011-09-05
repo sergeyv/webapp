@@ -157,3 +157,24 @@ class AutoFillDropdown(LoadableListbox):
         #self.form_load_from = k.pop('form_load_from', '')
         super(AutoFillDropdown, self).__init__(**k)
 
+
+class CombinationField(Widget):
+    """
+        Widget that makes a combination of two different fields 
+        on a form and sends it off as a different field name
+        as a hidden value.
+        eg:
+        <input type="text" name="domain_name" value="foobar"/>
+        <select name="suffix">
+            <option value=".com.au">.com.au</option>
+            <option value=".net.au">.net.au</option>
+        </select>
+        <input type="hidden" name="name" value="foobar.com.au" />
+    """
+
+    type = 'CombinationField'
+    template = "field.CombinationField"
+
+    def __init__(self, **k):
+        self.combination_fields = k.pop('combination_fields', '')
+        super(CombinationField, self).__init__(**k)
