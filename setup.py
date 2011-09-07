@@ -19,6 +19,7 @@ setup(name='webapp',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
+          'crud',
       ],
       entry_points="""
       # -*- Entry points: -*-
