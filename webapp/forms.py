@@ -9,6 +9,8 @@ import json # In the standard library as of Python 2.6
 import formish
 import schemaish as sc
 
+import sqlalchemy as sa
+
 import webapp.validators as v
 
 from pkg_resources import resource_filename
@@ -95,8 +97,15 @@ class AutoSchema(sc.Structure):
         if 'model' in kwargs:
             self.model = kwargs['model']
         attrs = reflect(self.model)
+        #import pdb; pdb.set_trace();
         for attr in attrs:
-            self.add(attr.key, sc.String())
+            attr_type = attr.property.columns[0].type
+            if isinstance(attr_type, sa.Integer):
+                self.add(attr.key, sc.Integer())
+            elif isinstance(attr_type, sa.DateTime):
+                self.add(attr.key, sc.DateTime())
+            else:
+                self.add(attr.key, sc.String())
 
 
 

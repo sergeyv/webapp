@@ -90,7 +90,7 @@ def test_serialize():
     """
     Serialize an object and see if it contains the values
     """
-    est = datetime.now()
+    est = datetime.utcnow()
     s = School(id=123, name="TEST!", established = est)
     r = SchoolResource("123", None, s)
 
@@ -142,7 +142,7 @@ def test_sequences():
     are serialized properly
     """
 
-    est = datetime.now()
+    est = datetime.utcnow()
     s = School(id=123, name="TEST!", established = est)
 
     s.students.append(Student(id=1, name="Student One"))
@@ -181,7 +181,7 @@ def test_form_flattening():
     Test if __flatten_subforms__ attribute works - it should take the data from the item instead of trying to find a subobject... so
     data["details"]['name'] come from obj.name, not from (non-existent) obj.details.name
     """
-    est = datetime.now()
+    est = datetime.utcnow()
     s = School(id=123, name="TEST!", established = est)
     r = SchoolResource("123", None, s)
 

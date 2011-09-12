@@ -15,7 +15,7 @@ class DynamicDefault(object):
 class DateTimeDefaultNow(DynamicDefault):
 
     def __call__(self, item, attr_name):
-        return datetime.now()
+        return datetime.utcnow()
 
     def isoformat(self, *args, **kwargs):
         return "1970-01-01"

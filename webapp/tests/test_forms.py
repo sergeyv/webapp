@@ -84,7 +84,7 @@ def test_inheritance():
     if they define the form. So we can declare a form in a parent class
     and use it to serialize children.
     """
-    est = datetime.now()
+    est = datetime.utcnow()
     s = School(id=123, name="TEST!", established = est)
     r = SchoolResource("123", None, s)
 
