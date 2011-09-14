@@ -27,6 +27,8 @@ from zope.component import queryUtility
 #def register_form(name, formclass):
 #    _form_registry[name] = formclass
 
+from webapp.renderers import safe_json_dumps
+
 
 class ILoadableForm(Interface):
     """
@@ -266,7 +268,7 @@ class LoadableForm(formish.Form):
             if validators: # empty dict is false-ish
                 rules[field.name] = validators
 
-        return json.dumps(rules)
+        return safe_json_dumps(rules)
 
 
     def get_html(self):
