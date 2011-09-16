@@ -262,7 +262,7 @@ class LoadableForm(formish.Form):
         """
 
         rules = {}
-        for field in self.fields:
+        for field in self.allfields:
             validators = get_validators_for_field(field)
 
             if validators: # empty dict is false-ish
