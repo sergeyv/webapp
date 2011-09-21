@@ -81,11 +81,6 @@ def _create_item(context, request):
     return new_item.id
 
 
-@view_config(name="remote_submit", context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
-def json_rest_remote_submit(context, request):
-    """
-    """
-    return True;
 
 @view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="PUT", renderer="better_json", accept="text/plain")
 def json_rest_create_new(context, request):
