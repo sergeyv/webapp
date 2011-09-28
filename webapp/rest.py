@@ -311,6 +311,8 @@ class RestResource(crud.Resource):
         if isinstance(format, sc.Structure):
             return format
 
+        schema = None
+
         form_name = cls.data_formats.get(format, None)
         form = None
         if form_name is not None:

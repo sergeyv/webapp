@@ -14,7 +14,10 @@
         this.options = $.extend({
             title: "Add/Edit Item",
             button_title: "Save Changes",
-            http_method: "PUT"
+            http_method: "PUT",
+            need_load_data: true,
+            need_save_data: true
+
         }, options);
 
         this.options.data_format = this.options.data_format || this.options.identifier;
@@ -49,40 +52,7 @@
 
     };
 
-    /*Form.prototype.showViewFirstTime = function () {
-        var self = this,
-            load_from = "/forms/" + self.options.identifier,
-            $placeholder;
 
-        self.init();
-
-        $placeholder = self.view.find(".formPlaceholder");
-
-        if (!$placeholder.length) {
-            alert("Can't find form placeholder for " + self.options.identifier);
-        }
-
-        $placeholder.load(load_from, function () {
-
-            self.genericAugmentForm();
-
-            /// Form is loaded, we can now adjust form's look
-            self.augmentForm();
-
-            // and bind stuff
-            self.bindFormControls();
-
-            // Set validation
-            self.setValidationRules();
-
-            // attach event handlers
-            self.setHandlers();
-
-            /// finally we can show the form
-            self.showView();
-        });
-
-    };*/
 
     Form.prototype.showViewFirstTime = function () {
 
@@ -212,12 +182,16 @@
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
 
-        webapp.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
-            self.fill_form(id_root, data);
+        if (self.need_load_data) {
+            webapp.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
+                self.fill_form(id_root, data);
 
-            // Only show the view after all the data is set.
+                // Only show the view after all the data is set.
+                webapp.controller.setActiveView(self);
+            });
+        } else {
             webapp.controller.setActiveView(self);
-        });
+        }
 
 
     };
@@ -371,27 +345,6 @@
 
     };
 
-    /*Form.prototype.populateForm = function () {
-
-        var self = this,
-            item_id,
-            id_root;
-
-        // Reset the form.
-        self.resetForm();
-
-        self.disableForm();
-
-        id_root = '#' + self.options.identifier;
-        item_id = self.event.parameters.item_id || 'new';
-
-        webapp.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
-            self.fill_form(id_root, data);
-
-            // Only show the view after all the data is set.
-            webapp.controller.setActiveView(self);
-        });
-    };*/
 
     Form.prototype.mangle_url = function (path, $elem) {
         /*
@@ -464,7 +417,7 @@
             self.reloadLoadable($select);
         });
 
-        self.form.find('div.autoFillDropdown').each(function (idx){
+        self.form.find('div.autoFillDropdown').each(function (idx) {
             //var $widget = $(this).find('div.autofillform');
             /*self.autoFillForm($widget);*/
             var $select = $(this).find('select');
