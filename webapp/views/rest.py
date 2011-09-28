@@ -31,11 +31,12 @@ def json_rest_empty(context, request):
     """
     #Specifc validation methods for remote validation here
     #To be used with the remote_method validator
-    if request.subpath and request.subpath[0] == u'validate':
-        validation_name = str(request.params.keys()[0])
+    if len(request.subpath) > 1 and request.subpath[0] == u'validate':
+        validation_name = str(request.subpath[1])
+        field_name = str(request.params.keys()[0])
         if hasattr(context, 'validate_' + validation_name):
             result = getattr(context, 'validate_' + validation_name)(
-                    request.params[validation_name])
+                    request.params[field_name])
             return result
         else:
             raise AttributeError('No validation method on context')
@@ -48,7 +49,6 @@ def _create_item(context, request):
     """
     if hasattr(context, "before_item_created"):
         context.before_item_created(request)
-
     params = json.loads(request.body)
     print "+JSON_REST_CREATE: %s" % (params)
     # Formish uses dotted syntax to deal with nested structures
@@ -79,6 +79,7 @@ def _create_item(context, request):
 
 
     return new_item.id
+
 
 
 @view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="PUT", renderer="better_json", accept="text/plain")
