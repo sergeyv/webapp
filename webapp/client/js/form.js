@@ -77,6 +77,11 @@
             title = self.event.parameters.title || self.options.title,
             button_title = self.event.parameters.button_title || self.options.button_title;
 
+        if (self.options.need_save_data) {
+            self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
+        } else {
+            self.view.find(".actions").html("<a class=\"formCancelLink\" href=\"#/\">Close</a>");
+        }
         self.cancelLink = self.view.find("a.formCancelLink");
 
         self.view.find(".webappPopup").click(function () {
@@ -109,7 +114,6 @@
         } else {
             self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
             /// TODO: Add option/condition "add_cancel_link"?
-            self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
             /// Cancel link points to the page we came from
             self.cancelLink.attr('href', webapp.previousPageUrl());
             self.cancelLink.click(function () {});
@@ -172,8 +176,11 @@
 
         self.register_combination_changes();
 
-        // Set validation
-        self.setValidationRules();
+        if (self.options.need_save_data) {
+            // Set validation
+            self.setValidationRules();
+        } else {
+        }
 
         // attach event handlers
         self.setHandlers();
@@ -181,7 +188,7 @@
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
 
-        if (self.need_load_data) {
+        if (self.options.need_load_data) {
             webapp.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
                 self.fill_form(id_root, data);
 

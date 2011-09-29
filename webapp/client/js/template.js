@@ -223,7 +223,8 @@
                                 self[parts[1]]();
                             }
                         });
-                    };
+                    },
+                    data;
 
                 if ($link.hasClass("webappMethodDelete")) {
                     meth = webapp.Delete;
@@ -233,7 +234,11 @@
                     meth = webapp.Update;
                 }
 
-                meth($link.attr('href'), callback);
+                if ($link.hasClass('webappSendData')) {
+                    data = $link.data('send');
+                }
+
+                meth($link.attr('href'), data, callback);
 
                 if ($link.hasClass("webappGoBack")) {
                     webapp.relocateTo(webapp.previousPageUrl());

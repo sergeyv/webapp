@@ -182,9 +182,26 @@ in templates:
   if the user chooses OK. The link's title tag is used for
   the dialog's message text
 
-- ``webappMethodDelete`` - uses DELETE instead of POST (otherwise it's GET)
-  We can add more methods when needed though it's not yet
-  clear how to send any data in a POST or PUT request.
+- ``webappMethodDelete`` - uses DELETE instead of GET
+
+
+- ``webappMethodPut`` - uses PUT instead of GET
+  If specified alone, the PUT body will be empty - i.e. no data is really sent,
+  just an empty request
+
+- ``webappSendData`` - uses jquery.data method to find ``data-send`` attribute on
+  link object itself and send it to the server. It makes it possible to send small
+  bits of data in the request body. The value of the data-send attribute may be a string representation of a JSON dictionary
+
+.. code-block:: html
+
+    <a class="webappAsyncAction webappMethodPut webappSendData"
+       data-send='{one:123, two="hello!"}'
+       href="<%=this.view.getRestServiceUrl() %>/<%=server.id %>/tasks/add">
+        <img src="/images/plus.png" alt="Add two numbers" />
+    </a>
+
+The above snippet would send {one: 123, two:'hello!'} to the server
 
 - ``webappGoBack`` - after the async action has been invoked,
   redirect to the previous page
