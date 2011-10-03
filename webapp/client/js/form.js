@@ -11,7 +11,7 @@
         submit_action
         next_view
         */
-        this.options = $.extend({
+        var opts = $.extend({
             title: "Add/Edit Item",
             button_title: "Save Changes",
             http_method: "PUT",
@@ -20,6 +20,8 @@
             submit_action: 'redirect'
 
         }, options);
+
+        webapp.Template.apply(this, [opts]);
 
         this.options.data_format = this.options.data_format || this.options.identifier;
     }
