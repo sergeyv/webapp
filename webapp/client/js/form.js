@@ -8,8 +8,7 @@
         title
         button_title
         rest_service_root
-        redirect_after_add
-        redirect_after_edit
+        redirect_after_submit
         */
         this.options = $.extend({
             title: "Add/Edit Item",
@@ -481,7 +480,7 @@
         var self = this,
             form_data = self.form.serializeObject(),
             item_id = self.event.parameters.item_id || 'new',
-            redirect_to = (item_id === 'new') ? self.options.redirect_after_add : self.options.redirect_after_edit,
+            //redirect_to = self.options.redirect_after_submit,
             meth = webapp.Update;
 
         if (self.options.http_method === "POST") {
@@ -496,7 +495,12 @@
                         self.event.popup_success_callback(data);
                     }
                 } else {
-                    var url = redirect_to || webapp.previousPageUrl();
+                    var url = self.options.redirect_after_submit;
+                    if (url) {
+                        url = webapp.fillInPlaceholders(url, data);
+                    } else {
+                        url = webapp.previousPageUrl();
+                    }
                     webapp.relocateTo(url);
                 }
 

@@ -72,13 +72,8 @@ def _create_item(context, request):
     # TODO: Add validation here
     new_item = context.create_subitem(params=params, request=request)
 
-    #if new_item is not None:
-    #    # The context may choose not to return the item added
-    #    # and do everything itself
-    #    session = get_session()
 
-
-    return new_item.id
+    return {'item_id': new_item.id}
 
 
 
@@ -117,6 +112,7 @@ def json_rest_filters(context, request):
         result = fn(request)
         return result
 
+    # TODO: Do something meaningful
     return {'result':"HELLO! No filters found!"}
 
 @view_config(name="incremental", context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json")
@@ -134,6 +130,7 @@ def json_rest_incremental(context, request):
         result = fn(request)
         return result
 
+    # TODO: Do something meaningful
     return {'result':"HELLO! Nothing found!"}
 
 
@@ -159,6 +156,7 @@ def json_rest_delete_subitems(context, request):
 
     context.delete_subitems(ids, request)
 
+    # TODO: Do something meaningful
     return {'result':"OK"}
 
 
@@ -192,7 +190,7 @@ def json_rest_update(context, request):
     params = dottedish.api.unflatten(params.items())
     context.update(params, request)
 
-    return {'result':"HELLO FROM THE SERVER"}
+    return { 'item_id': context.model.id }
 
 
 @view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")

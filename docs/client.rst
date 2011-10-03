@@ -120,7 +120,8 @@ Then we can use it by attaching a webapp.Form to some route:
     this.route( "/users/:item_id/edit", new webapp.Form({
             add_button_title: "Add User",
             identifier: "UserEditForm", // the same as the name of the class in Python
-            rest_service_root: "/rest/users/:item_id" // we set up a Rest API at this address by registering an SA model (supposedly called User) with crud
+            rest_service_root: "/rest/users/:item_id", // we set up a Rest API at this address by registering an SA model (supposedly called User) with crud
+            redirect_after_submit: "/users/:item_id"
         }));
 
 Now, if we open ``#/users/123/edit``, the form will request json data from
@@ -154,6 +155,9 @@ The form above will GET its initial values from ``/rest/users/new`` and when sub
 
 On the server side, ``new`` maps to a couple of view functions registered on IRestCollection interface, one function handles GET and another PUT method
 
+Server-side, the "create" and "update" views return a small json dictionary which
+looks like {"item_id": 345} - the data from it is substituted into the form's
+``redirect_after_submit`` parameter, so "/users/:item_id" becomes "/users/345" - this way we can make the form to redirect to the newly-added object. If ``redirect_after_submit`` is missing, the application will redirect to the previous page.
 
 webapp.Template
 ----------------

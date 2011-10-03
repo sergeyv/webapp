@@ -120,16 +120,7 @@
             return "";
         }
 
-        url = root.replace(
-            new RegExp("(/):([^/]+)", "gi"),
-            function ($0, $1, $2) {
-                var repl = params[$2];
-                if (repl !== undefined) { // if (repl) {...} would not work for false-y values, such as 0 or ''
-                    return "/" + repl;
-                }
-                return "";
-            }
-        );
+        url = webapp.fillInPlaceholders(root, params);
 
         if (with_params === "with-params" ) {
                 params = self.collectRestParams();

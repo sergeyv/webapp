@@ -262,9 +262,28 @@
 	WebApp.prototype.normalizeHash = function (hash) {
 		// Strip off front hash and slashses as well as trailing slash. This will
 		// convert hash values like "#/section/" into "#/section".
-        //hash.replace( new RegExp( "^[#/]+|/$", "g" ), "" )
 		return hash.replace(new RegExp("^#|/$", "g"), "");
 	};
+
+    WebApp.prototype.fillInPlaceholders = function (templ, params) {
+        /// accepts a string with some :placeholders in it - i.e.
+        /// /users/:user_id/edit and params object containing {user_id: 345}
+        /// and returns a strings where placeholders are replaved by the values
+        /// from the params object, i.e. /users/345/edit
+
+        return templ.replace(
+            new RegExp("(/):([^/]+)", "gi"),
+            function ($0, $1, $2) {
+                var repl = params[$2];
+                if (repl !== undefined) { // if (repl) {...} would not work for false-y values, such as 0 or ''
+                    return "/" + repl;
+                }
+                return "";
+            }
+        );
+
+    };
+
 
 
     WebApp.prototype.getEventContextForRoute = function (hash) {
