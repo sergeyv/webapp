@@ -8,14 +8,16 @@
         title
         button_title
         rest_service_root
-        redirect_after_submit
+        submit_action
+        next_view
         */
         this.options = $.extend({
             title: "Add/Edit Item",
             button_title: "Save Changes",
             http_method: "PUT",
             need_load_data: true,
-            need_save_data: true
+            need_save_data: true,
+            submit_action: 'redirect'
 
         }, options);
 
@@ -84,7 +86,15 @@
         self.cancelLink = self.view.find("a.formCancelLink");
 
         self.view.find(".webappPopup").click(function () {
-            var $link = $(this),
+            var $link = $(this);
+            return webapp.popupView($link.attr('href'), function (added_id) {
+                    //alert("Success: " + added_id);
+                    var $select = $link.parent().children("select");
+                    $select.data("original_value", added_id);
+                    self.reloadLoadable($select);
+                });
+
+            /*var $link = $(this),
                 hash = webapp.normalizeHash($link.attr("href")),
                 context = webapp.getEventContextForRoute(hash);
 
@@ -101,7 +111,7 @@
             } else {
                 self.showMessage("POPUP VIEW NOT FOUND: " + hash);
             }
-            return false;
+            return false;*/
         });
 
 
@@ -480,7 +490,6 @@
         var self = this,
             form_data = self.form.serializeObject(),
             item_id = self.event.parameters.item_id || 'new',
-            //redirect_to = self.options.redirect_after_submit,
             meth = webapp.Update;
 
         if (self.options.http_method === "POST") {
@@ -495,13 +504,18 @@
                         self.event.popup_success_callback(data);
                     }
                 } else {
-                    var url = self.options.redirect_after_submit;
+                    var url = self.options.next_view;
                     if (url) {
                         url = webapp.fillInPlaceholders(url, data);
                     } else {
                         url = webapp.previousPageUrl();
                     }
-                    webapp.relocateTo(url);
+
+                    if (self.options.submit_action == 'redirect') {
+                        webapp.relocateTo(url);
+                    } else if (self.options.submit_action == 'popup') {
+                        webapp.popupView(url);
+                    }
                 }
 
             });

@@ -412,6 +412,22 @@
 
 	};
 
+
+    WebApp.prototype.popupView = function (url, success_callback) {
+        var hash = webapp.normalizeHash(url),
+            context = webapp.getEventContextForRoute(hash);
+
+
+        context.popup_success_callback = success_callback
+
+        if (context.mapping) {
+            context.mapping.controller.popupView(context.mapping.view, context);
+        } else {
+            self.showMessage("POPUP VIEW NOT FOUND: " + hash);
+        }
+        return false;
+    }
+
     // uses webapp.visitedUrlsLog
     // to return the previous page url
     WebApp.prototype.previousPageUrl = function () {
