@@ -12,9 +12,12 @@
         - data_format
         - ann
         - after_data_loaded (function)
+        - need_load_data
         */
-        this.options = $.extend({
+        var opts = $.extend({
+            need_load_data: true
         }, options);
+        webapp.View.apply(this, [opts]);
     }
 
     Template.prototype = new webapp.View();
@@ -86,26 +89,32 @@
             self.view = container;
         }
 
-        //this.parameters = parameters;
         this.populateView();
     };
 
     Template.prototype.populateView = function () {
         var self = this;
 
-        webapp.Read(self.getRestServiceUrl("with-params"), function (data) {
+        //this.parameters = parameters;
+        if (self.options.need_load_data) {
+            webapp.Read(self.getRestServiceUrl("with-params"), function (data) {
 
-            self.data = data;
+                self.data = data;
+                self.renderData();
+
+            });
+        } else {
+            self.data = {};
             self.renderData();
+        }
 
-            if (!self.options.is_partial) {
-                // Show the view.
-                webapp.log("Set active view!");
-                webapp.controller.setActiveView(self);
-            } else {
-                self.view.removeClass("loading");
-            }
-        });
+        if (!self.options.is_partial) {
+            // Show the view.
+            webapp.log("Set active view!");
+            webapp.controller.setActiveView(self);
+        } else {
+            self.view.removeClass("loading");
+        }
 
     };
 

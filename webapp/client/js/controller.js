@@ -129,7 +129,8 @@
 
     Controller.prototype.setActiveView = function (view) {
 
-        var old_views;
+        var old_views,
+            self = this;
 
         /// if the view is shown in a popup, we don't need
         /// to hide the previous view etc.
@@ -137,8 +138,15 @@
             view.view.dialog({
                 modal: true,
                 width: "80%",
-                title: view.options.title
+                title: view.options.title,
+                beforeClose: function (event, ui) {
+                    self.currentView = view.event.parentView;
+                }
             });
+
+            view.event.parentView = self.currentView;
+            self.currentView = view;
+
         } else {
             old_views = $(".activeContentView");
             $.each(old_views, function (idx, elem) {
