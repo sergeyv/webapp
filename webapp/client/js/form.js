@@ -288,13 +288,14 @@
                 display_elem,
                 link;
 
-            if (value === null) {
-                value = '';
-            }
-
             // The app can provide default values to pre-fill the form
             // by invoking a url in format #/view|key1:value1|key2:value2
-            value = value || self.event.uri_args[name];
+            // the defaults would only be applied if the server passes
+            // null or undefined as the value - empty strings or bools still
+            // take precendence
+            if (value === null || typeof value === 'undefined') {
+                value = self.event.uri_args[name] || '';
+            }
 
             id = id_root + '-' + name;
             if (typeof value === "string" ||
