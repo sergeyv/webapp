@@ -26,7 +26,6 @@ class IRestRootCollection(crud.ICollection):
 _marker = []
 
 
-
 class RestCollection(crud.Collection):
     """
     Just like a normal crud.Collection but
@@ -46,7 +45,6 @@ class RestCollection(crud.Collection):
 
     def get_items_listing(self, request, filter_condition=None):
 
-
         format = request.GET.get('format', 'listing')
 
         order_by = request.GET.get('sort_on', None)
@@ -59,7 +57,6 @@ class RestCollection(crud.Collection):
 
         search_criterion = request.GET.get('search', None)
 
-
         filter_values = []
         # NOTE: this should use self.filter_fields as a basis
         # so it's not possible to filter by fileds not
@@ -67,8 +64,7 @@ class RestCollection(crud.Collection):
         for f in self.filter_fields:
             val = request.GET.get("filter-%s" % f, None)
             if val:
-                filter_values.append({'key':f, 'value': val})
-
+                filter_values.append({'key': f, 'value': val})
 
         # See if a subclass defines a hook for processing this format
         resource = self.wrap_child(self.create_transient_subitem(), name="empty")
@@ -87,24 +83,22 @@ class RestCollection(crud.Collection):
 
         ### 'vocab' format is a special (simplified) case
         ### - returns {'items': [(id, name), (id, name), ...]}
-        if format=='vocab':
+        if format == 'vocab':
             items = self.get_items(order_by=order_by, wrap=False)
-            result = [ (item.id, str(item)) for item in items ]
-            return {'items':result}
-
+            result = [(item.id, str(item)) for item in items]
+            return {'items': result}
 
         data = {}
 
         model_class = self.get_subitems_class()
-
-        query = self.get_items_query(filter_condition = filter_condition, order_by=order_by)
+        query = self.get_items_query(filter_condition=filter_condition, order_by=order_by)
 
         # FILTERING
         for f in filter_values:
             field = getattr(model_class, f['key'])
             if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
                 # The attribute is a simple column
-                query = query.filter(field==f['value'])
+                query = query.filter(field == f['value'])
             else:
                 # The attribute is not a simple column so we suppose it's
                 # a relation. TODO: we may need a better check here
@@ -114,8 +108,7 @@ class RestCollection(crud.Collection):
 
                 id_attr = getattr(rel_class, 'id')
 
-                query = query.join(rel_class).filter(id_attr==f['value'])
-
+                query = query.join(rel_class).filter(id_attr == f['value'])
 
         # SEARCH
         # TODO: LIKE parameters need escaping. Or do they?
@@ -124,7 +117,7 @@ class RestCollection(crud.Collection):
             # called "name". No field - no search
             # we may make this configurable in the future
             if hasattr(model_class, 'name'):
-                query = query.filter(model_class.name.ilike('%'+search_criterion+'%'))
+                query = query.filter(model_class.name.ilike('%' + search_criterion + '%'))
 
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
