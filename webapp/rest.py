@@ -12,6 +12,7 @@ from decimal import Decimal
 
 import sqlalchemy as sa
 import schemaish as sc
+from zope.interface import implements
 
 import crud
 
@@ -24,6 +25,22 @@ class IRestRootCollection(crud.ICollection):
     pass
 
 _marker = []
+
+
+class RestSubobject(crud.Traversable):
+    """
+    A base class for a "virtual" subobject which has no database-level
+    representation:
+    """
+    implements(crud.IResource)
+
+    def update(self, params, request):
+        """
+        Override the crud's method to call "item updated" hooks
+        """
+        self.deserialize(params, request)
+        if hasattr(self, "after_item_updated"):
+            self.after_item_updated(request)
 
 
 class RestCollection(crud.Collection):
@@ -418,7 +435,7 @@ class RestResource(crud.Resource):
 
                     subitems_schema = structure_field.attr
                     subitems = []
-                    for subitem in value: # take care not to name it "item" or it'll override the function-wide variable
+                    for subitem in value:  # take care not to name it "item" or it'll override the function-wide variable
                         subitems.append(self._default_item_serializer(subitem, subitems_schema))
                     value = subitems
                 elif isinstance(structure_field, sc.Structure):
@@ -584,7 +601,7 @@ class RestResource(crud.Resource):
                 elif isinstance(attr, sc.Date):
                     if value:
                         # TODO: Need to improve this. Use dateutil?
-                        value = value.split('T')[0] # strip off the time part
+                        value = value.split('T')[0]  # strip off the time part
                         d = datetime.strptime(value, "%Y-%m-%d")
                     else:
                         d = None
@@ -615,7 +632,7 @@ class RestResource(crud.Resource):
         def _save_sequence(collection, schema, data):
 
 
-            existing_items = { str(item.model.id):item for item in collection.get_items() }
+            existing_items = {str(item.model.id): item for item in collection.get_items()}
 
             #seen_ids = []
             ids_to_delete = []
@@ -623,7 +640,7 @@ class RestResource(crud.Resource):
             print "EXISTING ITEMS: %s" % (existing_items,)
             for (order_idx, value) in data.items():
                 if order_idx == '*':
-                    continue;
+                    continue
                 # the data must contain 'id' parameter
                 # if the data should be saved into an existing item
                 item_id = value.get('id', None)
