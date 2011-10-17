@@ -30,7 +30,39 @@ _marker = []
 class RestSubobject(crud.Traversable):
     """
     A base class for a "virtual" subobject which has no database-level
-    representation:
+    representation::
+
+        class AutoresponderResource(webapp.RestSubobject):
+
+            def serialize(self, format='default', annotate=False, only_fields=None):
+                email = self.__parent__.model
+                print "TADA, serialize called"
+                return email.invoke_action('get_autoresponder')
+
+            def deserialize(self, params, request):
+                email = self.__parent__.model
+                return invoke_action_async(email, "set_autoresponder", params)
+
+    Then we can use it like this::
+
+        @crud.resource(models.EmailAddress)
+        class EmailAddressResource(RecordableResource):
+
+            subsections = {
+                'autoresponder': AutoresponderResource,
+            }
+
+    And finally, we can have a REST API endpoint at /rest/emails/123/autoresponder -
+    a GET request would return autoresponder status, a PUT request would set autoresponder
+
+    We can directly see and manipulate the data in a form::
+
+        c.route("/emails/:item_id/set-autoresponder", new webapp.Form({
+            title: "Set Automatic Reply",
+            identifier: "EmailAddressSetAutoresponder",
+            rest_service_root: "/rest/emails/:item_id/autoresponder"
+        }));
+
     """
     implements(crud.IResource)
 
