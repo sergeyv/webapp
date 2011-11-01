@@ -205,6 +205,12 @@
         *   We can add more methods when needed though it's not yet
         *   clear how to send any data in a POST or PUT request.
         *
+        * - webappSendData - sends the data from the link's data-send attribute
+        *
+        * - webappCollectDataMethod-<methodName> - invokes a method of the view
+        *   and extends the data to be sent to the server with whatever the method returns
+        *
+        *
         * - webappGoBack - after the async action has been invoked,
         *   redirect to the previous page
         *
@@ -233,7 +239,7 @@
                             }
                         });
                     },
-                    data;
+                    data = {};
 
                 if ($link.hasClass("webappMethodDelete")) {
                     meth = webapp.Delete;
@@ -244,7 +250,27 @@
                 }
 
                 if ($link.hasClass('webappSendData')) {
-                    data = $link.data('send');
+                    data = $link.data('send') || {};
+
+                    $.extend(data, (function () {
+                        var meth_name = $link.data("collect-method");
+                        if (self[meth_name]) {
+                            return self[meth_name]();
+                        }
+                        return {};
+                    })());
+
+                    /// if there's a class webappCollectDataMethod-methodName
+                    /// we will extend `data` with what methodName returns
+                    //$.each($link.attr('class').split(' '), function (idx, val) {
+                    //    var parts = val.split('-');
+                        /*if (parts.length === 2 &&
+                                parts[0] === "webappCollectDataMethod" &&
+                                self[parts[1]]) {
+                            $.extend(data, self[parts[1]]());
+                        }*/
+                    //});
+
                 }
 
                 meth($link.attr('href'), data, callback);
