@@ -92,6 +92,12 @@ class RestCollection(crud.Collection):
 
     filter_fields = ()
 
+    # by default we search by 'name' field. A subclass may
+    # override this setting to provide more than one field
+    # which will be ORed togeter
+    # i.e. ... WHERE name LIKE 'abc%' OR hostname LIKE 'abc%' ...
+    search_fields = ('name',)
+
     def get_items_listing(self, request, filter_condition=None):
 
         format = request.GET.get('format', 'listing')
@@ -162,12 +168,16 @@ class RestCollection(crud.Collection):
         # SEARCH
         # TODO: LIKE parameters need escaping. Or do they?
         if search_criterion:
-            # The search currently depends on the presence of a field
-            # called "name". No field - no search
-            # we may make this configurable in the future
-            if hasattr(model_class, 'name'):
-                query = query.filter(model_class.name.ilike('%' + search_criterion + '%'))
+            # search_fields is a tuple of fiels names
+            #which need to be searched
+            criteria = []
+            for field_name in self.search_fields:
+                field_obj = getattr(model_class, field_name, None)
+                if field_obj is not None:
+                    criteria.append(field_obj.ilike('%' + search_criterion + '%'))
+            query = query.filter(sa.sql.expression.or_(*criteria))
 
+            #import pdb; pdb.set_trace()
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
         ## filter settings
@@ -178,7 +188,7 @@ class RestCollection(crud.Collection):
         # Limit the result set to a single batch only
         # request one record more than needed to see if there are
         # more records
-        query = query.offset(batch_start).limit(batch_size+1)
+        query = query.offset(batch_start).limit(batch_size + 1)
         items = query.all()
 
         if len(items) > batch_size:
@@ -226,7 +236,7 @@ class RestCollection(crud.Collection):
 
                 d = []
                 for r in result:
-                    d.append( [str(r[0]), str(r[0]), str(r[1])] )
+                    d.append([str(r[0]), str(r[0]), str(r[1])])
                 data[attribute_name] = d
             else:
                 # The attribute is not a simple column so we suppose it's
@@ -246,7 +256,7 @@ class RestCollection(crud.Collection):
                 result = q.all()
                 r = []
                 for item in result:
-                    r.append( [item.id, item.name, item[2]])
+                    r.append([item.id, item.name, item[2]])
                 data[attribute_name] = r
 
                 #raise AttributeError("You're trying to order by '%s', which is not a proper column (a relationship maybe?)" % attribute_name)
@@ -287,11 +297,12 @@ class RestCollection(crud.Collection):
 
         only_fields = request.GET.get('only', None)
         if only_fields is not None:
-            only_fields = [ f.strip() for f in only_fields.split(',') ]
+            only_fields = [f.strip() for f in only_fields.split(',')]
 
-        data = resource.serialize(format = format, only_fields=only_fields)
+        data = resource.serialize(format=format, only_fields=only_fields)
 
-        import transaction; transaction.abort()
+        import transaction
+        transaction.abort()
         return data
 
 
@@ -313,7 +324,7 @@ class RestCollection(crud.Collection):
 
         get_id_for = request.GET.get('get_id_for', None)
         if get_id_for is not None:
-            cli = query.filter(model_class.name==get_id_for).one()
+            cli = query.filter(model_class.name == get_id_for).one()
             return {'id': cli.id, 'name': cli.name}
 
         ### Filter-able fields:
@@ -321,7 +332,7 @@ class RestCollection(crud.Collection):
 
         # TODO: LIKE parameters need escaping
         if name_filter:
-            query = query.filter(model_class.name.ilike(name_filter+'%'))
+            query = query.filter(model_class.name.ilike(name_filter + '%'))
 
         query = query.order_by(model_class.name)
 
@@ -391,7 +402,7 @@ class RestResource(crud.Resource):
 
         if schema is None:
             raise ValueError("%s form is not registered, but is listed as the"\
-                " '%s' format for %s class" % (form_name, format, cls) )
+                " '%s' format for %s class" % (form_name, format, cls))
         return schema
 
 
@@ -423,7 +434,7 @@ class RestResource(crud.Resource):
         return data
 
 
-    def _default_item_serializer(self, item, structure, only_fields = None):
+    def _default_item_serializer(self, item, structure, only_fields=None):
 
         data = {}
         default = object()
@@ -531,7 +542,7 @@ class RestResource(crud.Resource):
         for (name, field) in structure.attrs:
             f = {
                 'name': name,
-                'title':field.title,
+                'title': field.title,
             }
             data.append(f)
 
