@@ -99,7 +99,7 @@ class AutoSchema(sc.Structure):
         if 'model' in kwargs:
             self.model = kwargs['model']
         attrs = reflect(self.model)
-        #import pdb; pdb.set_trace();
+
         for attr in attrs:
             attr_type = attr.property.columns[0].type
             if isinstance(attr_type, sa.Integer):

@@ -177,7 +177,6 @@ class RestCollection(crud.Collection):
                     criteria.append(field_obj.ilike('%' + search_criterion + '%'))
             query = query.filter(sa.sql.expression.or_(*criteria))
 
-            #import pdb; pdb.set_trace()
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
         ## filter settings
@@ -441,7 +440,7 @@ class RestResource(crud.Resource):
 
         flattened = getattr(structure, "__flatten_subforms__", [])
 
-        print "FLATTENED: %s (%s)" % (flattened, structure)
+        # print "FLATTENED: %s (%s)" % (flattened, structure)
 
         for (name, structure_field) in structure.attrs:
 
@@ -454,7 +453,7 @@ class RestResource(crud.Resource):
             value = getattr(item, name, default)
             #structure_field = getattr(structure, name, default)
 
-            print "Starting with %s of %s" % (name, item)
+            # print "Starting with %s of %s" % (name, item)
 
 
             if name in flattened:
@@ -548,15 +547,7 @@ class RestResource(crud.Resource):
 
         return data
 
-
-
-    def deserialize(self, params, request):
-        """
-        Recursively applies data from a Formish form to an SA model,
-        using the form's schema to ensure only the attributes from the form are set.
-        This supposes that the form submitted is a formish form
-        """
-        # TODO: Add validation here
+    def default_item_deserializer(self, params, request):
 
         def _get_attribute_class(item, name):
             """
@@ -674,7 +665,6 @@ class RestResource(crud.Resource):
 
         def _save_sequence(collection, schema, data):
 
-
             existing_items = {str(item.model.id): item for item in collection.get_items()}
 
             #seen_ids = []
@@ -717,8 +707,6 @@ class RestResource(crud.Resource):
             collection.delete_subitems(ids_to_delete, request)
 
 
-        item = self.model
-
         schema = params.get('__schema__')
         form_name = schema.__class__.__name__
 
@@ -727,11 +715,30 @@ class RestResource(crud.Resource):
             schema = self._find_schema_for_data_format(form_name)
 
 
-        meth = getattr(self, 'deserialize_%s' + form_name, None)
-        if meth is not None:
-            return meth(params)
+        _save_structure(self.model, schema, params)
 
-        _save_structure(item, schema, params)
+
+
+    def deserialize(self, params, request):
+        """
+        Recursively applies data from a Formish form to an SA model,
+        using the form's schema to ensure only the attributes from the form are set.
+        This supposes that the form submitted is a formish form
+        """
+        # TODO: Add validation here
+
+        schema = params.get('__schema__')
+
+        if schema is not None:
+            form_name = schema.__class__.__name__
+        else:
+            form_name = params.get('__formish_form__')
+
+        meth = getattr(self, 'deserialize_%s' % form_name, None)
+        if meth is not None:
+            return meth(params, request)
+
+        self.default_item_deserializer(params, request)
 
 
     def update(self, params, request):
