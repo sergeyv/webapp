@@ -400,7 +400,6 @@
                                 if($elem.attr('displaytype') == 'disable')
                                 {
                                     $elem.attr('disabled', 'disabled');
-                                    console.log($elem.attr('id') + 'disable');
                                 }
                                 else
                                 {
@@ -495,7 +494,6 @@
                 $select.removeData("original_value");
                 if($select.attr('displaytype') == 'disable')
                 {
-                    console.log($select.attr('id') + 'enable');
                     $select.removeAttr('disabled');
                 }
                 else
