@@ -189,6 +189,16 @@ def get_validators_for_field(field):
     if v.validation_includes(field.attr.validator, v.IPAddress):
         validators['ip_address'] = True
 
+    if v.validation_includes(field.attr.validator, v.Min):
+        for validator in field.attr.validator.validators:
+            if isinstance(validator, v.Min):
+                validators['min'] = validator.min_val
+
+    if v.validation_includes(field.attr.validator, v.Max):
+        for validator in field.attr.validator.validators:
+            if isinstance(validator, v.Max):
+                validators['max'] = validator.max_val
+
     if v.validation_includes(field.attr.validator, v.RemoteMethod):
         for validator in field.attr.validator.validators:
             if isinstance(validator, v.RemoteMethod):

@@ -25,3 +25,4 @@ from validatish import validation_includes
 
 from .ip_address import IPAddress
 from .remote_method import RemoteMethod
+from .simple import Min, Max

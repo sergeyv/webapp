@@ -310,7 +310,42 @@
         /// the 0th, which goes into event's 'location' attribute
         for (i = 1; i < parts.length; i += 1) {
             pair = parts[i].split(':');
-            uri_args[pair[0]] = pair[1];
+
+            if ( pair[0].indexOf( '.' ) != -1 ) // Key has dots in it, so parse it into a structure
+            {
+                var dot_parts = pair[0].split('.'),
+                    cur_path = uri_args;
+                
+                // Traverses the structure and creates items as it goes along
+                for ( var di = 0; di < dot_parts.length - 1; di += 1 ) 
+                {
+                    var dot_part = dot_parts[di];
+                    var m;
+                    if ( m = dot_part.match( '(.+)\\[([0-9]+)\\]' ) ) // Its an array!
+                    {
+                        if ( !cur_path.hasOwnProperty( m[1] ) )
+                            cur_path[ m[1] ] = [];
+
+                        if ( cur_path[ m[1] ][ parseInt( m[2] ) ] == undefined )
+                            cur_path[ m[1] ][ parseInt( m[2] ) ] = {};
+                            
+                        cur_path = cur_path[ m[1] ][ parseInt( m[2] ) ];
+                    }
+                    else // Just a normal object
+                    {
+                        if ( !cur_path.hasOwnProperty( dot_part ) )
+                        {
+                            cur_path[ dot_part ] = {};
+                        }
+                        
+                    }
+                }
+                
+                // The path to the attribute has been created at this point so now we can finally set it.
+                cur_path[ dot_parts[ dot_parts.length -1 ] ] = pair[1]
+            }
+            else
+                uri_args[pair[0]] = pair[1];
         }
 
         // Define the default event context.
