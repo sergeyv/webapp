@@ -8,20 +8,9 @@
 Commonly needed form widgets.
 """
 
-__all__ = ['LoadableListbox', 'FieldsetSwitcher', 'Calendar', 'Input']
+__all__ = ['LoadableListbox', 'FieldsetSwitcher', 'Calendar', ]
 
-from convertish.convert import string_converter, \
-        datetuple_converter,ConvertError
-from schemaish.type import File as SchemaFile
-import uuid
-
-
-from formish import util
-from formish.filestore import CachedTempFilestore
-
-from formish.widgets import Widget, SelectChoice, SequenceDefault, StructureDefault, Hidden
-
-
+from formish.widgets import Widget, SelectChoice, SequenceDefault, Hidden
 
 
 class LoadableListbox(Widget):
@@ -161,7 +150,7 @@ class AutoFillDropdown(LoadableListbox):
 
 class CombinationField(Widget):
     """
-        Widget that makes a combination of two different fields 
+        Widget that makes a combination of two different fields
         on a form and sends it off as a different field name
         as a hidden value.
         eg:

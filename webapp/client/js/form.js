@@ -48,7 +48,7 @@
             rules = webapp.getValidationRules(self.options.identifier);
 
         self.form.validate({ rules: rules,
-            submitHandler: function (form) {
+            submitHandler: function () {
                 self.submitForm();
             }
             });
@@ -89,12 +89,11 @@
 
         self.view.find(".webappPopup").click(function () {
             var $link = $(this);
-            return webapp.popupView($link.attr('href'), function (added_id) {
-                    //alert("Success: " + added_id);
-                    var $select = $link.parent().children("select");
-                    $select.data("original_value", added_id);
-                    self.reloadLoadable($select);
-                });
+            return webapp.popupView($link.attr('href'), function (server_response) {
+                var $select = $link.parent().children("select");
+                $select.data("original_value", server_response.item_id);
+                self.reloadLoadable($select);
+            });
 
             /*var $link = $(this),
                 hash = webapp.normalizeHash($link.attr("href")),
@@ -190,7 +189,6 @@
         if (self.options.need_save_data) {
             // Set validation
             self.setValidationRules();
-        } else {
         }
 
         // attach event handlers
@@ -397,14 +395,7 @@
                             if ($(this).val()) {
                                 self.reloadLoadable($elem);
                             } else {
-                                if($elem.attr('displaytype') == 'disable')
-                                {
-                                    $elem.attr('disabled', 'disabled');
-                                }
-                                else
-                                {
-                                    $elem.parents("div.field").hide();
-                                }
+                                self.hideListbox($elem);
                             }
                         });
                         $elem.addClass('dependent');
@@ -434,31 +425,29 @@
 
         var self = this;
 
-        // hide the loadables until they're loaded
-        self.form.find('div.loadableListbox').each(function()
-                {
-                    var select = $(this).find('select')
-                    if($(select).attr('displaytype')=='disable')
-                    {
-                        $(select).attr('disabled', 'disabled');
-                    }
-                    else{
-                        $(this).parents("div.field").hide();
-                    }
-                });
 
-        self.form.find('div.loadableListbox').each(function (idx) {
+        self.form.find('div.loadableListbox').each(function () {
             var $select = $(this).find('select');
+            self.hideListbox($select);
             self.reloadLoadable($select);
         });
 
-        self.form.find('div.autoFillDropdown').each(function (idx) {
+        self.form.find('div.autoFillDropdown').each(function () {
             //var $widget = $(this).find('div.autofillform');
             /*self.autoFillForm($widget);*/
             var $select = $(this).find('select');
             $select.change(function () {
                 var item_id = self.event.parameters.item_id || 'new',
-                    url = self.getRestServiceUrl("with-params", {item_id: item_id}, {only: $select.data('dependent_fields'), set_field:$select.attr('name'), set_value:$select.val()});
+                    url = self.getRestServiceUrl("with-params",
+                        {
+                            item_id: item_id
+                        },
+                        {
+                            only: $select.data('dependent_fields'),
+                            set_field: $select.attr('name'),
+                            set_value: $select.val()
+                        });
+
                 webapp.Read(url, function (data) {
                     var id_root = '#' + self.options.identifier;
                     self.fill_form(id_root, data);
@@ -492,20 +481,41 @@
                 /// to select the element we need
                 $select.val($select.data("original_value"));
                 $select.removeData("original_value");
-                if($select.attr('displaytype') == 'disable')
-                {
-                    $select.removeAttr('disabled');
-                }
-                else
-                {
-                    $select.parents("div.field").show();
-                }
-
+                self.showListbox($select);
                 $select.change();
             });
         }
     };
 
+
+    Form.prototype.hideListbox = function ($select) {
+        /* hides a loadable listbox when it's not yet loaded
+           or if it's parent is not selected */
+
+        /// need to clear the listbox so any dependent listboxes
+        /// are getting hidden too
+        $select.val('').change();
+        if ($select.data('displaytype') === 'disable') {
+            $select.attr('disabled', 'disabled');
+            $select.parent().find('.iconAdd').hide(); // hide the add button
+        } else {
+            $select.parents("div.field").hide();
+        }
+
+    };
+
+    Form.prototype.showListbox = function ($select) {
+        /// shows a loadable listbox after it's loaded
+        /// or if it's parent is selected
+        if ($select.data('displaytype') === 'disable') {
+            $select.removeAttr('disabled');
+            $select.parent().find('.iconAdd').show(); // show the add button
+
+        } else {
+            $select.parents("div.field").show();
+        }
+
+    };
 
     Form.prototype.submitForm = function () {
         /*
@@ -538,9 +548,9 @@
                         url = webapp.previousPageUrl();
                     }
 
-                    if (self.options.submit_action == 'redirect') {
+                    if (self.options.submit_action === 'redirect') {
                         webapp.relocateTo(url);
-                    } else if (self.options.submit_action == 'popup') {
+                    } else if (self.options.submit_action === 'popup') {
                         webapp.popupView(url);
                     }
                 }
@@ -561,24 +571,22 @@
         });
     };
 
-    Form.prototype.register_combination_changes = function()
-    {
-        this.form.find('div.combinationfield').each(function()
-        {
-            var field_name = $(this).find('input').attr('id');
-            var fields = new Array();
-            var cnt = 0;
-            $(this).find('div.combination-field').each(function(){
+    Form.prototype.register_combination_changes = function () {
+        this.form.find('div.combinationfield').each(function () {
+            var field_name = $(this).find('input').attr('id'),
+                fields = [],
+                cnt = 0;
+
+            $(this).find('div.combination-field').each(function () {
                 fields[cnt] = $(this).attr('field');
                 cnt += 1;
-                $('div.' + $(this).attr('field')).change(function(){
-                    var field_input = '';
-                    for(var i = 0; i < cnt; ++i)
-                    {
+                $('div.' + $(this).attr('field')).change(function () {
+                    var field_input = '',
+                        i;
+                    for (i = 0; i < cnt; i += 1) {
                         field_input += $('#' + fields[i]).val();
                     }
-                    $("input#" + field_name).val(field_input);
-                    $("input#" + field_name).change();
+                    $("input#" + field_name).val(field_input).change();
                 });
             });
         });
