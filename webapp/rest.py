@@ -734,9 +734,24 @@ class RestResource(crud.Resource):
         else:
             form_name = params.get('__formish_form__')
 
+        # A Resource can define a deserialization hook
+        # be declaring a method deserialize_FormName.
         meth = getattr(self, 'deserialize_%s' % form_name, None)
         if meth is not None:
             return meth(params, request)
+
+        if schema is None:
+            schema = self._find_schema_for_data_format(form_name)
+
+        # Alternatively, the form can define a custom
+        # deserializer. This approach seems to be better, so
+        # custom deserializers on a resource should be deprecated.
+        # In fact, the default deserializer can be moved to a base class
+        # from which all forms will be subclassed
+        meth = getattr(schema, 'deserialize', None)
+        if meth is not None:
+            return meth(self, params, request)
+
 
         self.default_item_deserializer(params, request)
 
