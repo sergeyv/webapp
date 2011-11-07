@@ -427,7 +427,14 @@
                             if ($(this).val()) {
                                 self.reloadLoadable($elem);
                             } else {
-                                $elem.parents("div.field").hide();
+                                if($elem.attr('displaytype') == 'disable')
+                                {
+                                    $elem.attr('disabled', 'disabled');
+                                }
+                                else
+                                {
+                                    $elem.parents("div.field").hide();
+                                }
                             }
                         });
                         $elem.addClass('dependent');
@@ -458,7 +465,17 @@
         var self = this;
 
         // hide the loadables until they're loaded
-        self.form.find('div.loadableListbox').parents("div.field").hide();
+        self.form.find('div.loadableListbox').each(function()
+                {
+                    var select = $(this).find('select')
+                    if($(select).attr('displaytype')=='disable')
+                    {
+                        $(select).attr('disabled', 'disabled');
+                    }
+                    else{
+                        $(this).parents("div.field").hide();
+                    }
+                });
 
         self.form.find('div.loadableListbox').each(function (idx) {
             var $select = $(this).find('select');
@@ -505,7 +522,14 @@
                 /// to select the element we need
                 $select.val($select.data("original_value"));
                 $select.removeData("original_value");
-                $select.parents("div.field").show();
+                if($select.attr('displaytype') == 'disable')
+                {
+                    $select.removeAttr('disabled');
+                }
+                else
+                {
+                    $select.parents("div.field").show();
+                }
 
                 $select.change();
             });

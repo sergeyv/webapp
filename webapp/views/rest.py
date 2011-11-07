@@ -7,20 +7,22 @@
 
 import json
 
-from pyramid.view import view_config
-from webob import Response
+# from webob import Response
 
-import formish
-import schemaish as sc
+# import formish
+# import schemaish as sc
 import dottedish
+from pyramid.view import view_config
+import transaction
 
 import crud
 
 from webapp.db import get_session
-from webapp.rest import IRestRootCollection, RestCollection
-from webapp.forms import get_form
+from webapp.rest import IRestRootCollection
+# from webapp.forms import get_form
 
-from webapp.testing import sluggish, explode
+# from webapp.testing import sluggish, explode
+
 
 @view_config(name="new", context=crud.ICollection, containment=IRestRootCollection,
 permission="rest.list", request_method="GET",
@@ -83,6 +85,7 @@ def json_rest_create_new(context, request):
     """
     return _create_item(context, request)
 
+
 @view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
 def json_rest_create(context, request):
     """
@@ -107,13 +110,14 @@ def json_rest_filters(context, request):
     """
     print "JSON_REST_FILTERS: request body %s" % (request.body)
 
-    fn =  getattr(context, 'get_filters', None)
+    fn = getattr(context, 'get_filters', None)
     if fn is not None:
         result = fn(request)
         return result
 
     # TODO: Do something meaningful
-    return {'result':"HELLO! No filters found!"}
+    return {'result': "HELLO! No filters found!"}
+
 
 @view_config(name="incremental", context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json")
 def json_rest_incremental(context, request):
@@ -125,13 +129,13 @@ def json_rest_incremental(context, request):
     """
     print "JSON_REST_INCREMENTAL: request body %s" % (request.body)
 
-    fn =  getattr(context, 'get_incremental', None)
+    fn = getattr(context, 'get_incremental', None)
     if fn is not None:
         result = fn(request)
         return result
 
     # TODO: Do something meaningful
-    return {'result':"HELLO! Nothing found!"}
+    return {'result': "HELLO! Nothing found!"}
 
 
 
@@ -150,14 +154,14 @@ def json_rest_delete_subitems(context, request):
         # Formish uses dotted syntax to deal with nested structures
         # we need to unflatten it
         params = dottedish.api.unflatten(params.items())
-        ids=params['id']
+        ids = params['id']
     except ValueError:
-        ids=None
+        ids = None
 
     context.delete_subitems(ids, request)
 
     # TODO: Do something meaningful
-    return {'result':"OK"}
+    return {'result': "OK"}
 
 
 
@@ -167,7 +171,7 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
-    result = context.delete_item(request) # returns task_id
+    result = context.delete_item(request)  # returns task_id
 
     return result
 
@@ -188,9 +192,9 @@ def json_rest_update(context, request):
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
-    context.update(params, request)
+    return context.update(params, request)
 
-    return { 'item_id': context.model.id }
+    #{'item_id': context.model.id}
 
 
 @view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
@@ -218,10 +222,9 @@ def json_rest_get(context, request):
 
     only_fields = request.GET.get('only', None)
     if only_fields is not None:
-        only_fields = [ f.strip() for f in only_fields.split(',') ]
+        only_fields = [f.strip() for f in only_fields.split(',')]
 
     data = context.serialize(format=format_name, annotate=annotate, only_fields=only_fields)
 
-    import transaction; transaction.abort()
+    transaction.abort()
     return data
-

@@ -5,7 +5,7 @@
 
         // a nice side-effect of this is that it's doing a deep-copy
         var opts = $.extend({
-            identifier: "filters-partial",
+            identifier: "filters-partial"
         }, options);
 
         webapp.Template.apply(this, [opts]);

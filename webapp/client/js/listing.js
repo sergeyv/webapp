@@ -68,6 +68,15 @@
         return params;
     };
 
+    Listing.prototype.collectSelectedIds = function () {
+        var checkboxes = this.view.find("input.multiEdit:checked"),
+            vals = [];
+        $.each(checkboxes, function(idx, cb) {
+            vals.push($(cb).val());
+        });
+        return {ids: vals};
+    };
+
     Listing.prototype.augmentView = function () {
 
         var self = this;

@@ -18,6 +18,6 @@ from forms import loadable, LoadableForm, get_form, AutoSchema, Literal
 
 from .defaults import *
 
-from rest import RestCollection, RestResource, IRestRootCollection
+from rest import RestCollection, RestResource, RestSubobject, IRestRootCollection
 
 
