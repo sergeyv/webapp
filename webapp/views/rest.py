@@ -93,7 +93,12 @@ def json_rest_create(context, request):
     return _create_item(context, request)
 
 
-@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json", xhr=True, accept="application/json")
+@view_config(context=crud.ICollection,
+    containment=IRestRootCollection,
+    permission="rest.list",
+    request_method="GET",
+    renderer="better_json",
+    accept="application/json")
 def json_rest_list(context, request, permission=""):
     """
     """
