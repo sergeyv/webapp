@@ -521,6 +521,10 @@ class RestResource(crud.Resource):
 
         structure = self._find_schema_for_data_format(format)
 
+        # A form can define a serialization hook
+        if hasattr(structure, "serialize"):
+            return structure.serialize(self)
+
         # A subclass may define a method serialize_formatname(self, item, structure) which will be called instead of the standard serializer
         meth = getattr(self, "serialize_%s" % format, self._default_item_serializer)
 
