@@ -468,6 +468,8 @@ class RestResource(crud.Resource):
         form = None
         if form_name is not None:
             form = get_form(cls.data_formats[format])
+            if form is None:
+                raise ValueError("Can't find form %s for %s" % (form_name, cls.__name__))
             schema = form.structure.attr
         else:
             # A client can either pass a format name (i.e. 'add'),
