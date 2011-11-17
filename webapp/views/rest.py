@@ -197,9 +197,11 @@ def json_rest_update(context, request):
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
-    return context.update(params, request)
 
-    #{'item_id': context.model.id}
+    # Resource.update returns nothing
+    context.update(params, request)
+
+    return {'item_id': context.model.id}
 
 
 @view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")

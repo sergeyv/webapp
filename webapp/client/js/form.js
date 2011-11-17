@@ -535,15 +535,27 @@
 
         meth(self.getRestServiceUrl("", {item_id: item_id}), form_data,
             function (data) {
+
+                /*
+                    The server is supposed to return {item_id: 123} when
+                    an item is created or updated. We update our event parameters
+                    with the values returned by the server so any subsequent
+                    submits of the form go to the address of the newly-created item
+                    (this is possible in case of submit_action="popup")
+                */
+                if (data ) {
+                    $.extend(self.event.parameters, data);
+                }
+
                 if (self.event.is_popup) {
                     self.view.dialog("close");
                     if (self.event.popup_success_callback) {
-                        self.event.popup_success_callback(data);
+                        self.event.popup_success_callback(self.event.parameters);
                     }
                 } else {
                     var url = self.options.next_view;
                     if (url) {
-                        url = webapp.fillInPlaceholders(url, data);
+                        url = webapp.fillInPlaceholders(url, self.event.parameters);
                     } else {
                         url = webapp.previousPageUrl();
                     }
