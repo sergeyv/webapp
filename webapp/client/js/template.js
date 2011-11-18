@@ -219,6 +219,10 @@
         *   i.e. webappOnSuccess-populateView will reload
         *   the data from the server and re-render the template with that data.
         *
+        * - webappPopup - display the target link in the popup. It is possible to
+        *   invoke an async action and show the view in a popup at the same time
+        *   by specifying both urls separated by a hash: /rest/some/url#/some/view
+        *
         */
     Template.prototype.augmentView = function () {
 
@@ -325,7 +329,15 @@
         self.view.find("a.webappPopup").click(function () {
 
             var $link = $(this),
-                hash = webapp.normalizeHash($link.attr("href")),
+                href = (function (l) {
+                    /* remove the part of the url before the hash */
+                    var parts = l.split('#');
+                    if (parts.length === 2) {
+                        return "#" + parts[1];
+                    }
+                    return l;
+                }($link.attr("href"))),
+                hash = webapp.normalizeHash(href),
                 context = webapp.getEventContextForRoute(hash);
 
 
@@ -348,7 +360,7 @@
             if (context.mapping) {
                 context.mapping.controller.popupView(context.mapping.view, context);
             } else {
-                self.showMessage("POPUP VIEW NOT FOUND: "  + hash);
+                webapp.showMessage("POPUP VIEW NOT FOUND: "  + hash);
             }
 
             return false;
