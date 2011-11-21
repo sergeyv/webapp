@@ -24,7 +24,7 @@ class AssetRegistry(object):
     """
 
     core_js_assets = (
-    "/webapp.client/core_js/jquery-1.6.2.js",
+    "/webapp.client/core_js/jquery-1.7.js",
 
     # REST support
     # from http://plugins.jquery.com/project/Rest
