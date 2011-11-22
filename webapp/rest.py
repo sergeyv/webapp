@@ -345,19 +345,17 @@ class RestCollection(crud.Collection):
 
                 id_attr = getattr(rel_class, 'id')
                 name_attr = getattr(rel_class, 'name')
+
                 q = session.query(id_attr, name_attr, sa.func.count(model_class.id))\
                     .join(model_class)\
                     .group_by(id_attr, name_attr)\
                     .order_by(name_attr)
-
                 #q = q.with_parent(self.model, attribute_name)
                 result = q.all()
                 r = []
                 for item in result:
                     r.append([item.id, item.name, item[2]])
                 data[attribute_name] = r
-
-                #raise AttributeError("You're trying to order by '%s', which is not a proper column (a relationship maybe?)" % attribute_name)
 
         return data
 
