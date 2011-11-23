@@ -651,6 +651,18 @@ class RestResource(crud.Resource):
         return data
 
     def default_item_deserializer(self, params, request):
+    
+        def _all_data_fields_are_empty(value):
+            """
+            Returns True if all fields of a dict are false-y
+            """
+            if not value:
+                return True
+            for v in value.values():
+                if v:
+                    return False
+                    
+            return True
 
         def _get_attribute_class(item, name):
             """
@@ -700,6 +712,11 @@ class RestResource(crud.Resource):
                         subitem = getattr(item, name, None)
                         print "SUBITEM: %s" % (value)
                         if subitem is None:
+                            # Do not create a subitem if all data fields are empty
+                            # - this may not work with defaults
+                            if _all_data_fields_are_empty(value):
+                                continue
+                                
                             cls = _get_attribute_class(item, name)
                             subitem = cls()
                             setattr(item, name, subitem)
