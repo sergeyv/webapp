@@ -92,7 +92,7 @@ def setUp():
     global session
     session = webapp.get_session()
     crud_root = crud.Collection( "test" )
-    crud.crud_init(session, crud_root)
+    crud.crud_init(session)
 
 
 def tearDown():
