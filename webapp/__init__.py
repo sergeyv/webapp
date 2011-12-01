@@ -14,7 +14,12 @@ from theme import set_theme, get_theme
 from theme import AssetRegistry
 
 
-from forms import loadable, LoadableForm, get_form, AutoSchema, Literal
+#from forms import loadable, LoadableForm, get_form,
+
+from .forms import AutoSchema, Literal
+
+from .forms import FormRegistry
+
 
 from .defaults import *
 
