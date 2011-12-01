@@ -60,7 +60,7 @@
     Form.prototype.showViewFirstTime = function () {
 
         var self = this,
-            load_from = "/forms/" + self.options.identifier;
+            load_from = webapp.forms_prefix + self.options.identifier;
 
 
         self.init();

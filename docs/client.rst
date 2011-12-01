@@ -171,6 +171,7 @@ webapp.Template
 webapp.Template loads a jqote2 template from ``/t/<view-identifier>.html`` and
 uses that template to render json data received from the server.
 
+The path templates are loaded from is controlled by webapp.templates_prefix, the default is "/t/"
 
 webapp.Template allows links to have some special classes
 which modify their behaviour. This allows to avoid having any 'custom' JS code

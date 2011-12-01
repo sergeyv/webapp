@@ -52,7 +52,7 @@
     Template.prototype.showViewFirstTime = function (container) {
 
         var self = this,
-            load_from = "/t/" + self.options.identifier + ".html";
+            load_from = webapp.templates_prefix + self.options.identifier + ".html";
 
 
         self.init();
@@ -416,7 +416,7 @@
         * of the function. Should be loaded once
         */
         var self = this,
-            load_from = "/forms/" + form_name,
+            load_from = webapp.forms_prefix + form_name,
             id_root = form_name,
             placeholder = '<div id="' + id_root + '">(+here it is!+)</div>';
 
