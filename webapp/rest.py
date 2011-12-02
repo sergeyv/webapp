@@ -17,7 +17,7 @@ from zope.interface import implements
 import crud
 
 from webapp.db import get_session
-from webapp.forms import get_form, Literal
+from webapp.forms import Literal, get_form_registry_by_name
 from webapp import DynamicDefault
 
 
@@ -75,7 +75,28 @@ class RestSubobject(crud.Traversable):
             self.after_item_updated(request)
 
 
-class RestCollection(crud.Collection):
+class FormAwareMixin(object):
+    """
+    A mixing which enables "local form-awareness", i.e. we can register
+    a form registry on a node in our content tree, and all sub-nodes within that
+    branch will find and use that registry
+    """
+
+    form_registry = None
+
+    def find_form_registry(self):
+        if self.form_registry is not None:
+            if isinstance(self.form_registry, basestring):
+                return get_form_registry_by_name(self.form_registry)
+            return self.form_registry
+
+        if (self.__parent__ is not None) and hasattr(self.__parent__, 'find_form_registry'):
+            return self.__parent__.find_form_registry()
+
+        return get_form_registry_by_name('default')
+
+
+class RestCollection(crud.Collection, FormAwareMixin):
     """
     Just like a normal crud.Collection but
     has some additional methods expected by rest views
@@ -448,59 +469,63 @@ class RestCollection(crud.Collection):
 
 
 
-class RestResource(crud.Resource):
+class RestResource(crud.Resource, FormAwareMixin):
     """
     Some additional methods for formatting
     """
 
-    @classmethod
-    def _find_schema_for_data_format(cls, format):
+    #@classmethod
+    def _find_schema_for_data_format(self, format):
 
+        form_registry = self.find_form_registry()
 
         if isinstance(format, sc.Structure):
             return format
 
         schema = None
 
-        form_name = cls.data_formats.get(format, None)
+        form_name = self.data_formats.get(format, None)
         form = None
         if form_name is not None:
-            form = get_form(cls.data_formats[format])
+            form = form_registry.get_form(self.data_formats[format])
             if form is None:
-                raise ValueError("Can't find form %s for %s" % (form_name, cls.__name__))
+                raise ValueError("Can't find form %s for %s" % (form_name, self.__class__.__name__))
             schema = form.structure.attr
         else:
             # A client can either pass a format name (i.e. 'add'),
             # or, as a shortcut for forms, directly the form name (i.e. 'ServerAddForm')
             # so we don't need to specify the format in the route's definition.
             # in the latter case we still want to make sure the form is listed as
-            # on of our formats.
-            if format in cls.data_formats.values():
-                form = get_form(format)
+            # one of our formats.
+            if format in self.data_formats.values():
+                form = form_registry.get_form(format)
                 schema = form.structure.attr
-            else:
-                from crud.registry import get_resource_for_model, get_model_for_resource
-                model_cls = get_model_for_resource(cls)
-                for parent_class in model_cls.__bases__:
-                    resource_class = get_resource_for_model(parent_class)
-                    print "GOT PARENT RESOURCE: %s" % resource_class
-                    if hasattr(resource_class, "_find_schema_for_data_format"):
-                        schema = resource_class._find_schema_for_data_format(format)
-                        if schema is not None:
-                            break
+
+            ### Support for finding format in class parents - I'm not sure
+            ### we're using this anywhere
+            #else:
+                #from crud.registry import get_resource_for_model, get_model_for_resource
+                #model_cls = get_model_for_resource(cls)
+                #for parent_class in model_cls.__bases__:
+                    #resource_class = get_resource_for_model(parent_class)
+                    #print "GOT PARENT RESOURCE: %s" % resource_class
+                    #if hasattr(resource_class, "_find_schema_for_data_format"):
+                        #schema = resource_class._find_schema_for_data_format(format)
+                        #if schema is not None:
+                            #break
 
 
-                if schema is None:
-                    from pyramid.httpexceptions import HTTPBadRequest
-                    e = HTTPBadRequest("Format '%s' is not registered for %s" % (format, cls))
-                    e.status = '444 Data Format Not Found'
-                    raise e
+                #if schema is None:
+                    #from pyramid.httpexceptions import HTTPBadRequest
+                    #e = HTTPBadRequest("Format '%s' is not registered for %s" % (format, cls))
+                    #e.status = '444 Data Format Not Found'
+                    #raise e
 
 
 
         if schema is None:
             raise ValueError("%s form is not registered, but is listed as the"\
-                " '%s' format for %s class" % (form_name, format, cls))
+                " '%s' format for %s class" % (form_name, format, self.__class__))
         return schema
 
 
@@ -651,7 +676,7 @@ class RestResource(crud.Resource):
         return data
 
     def default_item_deserializer(self, params, request):
-    
+
         def _all_data_fields_are_empty(value):
             """
             Returns True if all fields of a dict are false-y
@@ -661,7 +686,7 @@ class RestResource(crud.Resource):
             for v in value.values():
                 if v:
                     return False
-                    
+
             return True
 
         def _get_attribute_class(item, name):
@@ -716,7 +741,7 @@ class RestResource(crud.Resource):
                             # - this may not work with defaults
                             if _all_data_fields_are_empty(value):
                                 continue
-                                
+
                             cls = _get_attribute_class(item, name)
                             subitem = cls()
                             setattr(item, name, subitem)

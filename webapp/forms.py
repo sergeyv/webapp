@@ -157,7 +157,7 @@ class FormRegistry(object):
         form_registries[app_name] = self
 
 
-    def loadable(cls):
+    def loadable(self, cls):
         """
         Registers a formish structure class as a loadable form::
 
@@ -189,9 +189,24 @@ class FormRegistry(object):
         return cls
 
 
-
-    def get_form(name):
+    def get_form(self, name):
         return self.forms[name]
+
+# Create a default form registry to support the old behaviour
+# TODO: Do we want to remove it eventually?
+default_form_registry = FormRegistry('default')
+
+def get_form_registry_by_name(name):
+    return form_registries[name]
+
+
+def loadable(cls):
+    """
+    A default form registry in case we need only one
+    """
+    return default_form_registry.loadable(cls)
+
+
 
 def get_validators_for_field(field):
     """

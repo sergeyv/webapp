@@ -31,9 +31,19 @@
 
    <scan package=".views"/>
 
+
+    <!-- a route for the default form loader - /forms/FormName -->
+    <route
+        name="default-form-loader"
+        path="/forms/:id"
+        view=".views.form_loader"
+        renderer="string"
+    />
+
+    <!-- non-default form loader - /forms/registry_name/FormName -->
     <route
         name="form-loader"
-        path="/forms/:id"
+        path="/forms/:registry_name/:id"
         view=".views.form_loader"
         renderer="string"
     />
