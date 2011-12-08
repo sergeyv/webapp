@@ -66,6 +66,10 @@ class RestSubobject(crud.Traversable):
     """
     implements(crud.IResource)
 
+    @property
+    def model(self):
+        return self.__parent__.model
+
     def update(self, params, request):
         """
         Override the crud's method to call "item updated" hooks
