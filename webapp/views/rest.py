@@ -24,10 +24,10 @@ from webapp.rest import IRestRootCollection
 # from webapp.testing import sluggish, explode
 
 
-@view_config(name="new", 
-    context=crud.ICollection, 
+@view_config(name="new",
+    context=crud.ICollection,
     #containment=IRestRootCollection,
-    permission="rest.list", 
+    permission="rest.list",
     request_method="GET",
     renderer="better_json")
 def json_rest_empty(context, request):
@@ -109,11 +109,11 @@ def json_rest_list(context, request, permission=""):
     return result
 
 
-@view_config(name="filters", 
-    context=crud.ICollection, 
-    #containment=IRestRootCollection, 
-    permission="rest.list", 
-    request_method="GET", 
+@view_config(name="filters",
+    context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.list",
+    request_method="GET",
     renderer="better_json")
 def json_rest_filters(context, request):
     """
@@ -132,11 +132,11 @@ def json_rest_filters(context, request):
     return {'result': "HELLO! No filters found!"}
 
 
-@view_config(name="incremental", 
-    context=crud.ICollection, 
-    #containment=IRestRootCollection, 
-    permission="rest.list", 
-    request_method="GET", 
+@view_config(name="incremental",
+    context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.list",
+    request_method="GET",
     renderer="better_json")
 def json_rest_incremental(context, request):
     """
@@ -157,11 +157,11 @@ def json_rest_incremental(context, request):
 
 
 
-@view_config(context=crud.ICollection, 
-    #containment=IRestRootCollection, 
-    permission="rest.delete", 
-    request_method="DELETE", 
-    renderer="better_json", 
+@view_config(context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.delete",
+    request_method="DELETE",
+    renderer="better_json",
     accept="text/plain")
 def json_rest_delete_subitems(context, request):
     """
@@ -188,11 +188,11 @@ def json_rest_delete_subitems(context, request):
 
 
 
-@view_config(context=crud.IResource, 
-    #containment=IRestRootCollection, 
-    permission="rest.delete", 
-    request_method="DELETE", 
-    renderer="better_json", 
+@view_config(context=crud.IResource,
+    #containment=IRestRootCollection,
+    permission="rest.delete",
+    request_method="DELETE",
+    renderer="better_json",
     accept="text/plain")
 def json_rest_delete_item(context, request):
     """
@@ -201,17 +201,20 @@ def json_rest_delete_item(context, request):
     """
     result = context.delete_item(request)  # returns task_id
 
+    if result is None:
+        result = {'result': "OK"}
+
     return result
 
 
 
 
 
-@view_config(context=crud.IResource, 
-    #containment=IRestRootCollection, 
-    permission="rest.update", 
-    request_method="PUT", 
-    renderer="better_json", 
+@view_config(context=crud.IResource,
+    #containment=IRestRootCollection,
+    permission="rest.update",
+    request_method="PUT",
+    renderer="better_json",
     accept="text/plain")
 def json_rest_update(context, request):
     """
@@ -232,11 +235,11 @@ def json_rest_update(context, request):
     return {'item_id': context.model.id}
 
 
-@view_config(context=crud.IResource, 
-    #containment=IRestRootCollection, 
-    permission="rest.view", 
-    request_method="GET", 
-    renderer="better_json", 
+@view_config(context=crud.IResource,
+    #containment=IRestRootCollection,
+    permission="rest.view",
+    request_method="GET",
+    renderer="better_json",
     accept="text/plain")
 def json_rest_get(context, request):
     """
