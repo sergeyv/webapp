@@ -19,20 +19,14 @@ from sqlalchemy.exc import InvalidRequestError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
 
-
-#DBEngine = None
-
 _DBSession = None
-
-#local_storage = threading.local()
 
 def get_session():
     return _DBSession()
-    #return local_storage._DBSession()
 
 def get_session_class():
     return _DBSession
-    #return local_storage._DBSession
+
 
 def set_dbsession(session):
     global _DBSession
@@ -40,9 +34,7 @@ def set_dbsession(session):
         raise AttributeError("_DBSession has been already set!")
 
     _DBSession = session
-    #if hasattr(local_storage, "_DBSession"):
-    #    raise AttributeError("_DBSession is already set in this thread!")
-    #local_storage._DBSession = session
+
 
 class WebappBase(object):
     """
