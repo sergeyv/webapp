@@ -109,7 +109,7 @@
         * @param extra_params - allows to override variables from self.event.parameters for just one call
         */
         var self = this,
-            root = self.options.rest_service_root,
+            root = webapp.rest_service_prefix + self.options.rest_service_root,
             // we don't want to modify self.event.parameters here,
             // so we're extending an empty object
             params = $.extend({}, self.event.parameters, path_fragments),

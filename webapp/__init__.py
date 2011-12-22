@@ -13,8 +13,9 @@ from app_root import IRootCollection, RootCollection
 from theme import set_theme, get_theme
 from theme import AssetRegistry
 
+from .forms import AutoSchema, Literal
+from .forms import FormRegistry, LoadableForm, loadable
 
-from forms import loadable, LoadableForm, get_form, AutoSchema, Literal
 
 from .defaults import *
 

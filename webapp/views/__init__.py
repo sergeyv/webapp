@@ -5,16 +5,21 @@
 #     License: refer to LICENSE.txt
 ##########################################
 
+from webapp.forms import get_form_registry_by_name
+
 def form_loader(context, request):
     """
     A view which serves dynamically-loaded forms
     It uses URL dispatch (not traversal)
-    and is available at /forms/FormID
+    and is available at /forms/registry_name/FormID
     """
-    import webapp
+    registry_name = request.matchdict.get('registry_name', 'default')
     formid = request.matchdict['id']
-    print "Loadable form: %s" % formid
-    form = webapp.get_form(formid)
+
+    form_registry = get_form_registry_by_name(registry_name)
+
+    form = form_registry.get_form(formid)
+
     if form is not None:
         return form.get_html()
 

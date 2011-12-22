@@ -8,7 +8,7 @@ from webapp.forms import get_field_class_with_validators
 <select id="${field.cssname}" type="text" name="${field.name}"
 ${get_field_class_with_validators(field, classes)|n}
 href="${field.widget.load_from}"
-displaytype="${field.widget.display}"
+data-displaytype="${field.widget.display}"
 >
 <option></option>
 </select>

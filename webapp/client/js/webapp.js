@@ -44,6 +44,13 @@
         this.validation_rules = {
         };
 
+        // appended to all rest URLs. if specified, should not
+        // end with a slash
+        this.rest_service_prefix = '';
+        this.templates_prefix = '/t/';
+        this.forms_prefix = '/forms/';
+
+
         this.pageNotFoundView = undefined;
 
 		this.isRunning = false;
@@ -559,6 +566,8 @@
 
         });
     };
+
+
 
     // ----------------------------------------------------------------------- //
     // ----------------------------------------------------------------------- //

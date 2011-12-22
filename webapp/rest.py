@@ -17,7 +17,7 @@ from zope.interface import implements
 import crud
 
 from webapp.db import get_session
-from webapp.forms import get_form, Literal
+from webapp.forms import Literal, get_form_registry_by_name
 from webapp import DynamicDefault
 
 
@@ -66,6 +66,10 @@ class RestSubobject(crud.Traversable):
     """
     implements(crud.IResource)
 
+    @property
+    def model(self):
+        return self.__parent__.model
+
     def update(self, params, request):
         """
         Override the crud's method to call "item updated" hooks
@@ -75,7 +79,28 @@ class RestSubobject(crud.Traversable):
             self.after_item_updated(request)
 
 
-class RestCollection(crud.Collection):
+class FormAwareMixin(object):
+    """
+    A mixing which enables "local form-awareness", i.e. we can register
+    a form registry on a node in our content tree, and all sub-nodes within that
+    branch will find and use that registry
+    """
+
+    form_registry = None
+
+    def find_form_registry(self):
+        if self.form_registry is not None:
+            if isinstance(self.form_registry, basestring):
+                return get_form_registry_by_name(self.form_registry)
+            return self.form_registry
+
+        if (self.__parent__ is not None) and hasattr(self.__parent__, 'find_form_registry'):
+            return self.__parent__.find_form_registry()
+
+        return get_form_registry_by_name('default')
+
+
+class RestCollection(crud.Collection, FormAwareMixin):
     """
     Just like a normal crud.Collection but
     has some additional methods expected by rest views
@@ -98,20 +123,13 @@ class RestCollection(crud.Collection):
     # i.e. ... WHERE name LIKE 'abc%' OR hostname LIKE 'abc%' ...
     search_fields = ('name',)
 
-    def get_items_listing(self, request, filter_condition=None):
+    def _add_filters(self, query, request):
+        """
+        Add filter criteria to the query if there are `filter-<xxx>`
+        parameters in the request
+        """
 
-        format = request.GET.get('format', 'listing')
-
-        order_by = request.GET.get('sort_on', None)
-        sort_order = request.GET.get('sort_order', None)
-        batch_size = request.GET.get('batch_size', self.DEFAULT_RECORDS_PER_BATCH)
-        batch_size = int(batch_size)
-        batch_size = max(batch_size, self.MIN_RECORDS_PER_BATCH)
-        batch_size = min(batch_size, self.MAX_RECORDS_PER_BATCH)
-        batch_start = int(request.GET.get('batch_start', 0))
-
-        search_criterion = request.GET.get('search', None)
-
+        model_class = self.get_subitems_class()
         filter_values = []
         # NOTE: this should use self.filter_fields as a basis
         # so it's not possible to filter by fileds not
@@ -121,34 +139,6 @@ class RestCollection(crud.Collection):
             if val:
                 filter_values.append({'key': f, 'value': val})
 
-        # See if a subclass defines a hook for processing this format
-        resource = self.wrap_child(self.create_transient_subitem(), name="empty")
-
-        hook_name = "serialize_sequence_%s" % format
-        meth = getattr(resource, hook_name, None)
-        if meth is not None:
-            return meth()
-
-        # Proceed with the standard processing
-        if order_by is not None:
-            if sort_order == 'desc':
-                order_by = "-%s" % order_by
-            else:
-                order_by = "+%s" % order_by
-
-        ### 'vocab' format is a special (simplified) case
-        ### - returns {'items': [(id, name), (id, name), ...]}
-        if format == 'vocab':
-            items = self.get_items(order_by=order_by, wrap=False)
-            result = [(item.id, str(item)) for item in items]
-            return {'items': result}
-
-        data = {}
-
-        model_class = self.get_subitems_class()
-        query = self.get_items_query(filter_condition=filter_condition, order_by=order_by)
-
-        # FILTERING
         for f in filter_values:
             field = getattr(model_class, f['key'])
             if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
@@ -165,7 +155,17 @@ class RestCollection(crud.Collection):
 
                 query = query.join(rel_class).filter(id_attr == f['value'])
 
-        # SEARCH
+        return query
+
+    def _add_search(self, query, request):
+        """
+        Adds a search criteria to the query if there's `search`
+        parameter in the request
+        """
+
+
+        model_class = self.get_subitems_class()
+        search_criterion = request.GET.get('search', None)
         # TODO: LIKE parameters need escaping. Or do they?
         if search_criterion:
             # search_fields is a tuple of fiels names
@@ -176,19 +176,137 @@ class RestCollection(crud.Collection):
                 if field_obj is not None:
                     criteria.append(field_obj.ilike('%' + search_criterion + '%'))
             query = query.filter(sa.sql.expression.or_(*criteria))
+        return query
 
-            #import pdb; pdb.set_trace()
+
+    def get_items_listing(self, request, filter_condition=None):
+        """
+        Understands the following request parameters:
+
+            - format
+
+            - filter-<field-name>:<value> - only return results where
+              `field-name` == `value`. Works for simple relations, i.e.
+              filter-client=49. (49 is client's `id` field, and this is
+              hard-coded at the moment). The field must be listed in  the
+              subclass's filter_fields property, which is a tuple.
+
+            - search=<sometext> - return results where one of the fields listed
+              in search_fields tuple (default - search_fields = ('name',)) is matched
+              using SQL LIKE operator
+
+            - meth=<methodname> - a subclass can define a method filter_methodname
+              which is getting passed the query object and request, which can make some
+              modifications of the query::
+
+                  class CompaniesCollection(...):
+                      def filter_has_vip_clients(self, query, request):
+                          return query.filter(Client.company_id==Company.id)\
+                              .filter(Client.is_vip==True)
+
+              then the client will be able to use this filter by specifying &meth=is_vip in the URL
+
+            - sort_on
+            - sort_order
+            - batch_size
+            - batch_start
+
+        Returns a dictionary in the following format::
+            {
+                'items': [{...}, {...}, {...}],
+                'total_count': 123, # the total numbers of items matching the current query, without batching
+                'has_more': True, # True if there are more items than returned (i.e. batching has limited the result)
+                'next_batch_start': 123 # the start of the next batch sequence
+            }
+        In case of `vocab` format the result is simpler::
+
+            {
+                'items': [(id, name), (id, name), (id, name)]
+            }
+
+        Also, batching is not applied in case of the `vocab` format.
+        """
+
+        format = request.GET.get('format', 'listing')
+
+        order_by = request.GET.get('sort_on', None)
+        sort_order = request.GET.get('sort_order', None)
+
+
+        # See if a subclass defines a hook for processing this format
+        resource = self.wrap_child(self.create_transient_subitem(), name="empty")
+
+        hook_name = "serialize_sequence_%s" % format
+        meth = getattr(resource, hook_name, None)
+        if meth is not None:
+            return meth()
+
+        # Proceed with the standard processing
+        if order_by is not None:
+            if sort_order == 'desc':
+                order_by = "-%s" % order_by
+            else:
+                order_by = "+%s" % order_by
+
+
+        data = {}
+
+        query = self.get_items_query(filter_condition=filter_condition, order_by=order_by)
+
+
+        # CUSTOM QUERY MODIFIER
+        ### An initial approach to be able to specify some hooks in the subclass
+        ### so the client can invoke a filtering method by querying a special url:
+        ### /rest/collection?format=aaa&filter=min_clients&filter_params=5
+        ### would look for a method named 'filter_min_client' which is supposed
+        ### to return an SA clause element suitable for passing to .filter()
+        filter_meth_name = request.GET.get('meth', None)
+        if filter_meth_name:
+            # filter_param = request.get('param', None)
+            meth = getattr(self, 'filter_' + filter_meth_name)
+            query = meth(query, request)
+
+
+
+        # FILTERING
+        query = self._add_filters(query, request)
+
+        # SEARCH
+        query = self._add_search(query, request)
+
+
+        ### VOCABS - if the format is vocab we abort early since
+        ### we don't want/need batching
+        ### 'vocab' format is a special (simplified) case
+        ### - returns {'items': [(id, name), (id, name), ...]}
+        if format == 'vocab':
+            # items = self.get_items(order_by=order_by, wrap=False)
+            items = query.all()
+            result = [(item.id, str(item)) for item in items]
+            return {'items': result}
+
+
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
         ## filter settings
         count = query.count()
         data['total_count'] = count
 
+        # BATCH
+        # query = self._add_batch(query, request)
+        batch_size = request.GET.get('batch_size', self.DEFAULT_RECORDS_PER_BATCH)
+        batch_size = int(batch_size)
+        batch_size = max(batch_size, self.MIN_RECORDS_PER_BATCH)
+        batch_size = min(batch_size, self.MAX_RECORDS_PER_BATCH)
+        batch_start = int(request.GET.get('batch_start', 0))
 
         # Limit the result set to a single batch only
         # request one record more than needed to see if there are
         # more records
         query = query.offset(batch_start).limit(batch_size + 1)
+
+
+        # query all the items
         items = query.all()
 
         if len(items) > batch_size:
@@ -200,13 +318,18 @@ class RestCollection(crud.Collection):
         # wrap SA objects
         items = [self.wrap_child(model=model, name=str(model.id)) for model in items]
 
-        try:
-            for item in items:
-                i = item.serialize(format=format)
+        # try:
 
-                result.append(i)
-        except AttributeError, e:
-            raise
+        # serialize the results
+        for item in items:
+            i = item.serialize(format=format)
+            result.append(i)
+
+        # except AttributeError, e:
+        #     raise
+
+        ### FOR DEBUG REASONS
+        data['query'] = str(query)
 
         data['items'] = result
         return data
@@ -247,19 +370,17 @@ class RestCollection(crud.Collection):
 
                 id_attr = getattr(rel_class, 'id')
                 name_attr = getattr(rel_class, 'name')
+
                 q = session.query(id_attr, name_attr, sa.func.count(model_class.id))\
                     .join(model_class)\
                     .group_by(id_attr, name_attr)\
                     .order_by(name_attr)
-
                 #q = q.with_parent(self.model, attribute_name)
                 result = q.all()
                 r = []
                 for item in result:
                     r.append([item.id, item.name, item[2]])
                 data[attribute_name] = r
-
-                #raise AttributeError("You're trying to order by '%s', which is not a proper column (a relationship maybe?)" % attribute_name)
 
         return data
 
@@ -352,57 +473,63 @@ class RestCollection(crud.Collection):
 
 
 
-class RestResource(crud.Resource):
+class RestResource(crud.Resource, FormAwareMixin):
     """
     Some additional methods for formatting
     """
 
-    @classmethod
-    def _find_schema_for_data_format(cls, format):
+    #@classmethod
+    def _find_schema_for_data_format(self, format):
 
+        form_registry = self.find_form_registry()
 
         if isinstance(format, sc.Structure):
             return format
 
         schema = None
 
-        form_name = cls.data_formats.get(format, None)
+        form_name = self.data_formats.get(format, None)
         form = None
         if form_name is not None:
-            form = get_form(cls.data_formats[format])
+            form = form_registry.get_form(self.data_formats[format])
+            if form is None:
+                raise ValueError("Can't find form %s for %s" % (form_name, self.__class__.__name__))
             schema = form.structure.attr
         else:
             # A client can either pass a format name (i.e. 'add'),
             # or, as a shortcut for forms, directly the form name (i.e. 'ServerAddForm')
             # so we don't need to specify the format in the route's definition.
             # in the latter case we still want to make sure the form is listed as
-            # on of our formats.
-            if format in cls.data_formats.values():
-                form = get_form(format)
+            # one of our formats.
+            if format in self.data_formats.values():
+                form = form_registry.get_form(format)
                 schema = form.structure.attr
-            else:
-                from crud.registry import get_resource_for_model, get_model_for_resource
-                model_cls = get_model_for_resource(cls)
-                for parent_class in model_cls.__bases__:
-                    resource_class = get_resource_for_model(parent_class)
-                    print "GOT PARENT RESOURCE: %s" % resource_class
-                    if hasattr(resource_class, "_find_schema_for_data_format"):
-                        schema = resource_class._find_schema_for_data_format(format)
-                        if schema is not None:
-                            break
+
+            ### Support for finding format in class parents - I'm not sure
+            ### we're using this anywhere
+            #else:
+                #from crud.registry import get_resource_for_model, get_model_for_resource
+                #model_cls = get_model_for_resource(cls)
+                #for parent_class in model_cls.__bases__:
+                    #resource_class = get_resource_for_model(parent_class)
+                    #print "GOT PARENT RESOURCE: %s" % resource_class
+                    #if hasattr(resource_class, "_find_schema_for_data_format"):
+                        #schema = resource_class._find_schema_for_data_format(format)
+                        #if schema is not None:
+                            #break
 
 
-                if schema is None:
-                    from pyramid.httpexceptions import HTTPBadRequest
-                    e = HTTPBadRequest("Format '%s' is not registered for %s" % (format, cls))
-                    e.status = '444 Data Format Not Found'
-                    raise e
+                #if schema is None:
+                    #from pyramid.httpexceptions import HTTPBadRequest
+                    #e = HTTPBadRequest("Format '%s' is not registered for %s" % (format, cls))
+                    #e.status = '444 Data Format Not Found'
+                    #raise e
 
 
 
         if schema is None:
             raise ValueError("%s form is not registered, but is listed as the"\
-                " '%s' format for %s class" % (form_name, format, cls))
+                " '%s' format for %s class" % (form_name, format, self.__class__))
         return schema
 
 
@@ -423,6 +550,10 @@ class RestResource(crud.Resource):
 
         structure = self._find_schema_for_data_format(format)
 
+        # A form can define a serialization hook
+        if hasattr(structure, "serialize"):
+            return structure.serialize(self)
+
         # A subclass may define a method serialize_formatname(self, item, structure) which will be called instead of the standard serializer
         meth = getattr(self, "serialize_%s" % format, self._default_item_serializer)
 
@@ -441,7 +572,7 @@ class RestResource(crud.Resource):
 
         flattened = getattr(structure, "__flatten_subforms__", [])
 
-        print "FLATTENED: %s (%s)" % (flattened, structure)
+        # print "FLATTENED: %s (%s)" % (flattened, structure)
 
         for (name, structure_field) in structure.attrs:
 
@@ -454,7 +585,7 @@ class RestResource(crud.Resource):
             value = getattr(item, name, default)
             #structure_field = getattr(structure, name, default)
 
-            print "Starting with %s of %s" % (name, item)
+            # print "Starting with %s of %s" % (name, item)
 
 
             if name in flattened:
@@ -548,15 +679,19 @@ class RestResource(crud.Resource):
 
         return data
 
+    def default_item_deserializer(self, params, request):
 
+        def _all_data_fields_are_empty(value):
+            """
+            Returns True if all fields of a dict are false-y
+            """
+            if not value:
+                return True
+            for v in value.values():
+                if v:
+                    return False
 
-    def deserialize(self, params, request):
-        """
-        Recursively applies data from a Formish form to an SA model,
-        using the form's schema to ensure only the attributes from the form are set.
-        This supposes that the form submitted is a formish form
-        """
-        # TODO: Add validation here
+            return True
 
         def _get_attribute_class(item, name):
             """
@@ -606,6 +741,11 @@ class RestResource(crud.Resource):
                         subitem = getattr(item, name, None)
                         print "SUBITEM: %s" % (value)
                         if subitem is None:
+                            # Do not create a subitem if all data fields are empty
+                            # - this may not work with defaults
+                            if _all_data_fields_are_empty(value):
+                                continue
+
                             cls = _get_attribute_class(item, name)
                             subitem = cls()
                             setattr(item, name, subitem)
@@ -674,7 +814,6 @@ class RestResource(crud.Resource):
 
         def _save_sequence(collection, schema, data):
 
-
             existing_items = {str(item.model.id): item for item in collection.get_items()}
 
             #seen_ids = []
@@ -717,8 +856,6 @@ class RestResource(crud.Resource):
             collection.delete_subitems(ids_to_delete, request)
 
 
-        item = self.model
-
         schema = params.get('__schema__')
         form_name = schema.__class__.__name__
 
@@ -727,11 +864,45 @@ class RestResource(crud.Resource):
             schema = self._find_schema_for_data_format(form_name)
 
 
-        meth = getattr(self, 'deserialize_%s' + form_name, None)
-        if meth is not None:
-            return meth(params)
+        _save_structure(self.model, schema, params)
 
-        _save_structure(item, schema, params)
+
+
+    def deserialize(self, params, request):
+        """
+        Recursively applies data from a Formish form to an SA model,
+        using the form's schema to ensure only the attributes from the form are set.
+        This supposes that the form submitted is a formish form
+        """
+        # TODO: Add validation here
+
+        schema = params.get('__schema__')
+
+        if schema is not None:
+            form_name = schema.__class__.__name__
+        else:
+            form_name = params.get('__formish_form__')
+
+        # A Resource can define a deserialization hook
+        # be declaring a method deserialize_FormName.
+        meth = getattr(self, 'deserialize_%s' % form_name, None)
+        if meth is not None:
+            return meth(params, request)
+
+        if schema is None:
+            schema = self._find_schema_for_data_format(form_name)
+
+        # Alternatively, the form can define a custom
+        # deserializer. This approach seems to be better, so
+        # custom deserializers on a resource should be deprecated.
+        # In fact, the default deserializer can be moved to a base class
+        # from which all forms will be subclassed
+        meth = getattr(schema, 'deserialize', None)
+        if meth is not None:
+            return meth(self, params, request)
+
+
+        self.default_item_deserializer(params, request)
 
 
     def update(self, params, request):

@@ -8,20 +8,9 @@
 Commonly needed form widgets.
 """
 
-__all__ = ['LoadableListbox', 'FieldsetSwitcher', 'Calendar', 'Input']
+__all__ = ['LoadableListbox', 'FieldsetSwitcher', 'Calendar', ]
 
-from convertish.convert import string_converter, \
-        datetuple_converter,ConvertError
-from schemaish.type import File as SchemaFile
-import uuid
-
-
-from formish import util
-from formish.filestore import CachedTempFilestore
-
-from formish.widgets import Widget, SelectChoice, SequenceDefault, StructureDefault, Hidden
-
-
+from formish.widgets import Widget, SelectChoice, SequenceDefault, Hidden, StructureDefault
 
 
 class LoadableListbox(Widget):
@@ -161,7 +150,7 @@ class AutoFillDropdown(LoadableListbox):
 
 class CombinationField(Widget):
     """
-        Widget that makes a combination of two different fields 
+        Widget that makes a combination of two different fields
         on a form and sends it off as a different field name
         as a hidden value.
         eg:
@@ -179,3 +168,17 @@ class CombinationField(Widget):
     def __init__(self, **k):
         self.combination_fields = k.pop('combination_fields', '')
         super(CombinationField, self).__init__(**k)
+
+
+class PhoneNumber(StructureDefault):
+    """
+    Widget in a similar fashion to a combination of fields
+    i.e it'll retrieve the information from field of some sort and do shit with it yaaaay
+    """
+    type = 'PhoneNumber'
+    template = 'phonenumber.-'
+
+    def __init__(self, **k):
+        self.show_extension = k.pop('show_extension', '')
+        super(PhoneNumber, self).__init__(**k)
+

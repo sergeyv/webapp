@@ -15,12 +15,17 @@ import webapp.validators as v
 
 from pkg_resources import resource_filename
 
-from zope.component import getGlobalSiteManager
-gsm = getGlobalSiteManager()
+#from zope.component import getGlobalSiteManager
+#gsm = getGlobalSiteManager()
 
 
-from zope.interface import Interface, implements
-from zope.component import queryUtility
+#from zope.interface import Interface, implements
+#from zope.component import queryUtility
+
+
+from collections import defaultdict
+import weakref
+
 
 #_form_registry = {}
 #
@@ -30,9 +35,9 @@ from zope.component import queryUtility
 from webapp.renderers import safe_json_dumps
 
 
-class ILoadableForm(Interface):
-    """
-    """
+#class ILoadableForm(Interface):
+    #"""
+    #"""
 
 from schemaish.attr import LeafAttribute
 class Literal(LeafAttribute):
@@ -99,7 +104,7 @@ class AutoSchema(sc.Structure):
         if 'model' in kwargs:
             self.model = kwargs['model']
         attrs = reflect(self.model)
-        #import pdb; pdb.set_trace();
+
         for attr in attrs:
             attr_type = attr.property.columns[0].type
             if isinstance(attr_type, sa.Integer):
@@ -137,31 +142,71 @@ def _recursively_augment(form):
         structure.augment_form(form)
 
 
+form_registries = {}
+
+class FormRegistry(object):
+
+    forms = None
+    app_name = None
+
+    def __init__(self, app_name):
+        self.app_name = app_name
+        self.forms = {}
+        if app_name in form_registries:
+            raise ValueError("Form registry %s already exists" % app_name)
+        form_registries[app_name] = self
+
+
+    def loadable(self, cls):
+        """
+        Registers a formish structure class as a loadable form::
+
+            @loadable
+            class TestForm(schemaish.Structure):
+                attr1 = sc.String(title="Attribute 1")
+                attr2 = sc.String(title="Attribute 2")
+
+                def augment_form(self, form):
+                    form['client'].widget = webapp.widgets.FieldsetSwitcher(options=(("1", "One"), ("2", "Two")))
+
+        Then the template can be loaded from /forms/app_name/ClassName
+        """
+        name = cls.__name__
+        schema = cls()
+        form = LoadableForm(schema)
+        form.name = name
+
+        # Find any subforms and call their
+        # augment_form methods so we can set up widgets etc.
+        _recursively_augment(form)
+
+        #gsm.registerUtility(form, ILoadableForm, name)
+        if name in self.forms:
+            raise ValueError("Form %s already registered for application %s" % (name, self.app_name))
+
+        self.forms[name] = form
+
+        return cls
+
+
+    def get_form(self, name):
+        return self.forms[name]
+
+# Create a default form registry to support the old behaviour
+# TODO: Do we want to remove it eventually?
+default_form_registry = FormRegistry('default')
+
+def get_form_registry_by_name(name):
+    return form_registries[name]
+
+
 def loadable(cls):
     """
-    Registers a formish structure class as a loadable form::
-
-        @loadable
-        class TestForm(schemaish.Structure):
-            attr1 = sc.String(title="Attribute 1")
-            attr2 = sc.String(title="Attribute 2")
-
-            def augment_form(self, form):
-                form['client'].widget = webapp.widgets.FieldsetSwitcher(options=(("1", "One"), ("2", "Two")))
-
-    Then the template can be loaded from /forms/ClassName
+    A default form registry in case we need only one
     """
-    name = cls.__name__
-    schema = cls()
-    form = LoadableForm(schema)
-    form.name = name
+    return default_form_registry.loadable(cls)
 
-    # Find any subforms and call their
-    # augment_form methods so we can set up widgets etc.
-    _recursively_augment(form)
 
-    gsm.registerUtility(form, ILoadableForm, name)
-    return cls
 
 def get_validators_for_field(field):
     """
@@ -240,9 +285,6 @@ def is_option_selected(option, field):
     else:
         return ''
 
-def get_form(name):
-    return queryUtility(ILoadableForm, name)
-
 
 class LoadableForm(formish.Form):
     """
@@ -250,7 +292,7 @@ class LoadableForm(formish.Form):
     Forms are served as `/form/LoadableForm`, where "LoadableForm is the class name
     """
 
-    implements(ILoadableForm)
+    #implements(ILoadableForm)
 
 
     renderer = formish.renderer.Renderer([resource_filename('webapp', 'templates/mako')])

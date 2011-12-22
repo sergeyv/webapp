@@ -24,9 +24,12 @@ from webapp.rest import IRestRootCollection
 # from webapp.testing import sluggish, explode
 
 
-@view_config(name="new", context=crud.ICollection, containment=IRestRootCollection,
-permission="rest.list", request_method="GET",
-renderer="better_json")
+@view_config(name="new",
+    context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.list",
+    request_method="GET",
+    renderer="better_json")
 def json_rest_empty(context, request):
     """
     Returns an empty item with all fields set to default values
@@ -93,7 +96,12 @@ def json_rest_create(context, request):
     return _create_item(context, request)
 
 
-@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json", xhr=True, accept="application/json")
+@view_config(context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.list",
+    request_method="GET",
+    renderer="better_json",
+    accept="application/json")
 def json_rest_list(context, request, permission=""):
     """
     """
@@ -101,7 +109,12 @@ def json_rest_list(context, request, permission=""):
     return result
 
 
-@view_config(name="filters", context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json")
+@view_config(name="filters",
+    context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.list",
+    request_method="GET",
+    renderer="better_json")
 def json_rest_filters(context, request):
     """
     Returns a list of possible filters for the current section
@@ -119,7 +132,12 @@ def json_rest_filters(context, request):
     return {'result': "HELLO! No filters found!"}
 
 
-@view_config(name="incremental", context=crud.ICollection, containment=IRestRootCollection, permission="rest.list", request_method="GET", renderer="better_json")
+@view_config(name="incremental",
+    context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.list",
+    request_method="GET",
+    renderer="better_json")
 def json_rest_incremental(context, request):
     """
     Returns a list of items which match a search string
@@ -139,7 +157,12 @@ def json_rest_incremental(context, request):
 
 
 
-@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+@view_config(context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.delete",
+    request_method="DELETE",
+    renderer="better_json",
+    accept="text/plain")
 def json_rest_delete_subitems(context, request):
     """
     When a DELETE request is sent to a Collection,
@@ -165,7 +188,12 @@ def json_rest_delete_subitems(context, request):
 
 
 
-@view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.delete", request_method="DELETE", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource,
+    #containment=IRestRootCollection,
+    permission="rest.delete",
+    request_method="DELETE",
+    renderer="better_json",
+    accept="text/plain")
 def json_rest_delete_item(context, request):
     """
     When a DELETE request is sent to a Resource,
@@ -173,13 +201,21 @@ def json_rest_delete_item(context, request):
     """
     result = context.delete_item(request)  # returns task_id
 
+    if result is None:
+        result = {'result': "OK"}
+
     return result
 
 
 
 
 
-@view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.update", request_method="PUT", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource,
+    #containment=IRestRootCollection,
+    permission="rest.update",
+    request_method="PUT",
+    renderer="better_json",
+    accept="text/plain")
 def json_rest_update(context, request):
     """
     """
@@ -192,12 +228,19 @@ def json_rest_update(context, request):
     # Formish uses dotted syntax to deal with nested structures
     # we need to unflatten it
     params = dottedish.api.unflatten(params.items())
-    return context.update(params, request)
 
-    #{'item_id': context.model.id}
+    # Resource.update returns nothing
+    context.update(params, request)
+
+    return {'item_id': context.model.id}
 
 
-@view_config(context=crud.IResource, containment=IRestRootCollection, permission="rest.view", request_method="GET", renderer="better_json", accept="text/plain")
+@view_config(context=crud.IResource,
+    #containment=IRestRootCollection,
+    permission="rest.view",
+    request_method="GET",
+    renderer="better_json",
+    accept="text/plain")
 def json_rest_get(context, request):
     """
     Returns a json dict representing the given object's data serialized using
