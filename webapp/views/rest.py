@@ -82,14 +82,25 @@ def _create_item(context, request):
 
 
 
-@view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="PUT", renderer="better_json", accept="text/plain")
+@view_config(name="new",
+    context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.create",
+    request_method="PUT",
+    renderer="better_json",
+    accept="text/plain")
 def json_rest_create_new(context, request):
     """
     """
     return _create_item(context, request)
 
 
-@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
+@view_config(context=crud.ICollection,
+    #containment=IRestRootCollection,
+    permission="rest.create",
+    request_method="POST",
+    renderer="better_json",
+    accept="text/plain")
 def json_rest_create(context, request):
     """
     """
