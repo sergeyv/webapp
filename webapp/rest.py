@@ -81,7 +81,7 @@ class RestSubobject(crud.Traversable):
 
 class FormAwareMixin(object):
     """
-    A mixing which enables "local form-awareness", i.e. we can register
+    A mixin which enables "local form-awareness", i.e. we can register
     a form registry on a node in our content tree, and all sub-nodes within that
     branch will find and use that registry
     """
