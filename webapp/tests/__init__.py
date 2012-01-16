@@ -8,10 +8,37 @@ from unittest import TestCase
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 
+class Organisation(webapp.Base):
+    __tablename__ = "organisations"
+    id = sa.Column(sa.Integer, primary_key = True)
 
-# export dbfixture here for tests :
-#__all__ = ['TestController', 'dbfixture']
+    type = sa.Column(sa.String)
 
+    __mapper_args__ = {
+        'polymorphic_on' : type,
+        }
+
+    name = sa.Column(sa.String)
+    established = sa.Column(sa.DateTime)
+
+class School(Organisation):
+    __tablename__ = "schools"
+    __mapper_args__ = {'polymorphic_identity' : 'school'}
+
+    id = sa.Column(sa.Integer, sa.ForeignKey('organisations.id'), primary_key=True)
+
+    is_school = sa.Column(sa.Boolean)
+
+    
+class Student(webapp.Base):
+    __tablename__ = "students"
+    id = sa.Column(sa.Integer, primary_key = True)
+    name = sa.Column(sa.String)
+    school_id = sa.Column(sa.Integer, sa.ForeignKey("schools.id"))
+    school = sa.orm.relationship(School, backref="students")
+
+    def __repr__(self):
+        return "<Student %s (%s) from school #%s>" % (self.name, self.id, self.school_id)
 
 
 def setUp():
@@ -30,6 +57,8 @@ def setUp():
 
 
 def tearDown():
+    print "X"*80
     print "__init__.py -> tearDown"
     webapp.Base.metadata.drop_all()
+    #raise Exception()
 

@@ -10,24 +10,14 @@ import webapp
 
 from nose.tools import raises
 
+
+from . import Student, Organisation, School
+
 session = None
 
+rr = crud.ResourceRegistry("serializer")
+fr = webapp.FormRegistry("serializer")
 
-# Our test models
-
-class School(webapp.Base):
-    __tablename__ = "schools"
-    id = sa.Column(sa.Integer, primary_key = True)
-    name = sa.Column(sa.String)
-    established = sa.Column(sa.DateTime)
-    is_school = sa.Column(sa.Boolean)
-
-class Student(webapp.Base):
-    __tablename__ = "students"
-    id = sa.Column(sa.Integer, primary_key = True)
-    name = sa.Column(sa.String)
-    school_id = sa.Column(sa.Integer, sa.ForeignKey("schools.id"))
-    school = sa.orm.relationship(School, backref="students")
 
 # forms
 
@@ -35,20 +25,20 @@ class StudentForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
 
-@webapp.loadable
+@fr.loadable
 class SchoolForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
     established = sc.DateTime()
 
-@webapp.loadable
+@fr.loadable
 class SchoolWithStudentsForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
     students = sc.Sequence(StudentForm())
     established = sc.DateTime()
 
-@webapp.loadable
+@fr.loadable
 class SchoolDefaultsForm(sc.Structure):
     id = sc.Integer(default=999)
     name = sc.String(default="DEFAULT")
@@ -58,14 +48,14 @@ class SchoolDetailsSubform(sc.Structure):
     name = sc.String()
     established = sc.DateTime()
 
-@webapp.loadable
+@fr.loadable
 class SchoolFlattenForm(sc.Structure):
     id = sc.Integer()
     details = SchoolDetailsSubform()
 
     __flatten_subforms__ = ("details")
 
-@crud.resource(School)
+@rr.add(School)
 class SchoolResource(webapp.RestResource):
 
     data_formats = {
@@ -74,6 +64,8 @@ class SchoolResource(webapp.RestResource):
         'students': 'SchoolWithStudentsForm',
         'flat': 'SchoolFlattenForm',
         }
+        
+    form_registry = "serializer"
 
 
 def setUp():
@@ -83,6 +75,8 @@ def setUp():
 
 def tearDown():
     session.rollback()
+    #webapp.Base.metadata.clear()
+    #sa.orm.clear_mappers()
 
 
 
