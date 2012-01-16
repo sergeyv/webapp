@@ -10,27 +10,12 @@ import webapp
 
 from nose.tools import raises
 
+from . import Student, Organisation, School
+
 session = None
 
-
-# Our test models
-
-class School(webapp.Base):
-    __tablename__ = "de_schools"
-    id = sa.Column(sa.Integer, primary_key = True)
-    name = sa.Column(sa.String)
-    established = sa.Column(sa.DateTime)
-    is_school = sa.Column(sa.Boolean)
-
-class Student(webapp.Base):
-    __tablename__ = "de_students"
-    id = sa.Column(sa.Integer, primary_key = True)
-    name = sa.Column(sa.String)
-    school_id = sa.Column(sa.Integer, sa.ForeignKey("de_schools.id"))
-    school = sa.orm.relationship(School, backref="students")
-
-    def __repr__(self):
-        return "<Student %s (%s) from school #%s>" % (self.name, self.id, self.school_id)
+rr = crud.ResourceRegistry("deserialize")
+fr = webapp.FormRegistry("deserialize")
 
 # forms
 
@@ -38,21 +23,21 @@ class StudentForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
 
-@webapp.loadable
+@fr.loadable
 class SchoolForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
     established = sc.DateTime()
     is_school = sc.Boolean()
 
-@webapp.loadable
+@fr.loadable
 class SchoolWithStudentsForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
     students = sc.Sequence(StudentForm())
     established = sc.DateTime()
 
-@webapp.loadable
+@fr.loadable
 class SchoolDefaultsForm(sc.Structure):
     id = sc.Integer(default=999)
     name = sc.String(default="DEFAULT")
@@ -62,14 +47,14 @@ class SchoolDetailsSubform(sc.Structure):
     name = sc.String()
     established = sc.DateTime()
 
-@webapp.loadable
+@fr.loadable
 class SchoolFlattenForm(sc.Structure):
     id = sc.Integer()
     details = SchoolDetailsSubform()
 
     __flatten_subforms__ = ("details")
 
-@crud.resource(School)
+@rr.add(School)
 class SchoolResource(webapp.RestResource):
 
     data_formats = {
@@ -83,7 +68,7 @@ class SchoolResource(webapp.RestResource):
         'students': webapp.RestCollection("Students", 'students')
         }
 
-@crud.resource(Student)
+@rr.add(Student)
 class StudentResource(webapp.RestResource):
     pass
 
@@ -91,12 +76,14 @@ class StudentResource(webapp.RestResource):
 def setUp():
     global session
     session = webapp.get_session()
-    crud_root = crud.Collection( "test" )
-    crud.crud_init(session)
+    webapp.Base.metadata.create_all()
 
 
 def tearDown():
     session.rollback()
+    session.close()
+    webapp.Base.metadata.drop_all()
+
 
 class DummyRequest(object):
     pass
@@ -139,7 +126,7 @@ def test_sequences():
 
     session.flush()
     session.commit()
-
+    
     s = session.query(School).filter(School.id==321).one()
     assert len(s.students) == 2
     assert s.students[0].id == 234
@@ -170,6 +157,7 @@ def test_sequences():
 
     session.flush()
     session.commit()
+    
     s = session.query(School).filter(School.id==321).one()
 
     assert s.name == 'New School!'

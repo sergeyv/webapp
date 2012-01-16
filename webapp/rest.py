@@ -19,6 +19,7 @@ import crud
 from webapp.db import get_session
 from webapp.forms import Literal, get_form_registry_by_name
 from webapp import DynamicDefault
+from webapp.exc import WebappFormError
 
 
 class IRestRootCollection(crud.ICollection):
@@ -528,7 +529,7 @@ class RestResource(crud.Resource, FormAwareMixin):
 
 
         if schema is None:
-            raise ValueError("%s form is not registered, but is listed as the"\
+            raise WebappFormError("%s form is not registered, but is listed as the"\
                 " '%s' format for %s class" % (form_name, format, self.__class__))
         return schema
 
