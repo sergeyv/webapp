@@ -4,6 +4,7 @@ import schemaish as sc
 from pkg_resources import resource_filename
 
 from webapp.renderers import safe_json_dumps
+from webapp.exc import WebappFormError
 
 from .validators import get_validators_for_field
 
@@ -87,7 +88,7 @@ class FormRegistry(object):
         self.app_name = app_name
         self.forms = {}
         if app_name in form_registries:
-            raise ValueError("Form registry %s already exists" % app_name)
+            raise WebappFormError("Form registry %s already exists" % app_name)
         form_registries[app_name] = self
 
 
@@ -116,7 +117,7 @@ class FormRegistry(object):
 
         #gsm.registerUtility(form, ILoadableForm, name)
         if name in self.forms:
-            raise ValueError("Form %s already registered for application %s" % (name, self.app_name))
+            raise WebappFormError("Form %s already registered for application %s" % (name, self.app_name))
 
         self.forms[name] = form
 
