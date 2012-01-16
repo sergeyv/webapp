@@ -10,6 +10,9 @@ from unittest import TestCase
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 
+# RUN WITH: ./bin/nosetests ./code/webapp/ --pdb-failures --with-yanc
+
+
 class Organisation(webapp.Base):
     __tablename__ = "organisations"
     id = sa.Column(sa.Integer, primary_key = True)
