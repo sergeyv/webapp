@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sqlalchemy as sa
+
+import crud
 import webapp
 
 from unittest import TestCase
@@ -42,23 +44,21 @@ class Student(webapp.Base):
 
 
 def setUp():
+    # SQLite database in memory
     DB_STRING = 'sqlite://'
     DB_ECHO = True
 
     engine = sa.create_engine(DB_STRING, echo=DB_ECHO)
 
-    session = sa.orm.scoped_session(sa.orm.sessionmaker())
-    session.configure(bind=engine)
+    session = sa.orm.scoped_session(sa.orm.sessionmaker(bind=engine))
+    session.configure()
 
     webapp.set_dbsession(session)
-
+    crud.crud_init(session)
     webapp.Base.metadata.bind = engine
-    webapp.Base.metadata.create_all(engine)
 
 
 def tearDown():
-    print "X"*80
-    print "__init__.py -> tearDown"
     webapp.Base.metadata.drop_all()
     #raise Exception()
 

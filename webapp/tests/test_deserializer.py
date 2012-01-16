@@ -76,14 +76,13 @@ class StudentResource(webapp.RestResource):
 def setUp():
     global session
     session = webapp.get_session()
-    crud_root = crud.Collection( "test" )
-    crud.crud_init(session)
+    webapp.Base.metadata.create_all()
 
 
 def tearDown():
     session.rollback()
-    #webapp.Base.metadata.clear()
-    #sa.orm.clear_mappers()
+    session.close()
+    webapp.Base.metadata.drop_all()
 
 
 class DummyRequest(object):
@@ -127,7 +126,7 @@ def test_sequences():
 
     session.flush()
     session.commit()
-
+    
     s = session.query(School).filter(School.id==321).one()
     assert len(s.students) == 2
     assert s.students[0].id == 234
@@ -158,6 +157,7 @@ def test_sequences():
 
     session.flush()
     session.commit()
+    
     s = session.query(School).filter(School.id==321).one()
 
     assert s.name == 'New School!'

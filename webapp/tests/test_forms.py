@@ -51,12 +51,13 @@ class SchoolResource(webapp.RestResource):
 def setUp():
     global session
     session = webapp.get_session()
+    webapp.Base.metadata.create_all()
 
 
 def tearDown():
     session.rollback()
-    #webapp.Base.metadata.clear()
-    #sa.orm.clear_mappers()
+    session.close()
+    webapp.Base.metadata.drop_all()
 
 
 
