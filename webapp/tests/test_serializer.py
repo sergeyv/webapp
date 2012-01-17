@@ -2,16 +2,12 @@
 
 from datetime import datetime
 
-import sqlalchemy as sa
 import schemaish as sc
 
 import crud
 import webapp
 
-from nose.tools import raises
-
-
-from . import Student, Organisation, School
+from webapp.tests import Student, School
 
 session = None
 
@@ -25,11 +21,13 @@ class StudentForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
 
+
 @fr.loadable
 class SchoolForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
     established = sc.DateTime()
+
 
 @fr.loadable
 class SchoolWithStudentsForm(sc.Structure):
@@ -38,15 +36,18 @@ class SchoolWithStudentsForm(sc.Structure):
     students = sc.Sequence(StudentForm())
     established = sc.DateTime()
 
+
 @fr.loadable
 class SchoolDefaultsForm(sc.Structure):
     id = sc.Integer(default=999)
     name = sc.String(default="DEFAULT")
     is_school = sc.Boolean(default=True)
 
+
 class SchoolDetailsSubform(sc.Structure):
     name = sc.String()
     established = sc.DateTime()
+
 
 @fr.loadable
 class SchoolFlattenForm(sc.Structure):
@@ -54,6 +55,7 @@ class SchoolFlattenForm(sc.Structure):
     details = SchoolDetailsSubform()
 
     __flatten_subforms__ = ("details")
+
 
 @rr.add(School)
 class SchoolResource(webapp.RestResource):
@@ -64,7 +66,7 @@ class SchoolResource(webapp.RestResource):
         'students': 'SchoolWithStudentsForm',
         'flat': 'SchoolFlattenForm',
         }
-        
+
     form_registry = "serializer"
 
 
@@ -86,7 +88,7 @@ def test_serialize():
     Serialize an object and see if it contains the values
     """
     est = datetime.utcnow()
-    s = School(id=123, name="TEST!", established = est)
+    s = School(id=123, name="TEST!", established=est)
     r = SchoolResource("123", None, s)
 
     data = r.serialize(format="test")
@@ -94,6 +96,7 @@ def test_serialize():
     assert data['id'] == 123
     assert data['name'] == "TEST!"
     assert data['established'] == est
+
 
 def test_defaults():
     """
@@ -108,6 +111,7 @@ def test_defaults():
 
     assert data['id'] == 999
     assert data['name'] == "DEFAULT"
+
 
 def test_defaults_value():
     """
@@ -128,8 +132,6 @@ def test_defaults_value():
     assert data['is_school'] == True
 
 
-
-
 def test_sequences():
     """
     Serialize an object with some subobjects
@@ -138,7 +140,7 @@ def test_sequences():
     """
 
     est = datetime.utcnow()
-    s = School(id=123, name="TEST!", established = est)
+    s = School(id=123, name="TEST!", established=est)
 
     s.students.append(Student(id=1, name="Student One"))
     s.students.append(Student(id=2, name="Student Two"))
@@ -150,6 +152,7 @@ def test_sequences():
     assert isinstance(data['students'], list)
     assert len(data['students']) == 2
     assert data['established'] == est
+
 
 def test_html_escape():
     """
@@ -166,10 +169,11 @@ def test_html_escape():
     assert "<" not in data['name']
     assert ">" not in data['name']
 
-    m.name="&laquo;Nice quotes!&raquo;"
+    m.name = "&laquo;Nice quotes!&raquo;"
     data = r.serialize(format="defaults")
     assert "&laquo;" not in data['name']
     assert "&raquo;" not in data['name']
+
 
 def test_form_flattening():
     """
@@ -177,7 +181,7 @@ def test_form_flattening():
     data["details"]['name'] come from obj.name, not from (non-existent) obj.details.name
     """
     est = datetime.utcnow()
-    s = School(id=123, name="TEST!", established = est)
+    s = School(id=123, name="TEST!", established=est)
     r = SchoolResource("123", None, s)
 
     data = r.serialize(format="flat")

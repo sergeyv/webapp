@@ -8,6 +8,7 @@ from webapp.exc import WebappFormError
 
 from .validators import get_validators_for_field
 
+
 class LoadableForm(formish.Form):
     """
     A form which can be loaded by the client's code.
@@ -36,7 +37,7 @@ class LoadableForm(formish.Form):
         for field in self.allfields:
             validators = get_validators_for_field(field)
 
-            if validators: # empty dict is false-ish
+            if validators:  # empty dicts are false-ish
                 rules[field.name] = validators
 
         return safe_json_dumps(rules)
