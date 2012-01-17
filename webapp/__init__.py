@@ -5,6 +5,11 @@
 #     License: refer to LICENSE.txt
 ##########################################
 
+### MONKEYPATCH
+### WebOb 1.2 does not include UnicodeMultiDict, which breaks formish and FormAlchemy                              
+import webob.multidict                                                                                             
+webob.multidict.UnicodeMultiDict = webob.multidict.MultiDict                                                       
+
 
 from db import Base, initialize_sql, get_session, set_dbsession, get_session_class
 
@@ -20,5 +25,7 @@ from .forms import FormRegistry, LoadableForm, loadable
 from .defaults import *
 
 from rest import RestCollection, RestResource, RestSubobject, IRestRootCollection
+
+
 
 

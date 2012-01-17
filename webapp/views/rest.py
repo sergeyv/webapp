@@ -26,7 +26,6 @@ from webapp.rest import IRestRootCollection
 
 @view_config(name="new",
     context=crud.ICollection,
-    #containment=IRestRootCollection,
     permission="rest.list",
     request_method="GET",
     renderer="better_json")
@@ -82,14 +81,23 @@ def _create_item(context, request):
 
 
 
-@view_config(name="new", context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="PUT", renderer="better_json", accept="text/plain")
+@view_config(name="new",
+    context=crud.ICollection,
+    permission="rest.create",
+    request_method="PUT",
+    renderer="better_json",
+    accept="text/plain")
 def json_rest_create_new(context, request):
     """
     """
     return _create_item(context, request)
 
 
-@view_config(context=crud.ICollection, containment=IRestRootCollection, permission="rest.create", request_method="POST", renderer="better_json", accept="text/plain")
+@view_config(context=crud.ICollection,
+    permission="rest.create",
+    request_method="POST",
+    renderer="better_json",
+    accept="text/plain")
 def json_rest_create(context, request):
     """
     """
@@ -97,7 +105,6 @@ def json_rest_create(context, request):
 
 
 @view_config(context=crud.ICollection,
-    #containment=IRestRootCollection,
     permission="rest.list",
     request_method="GET",
     renderer="better_json",
@@ -111,7 +118,6 @@ def json_rest_list(context, request, permission=""):
 
 @view_config(name="filters",
     context=crud.ICollection,
-    #containment=IRestRootCollection,
     permission="rest.list",
     request_method="GET",
     renderer="better_json")
@@ -134,7 +140,6 @@ def json_rest_filters(context, request):
 
 @view_config(name="incremental",
     context=crud.ICollection,
-    #containment=IRestRootCollection,
     permission="rest.list",
     request_method="GET",
     renderer="better_json")
@@ -158,7 +163,6 @@ def json_rest_incremental(context, request):
 
 
 @view_config(context=crud.ICollection,
-    #containment=IRestRootCollection,
     permission="rest.delete",
     request_method="DELETE",
     renderer="better_json",
@@ -189,7 +193,6 @@ def json_rest_delete_subitems(context, request):
 
 
 @view_config(context=crud.IResource,
-    #containment=IRestRootCollection,
     permission="rest.delete",
     request_method="DELETE",
     renderer="better_json",
@@ -211,7 +214,6 @@ def json_rest_delete_item(context, request):
 
 
 @view_config(context=crud.IResource,
-    #containment=IRestRootCollection,
     permission="rest.update",
     request_method="PUT",
     renderer="better_json",
@@ -236,7 +238,6 @@ def json_rest_update(context, request):
 
 
 @view_config(context=crud.IResource,
-    #containment=IRestRootCollection,
     permission="rest.view",
     request_method="GET",
     renderer="better_json",

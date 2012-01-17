@@ -186,6 +186,8 @@
 
         self.register_combination_changes();
 
+        self.validation_remote_modify();
+
         if (self.options.need_save_data) {
             // Set validation
             self.setValidationRules();
@@ -632,6 +634,19 @@
                 });
             });
         });
+    };
+
+    Form.prototype.validation_remote_modify = function() {
+        var validation_rules = webapp.validation_rules[this.options.identifier];
+        for(var i in validation_rules)
+        {
+            var rule = validation_rules[i];
+            if(rule.remote)
+            {
+                rule.remote = webapp.fillInPlaceholders(rule.remote, this.event.parameters)
+            }
+        }
+
     };
 
     webapp.Form = Form;
