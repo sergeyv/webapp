@@ -177,6 +177,13 @@
 
             t.parent().parent().formish('add_remove_buttons');
             $('form').formish('add_sortables');
+
+            /* Make sure any loadableListboxes get loaded */
+            h.find('div.loadableListbox').each(function (idx) {
+                var $select = $(this).find('select');
+                webapp.getController().currentView.reloadLoadable($select);
+            });
+
         },
 
         add_new_items: function (t, modifier) {

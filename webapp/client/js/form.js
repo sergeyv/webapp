@@ -186,6 +186,8 @@
 
         self.register_combination_changes();
 
+        self.validation_remote_modify();
+
         if (self.options.need_save_data) {
             // Set validation
             self.setValidationRules();
@@ -241,11 +243,14 @@
     };
 
 
-    Form.prototype.fill_form = function (id_root, data) {
+    Form.prototype.fill_form = function ( id_root, data, first_lvl ) {
         /* Recursively iterate over the json data, find elements
         * of the form and set their values.
         * Now works with subforms
         */
+        if ( first_lvl == undefined )
+            first_lvl = true;
+            
         var self = this,
             is_array = function (arg) {
                 return (arg && typeof arg === 'object' &&
@@ -279,8 +284,34 @@
 
         if (!data) { return; }
 
-        $.each(data, function (name, value) {
+        if ( first_lvl )
+        {
+            // Fill out data provided by server with defaults provided in the URI
+            
+            var mergeobjs = function ( obj1, obj2 )
+            {
+                $.each(obj1, function (name, value) {
+                    if (value === null || typeof value === 'undefined') {
+                        if ( obj2.hasOwnProperty( name ) )
+                            obj1[ name ] = obj2[ name ];
+                    }
+                    else if ( is_array( value ) && obj2.hasOwnProperty( name ) && is_array( obj2[ name ] ) )
+                    {
+                        if ( value.length == 0 && obj2[name].length > 0 )
+                            obj1[ name ] = obj2[ name ];
+                        //for ( var ai in value )
+                        //    mergeobjs( obj1[ name ][ ai ], obj2[ name ][ ai ] );
+                    }
+                    else if ( typeof value === 'object' && obj2.hasOwnProperty( name ) )
+                    {
+                        mergeobjs( obj1[ name ], obj2[ name ] );
+                    }
+                } );
+            };
+            mergeobjs( data, self.event.uri_args );
+        }
 
+        $.each(data, function (name, value) {
             var id,
                 elem,
                 display_elem,
@@ -291,9 +322,10 @@
             // the defaults would only be applied if the server passes
             // null or undefined as the value - empty strings or bools still
             // take precendence
-            if (value === null || typeof value === 'undefined') {
-                value = self.event.uri_args[name] || '';
-            }
+            //if (value === null || typeof value === 'undefined') {
+            //    console.log( self.event.uri_args[name] );
+            //    value = self.event.uri_args[name] || '';
+            //}
 
             id = id_root + '-' + name;
             if (typeof value === "string" ||
@@ -348,13 +380,13 @@
                 // should go before the === "object" section
                 $.each(value, function (idx, subvalue) {
                     self.view.formish('add_new_items', $(link));
-                    self.fill_form(id + '-' + idx, subvalue);
+                    self.fill_form(id + '-' + idx, subvalue, false);
                 });
                 self.view.formish('add_new_items_header_row', $(link));
 
             } else if (typeof value === "object") {
                 if (data) {
-                    self.fill_form(id, value);
+                    self.fill_form(id, value, false);
                 }
             }
         });
@@ -602,6 +634,19 @@
                 });
             });
         });
+    };
+
+    Form.prototype.validation_remote_modify = function() {
+        var validation_rules = webapp.validation_rules[this.options.identifier];
+        for(var i in validation_rules)
+        {
+            var rule = validation_rules[i];
+            if(rule.remote)
+            {
+                rule.remote = webapp.fillInPlaceholders(rule.remote, this.event.parameters)
+            }
+        }
+
     };
 
     webapp.Form = Form;
