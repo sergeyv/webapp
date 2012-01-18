@@ -80,15 +80,6 @@ class RestSubobject(crud.Traversable):
             self.after_item_updated(request)
 
 
-from webapp.forms.data_format import DataFormatReader, DataFormatWriter, DataFormatLister
-
-DATA_FORMAT_MAPPING = {
-    'read':  DataFormatReader,
-    'write': DataFormatWriter,
-    'list': DataFormatLister,
-}
-
-
 class FormAwareMixin(object):
     """
     A mixin which enables "local form-awareness", i.e. we can register
@@ -109,106 +100,10 @@ class FormAwareMixin(object):
 
         return get_form_registry_by_name('default')
 
-    def __getitem__(self, name):
-
-        #if isinstance(self, RestCollection):
-        #    import pdb; pdb.set_trace()
-
-        if name.startswith('@'):
-            data_format_factory = self._find_data_format(name[1:])
-            data_format_obj = data_format_factory()
-            data_format_obj.__name__ = name
-            data_format_obj.__parent__ = self
-            return data_format_obj
-
-        return crud.Traversable.__getitem__(self, name)
-
-    def _find_data_format(self, format):
-
-        return self.__data_formats__['all'][format]
-
-    def _check_format_type(self, format, format_type):
-        """
-        Checks if the format was registered with the format_type
-        used in view predicates to raise a 404 if, say, a "reader" format
-        is POSTed to.
-        """
-        return format_type in self.__data_formats__ and \
-               format in self.__data_formats__[format_type]
-
-    @classmethod
-    def _data_format_decorator(cls, name_or_cls, format_types):
-        """
-        Base class for reader, writer and other decorator methods
-        """
-
-        if isinstance(name_or_cls, basestring):
-            additional_name = name_or_cls
-        else:
-            additional_name = None
-
-        def inner(schemaish_cls):
-            if not hasattr(cls, '__data_formats__'):
-                cls.__data_formats__ = {'all': {}}
-
-
-            all_format_types = ('all', ) + format_types
-            for format_type in all_format_types:
-                data_format_factory_class = DATA_FORMAT_MAPPING[format_type]
-                data_format_factory = data_format_factory_class(schemaish_cls)
-                format_dict = cls.__data_formats__.setdefault(data_format_factory, {})
-                format_dict[schemaish_cls.__name__] = data_format_factory
-                if additional_name is not None:
-                    format_dict[additional_name] = data_format_factory
-            # it's important to return it otherwise nested decorators won't work
-            return schemaish_cls
-
-
-        if isinstance(name_or_cls, basestring):
-            # we were passed a string which means the decorator was called
-            # with @Resource.reader('name') syntax - return the inner function
-            # which in turn will be called
-            # with the DataFormat class as its parameter
-            return inner
-
-        # we were passed a class, which means the decorater was used without
-        # ('name') so we invoke the inner function directly
-        return inner(name_or_cls)
-
-    @classmethod
-    def readonly_format(cls, name_or_cls):
-        """
-        A decorator to assign a DataFormat subclass as a READ data format
-        for the given resource::
-
-                @ContactResource.reader
-                class ContactResourceView(DataFormat):
-
-        in which case the format will be available as `/rest/contacts/123`
-
-        Alternatively, we can pass a name to the decorator::
-
-                @ContactResource.reader('test')
-                class ContactResourceView(DataFormat):
-        """
-
-        return cls._data_format_decorator(name_or_cls, ('read', ))
-
-    @classmethod
-    def writeonly_format(cls, name_or_cls):
-        """
-        """
-        return cls._data_format_decorator(name_or_cls, ('write', ))
-
-    @classmethod
-    def readwrite_format(cls, name_or_cls):
-        """
-        """
-        return cls._data_format_decorator(name_or_cls, ('read', 'write', ))
 
 
 
-class RestCollection(FormAwareMixin, crud.Collection):
+class RestCollection(crud.Collection, FormAwareMixin):
     """
     Just like a normal crud.Collection but
     has some additional methods expected by rest views
@@ -582,11 +477,103 @@ class RestCollection(FormAwareMixin, crud.Collection):
 
 
 
-class RestResource(FormAwareMixin, crud.Resource):
+class RestResource(crud.Resource, FormAwareMixin):
     """
     Some additional methods for formatting
     """
 
+    def __getitem__(self, name):
+
+        if name.startswith('@'):
+            structure_cls = self._find_data_format(name[1:])
+            structure = structure_cls()
+            structure.__name__ = name
+            structure.__parent__ = self
+            #structure.resource = self
+            # import pdb; pdb.set_trace()
+            return structure
+
+        return super(RestResource, self).__getitem__(name)
+
+    def _find_data_format(self, format):
+
+        return self.__data_formats__['all'][format][0]
+
+    def _check_format_type(self, format, format_type):
+        """
+        Checks if the format was registered with the format_type
+        used in view predicates to raise a 404 if, say, a "reader" format
+        is POSTed to.
+        """
+        return format_type in self.__data_formats__ and \
+               format in self.__data_formats__[format_type]
+
+    @classmethod
+    def _data_format_decorator(cls, name_or_form_cls, format_types):
+        """
+        Base class for reader, writer and other decorator methods
+        """
+
+        if isinstance(name_or_form_cls, basestring):
+            additional_name = name_or_form_cls
+        else:
+            additional_name = None
+
+        def inner(form_cls):
+            if not hasattr(cls, '__data_formats__'):
+                cls.__data_formats__ = {'all': {}}
+
+            all_format_types = ('all', ) + format_types
+            for format_type in all_format_types:
+                format_dict = cls.__data_formats__.setdefault(format_type, {})
+                format_dict[form_cls.__name__] = (form_cls, format_type)
+                if additional_name is not None:
+                    format_dict[additional_name] = (form_cls, format_type)
+            # it's important to return it otherwise nested decorators won't work
+            return form_cls
+
+
+        if isinstance(name_or_form_cls, basestring):
+            # we were passed a string which means the decorator was called
+            # with @Resource.reader('name') syntax - return the inner function
+            # which in turn will be called
+            # with the DataFormat class as its parameter
+            return inner
+
+        # we were passed a class, which means the decorater was used without
+        # ('name') so we invoke the inner function directly
+        return inner(name_or_form_cls)
+
+    @classmethod
+    def readonly_format(cls, name_or_form_cls):
+        """
+        A decorator to assign a DataFormat subclass as a READ data format
+        for the given resource::
+
+                @ContactResource.reader
+                class ContactResourceView(DataFormat):
+
+        in which case the format will be available as `/rest/contacts/123`
+
+        Alternatively, we can pass a name to the decorator::
+
+                @ContactResource.reader('test')
+                class ContactResourceView(DataFormat):
+        """
+
+        return cls._data_format_decorator(name_or_form_cls, ('read', ))
+
+    @classmethod
+    def writeonly_format(cls, name_or_form_cls):
+        """
+        """
+        return cls._data_format_decorator(name_or_form_cls, ('write', ))
+
+    @classmethod
+    def readwrite_format(cls, name_or_form_cls):
+        """
+        """
+        return cls._data_format_decorator(name_or_form_cls, ('read', 'write', ))
 
     #@classmethod
     def _find_schema_for_data_format(self, format):
