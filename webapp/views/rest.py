@@ -237,6 +237,7 @@ def json_rest_update(context, request):
     return {'item_id': context.model.id}
 
 
+# TODO: OBSOLETE
 @view_config(context=crud.IResource,
     permission="rest.view",
     request_method="GET",
@@ -274,20 +275,20 @@ def json_rest_get(context, request):
     return data
 
 
-from webapp.forms.data_format import IDataFormat
+from webapp.forms.data_format import IDataFormatReader, IDataFormatWriter, IDataFormatLister
 
 
-def is_a_reader(context, request):
-    resource = context.__parent__
-    format_name = context.__name__[1:]
-    return resource._check_format_type(format_name, 'read')
+# def is_a_reader(context, request):
+#     resource = context.__parent__
+#     format_name = context.__name__[1:]
+#     return resource._check_format_type(format_name, 'read')
 
-@view_config(context=IDataFormat,
+@view_config(context=IDataFormatReader,
     permission="rest.view",
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
-    custom_predicates=[is_a_reader, ],
+    # custom_predicates=[is_a_reader, ],
     )
 def json_rest_get(context, request):
     """
@@ -300,6 +301,7 @@ def json_rest_get(context, request):
     # TODO: The code below has a lot of similarities with RestResource.get_empty
     #format_name = request.GET.get('format', 'default')
 
+    #import pdb; pdb.set_trace();
     session = get_session()
     session.autoflush = False
 
