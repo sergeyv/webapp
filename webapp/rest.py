@@ -476,6 +476,7 @@ class RestCollection(crud.Collection, FormAwareMixin):
 
 
 
+
 class RestResource(crud.Resource, FormAwareMixin):
     """
     Some additional methods for formatting
@@ -496,7 +497,82 @@ class RestResource(crud.Resource, FormAwareMixin):
 
     def _find_data_format(self, format):
 
-        return self.data_formats[format]
+        return self.__data_formats__['all'][format][0]
+
+    def _check_format_type(self, format, format_type):
+        """
+        Checks if the format was registered with the format_type
+        used in view predicates to raise a 404 if, say, a "reader" format
+        is POSTed to.
+        """
+        return format in self.__data_formats__[format_type]
+
+    @classmethod
+    def _data_format_decorator(cls, name_or_form_cls, format_types):
+        """
+        Base class for reader, writer and other decorator methods
+        """
+
+        if isinstance(name_or_form_cls, basestring):
+            additional_name = name_or_form_cls
+        else:
+            additional_name = None
+
+        def inner(form_cls):
+            if not hasattr(cls, '__data_formats__'):
+                cls.__data_formats__ = {'all': {}}
+
+            all_format_types = ('all', ) + format_types
+            for format_type in all_format_types:
+                format_dict = cls.__data_formats__.setdefault(format_type, {})
+                format_dict[form_cls.__name__] = (form_cls, format_type)
+                if additional_name is not None:
+                    format_dict[additional_name] = (form_cls, format_type)
+            # it's important to return it otherwise nested decorators won't work
+            return form_cls
+
+
+        if isinstance(name_or_form_cls, basestring):
+            # we were passed a string which means the decorator was called
+            # with @Resource.reader('name') syntax - return the inner function
+            # which in turn will be called
+            # with the DataFormat class as its parameter
+            return inner
+
+        # we were passed a class, which means the decorater was used without
+        # ('name') so we invoke the inner function directly
+        return inner(name_or_form_cls)
+
+    @classmethod
+    def readonly_format(cls, name_or_form_cls):
+        """
+        A decorator to assign a DataFormat subclass as a READ data format
+        for the given resource::
+
+                @ContactResource.reader
+                class ContactResourceView(DataFormat):
+
+        in which case the format will be available as `/rest/contacts/123`
+
+        Alternatively, we can pass a name to the decorator::
+
+                @ContactResource.reader('test')
+                class ContactResourceView(DataFormat):
+        """
+
+        return cls._data_format_decorator(name_or_form_cls, ('read', ))
+
+    @classmethod
+    def writeonly_format(cls, name_or_form_cls):
+        """
+        """
+        return cls._data_format_decorator(name_or_form_cls, ('write', ))
+
+    @classmethod
+    def readwrite_format(cls, name_or_form_cls):
+        """
+        """
+        return cls._data_format_decorator(name_or_form_cls, ('read', 'write', ))
 
     #@classmethod
     def _find_schema_for_data_format(self, format):
@@ -574,219 +650,34 @@ class RestResource(crud.Resource, FormAwareMixin):
         if hasattr(structure, "serialize"):
             return structure.serialize(self)
 
+        # OBSOLETE, being phases out
         # A subclass may define a method serialize_formatname(self, item, structure) which will be called instead of the standard serializer
-        meth = getattr(self, "serialize_%s" % format, self._default_item_serializer)
+        # meth = getattr(self, "serialize_%s" % format, self._default_item_serializer)
 
-        data = meth(self.model, structure, only_fields=only_fields)
+        # data = meth(self.model, structure, only_fields=only_fields)
 
-        if annotate:
-            data['_ann'] = self._annotate_fields(structure)
+        # if annotate:
+        #     data['_ann'] = self._annotate_fields(structure)
 
-        return data
-
-
-    def _annotate_fields(self, structure):
-        """
-        Extract some additional data from our schema
-        (namely - field titles) to facilitate automated rendering
-        """
-        data = []
-        # structure.attrs is a list of (name,field) tuples
-        for (name, field) in structure.attrs:
-            f = {
-                'name': name,
-                'title': field.title,
-            }
-            data.append(f)
-
-        return data
-
-    def default_item_deserializer(self, params, request):
-
-        def _all_data_fields_are_empty(value):
-            """
-            Returns True if all fields of a dict are false-y
-            """
-            if not value:
-                return True
-            for v in value.values():
-                if v:
-                    return False
-
-            return True
-
-        def _get_attribute_class(item, name):
-            """
-            nicked from crud - returns an SA relation given an attribute name
-            """
-            relation = getattr(item.__class__, name)
-            arg = relation.property.argument
-            if callable(arg):
-                related_class = arg()
-            else:
-                related_class = arg.class_
-            return related_class
-
-        def _save_structure(item, schema, data):
-
-            attrs = schema.attrs
-
-            print "SAVING %s INTO %s USING %s" % (data, item, schema)
-            flattened = getattr(schema, "__flatten_subforms__", [])
-
-            for (name, attr) in attrs:
-                value = data.get(name, _marker)
-                if value is _marker:
-                    print "### No data passed for attr %s <%s>" % (name, data)
-                    continue
-
-                # Nested structures
-                if isinstance(attr, sc.Structure):
-                    print "STRUCTURE!"
-                    subschema = attr
-                    if name in flattened:
-                        # Flattened subforms are saved directly into the item
-                        _save_structure(item, subschema, value)
-                    else:
-
-                        # AutoFillDropdown requires the serializer
-                        # to flush the session session before serializing sequences
-                        # to load subobjects which were just linked to our item
-                        # Example:
-                        #     item.client_id =  123
-                        #     ... need to flush the session here so item.client is loaded
-                        #     item.client.name = "Client One"
-
-                        session = sa.orm.object_session(item)
-                        session.flush()
-
-                        subitem = getattr(item, name, None)
-                        print "SUBITEM: %s" % (value)
-                        if subitem is None:
-                            # Do not create a subitem if all data fields are empty
-                            # - this may not work with defaults
-                            if _all_data_fields_are_empty(value):
-                                continue
-
-                            cls = _get_attribute_class(item, name)
-                            subitem = cls()
-                            setattr(item, name, subitem)
-                        _save_structure(subitem, subschema, value)
-
-                # Sequences of structures
-                elif isinstance(attr, sc.Sequence):
-                    #collection = getattr(item, name)
-                    #subitems_cls = _get_attribute_class(item, name)
-                    # __getitem__ takes care about inserting a collection
-                    # into the traversal context etc.
-                    collection = self[name]
-                    _save_sequence(collection, attr.attr, value)
+        # return data
 
 
-                # Simple attributes
-                elif isinstance(attr, sc.String):
-                    # Convert empty strings to NULLs
-                    # - otherwise it fails with empty values
-                    # in enums
-                    if value == '':
-                        value = None
+    # def _annotate_fields(self, structure):
+    #     """
+    #     Extract some additional data from our schema
+    #     (namely - field titles) to facilitate automated rendering
+    #     """
+    #     data = []
+    #     # structure.attrs is a list of (name,field) tuples
+    #     for (name, field) in structure.attrs:
+    #         f = {
+    #             'name': name,
+    #             'title': field.title,
+    #         }
+    #         data.append(f)
 
-                    setattr(item, name, value)
-                elif isinstance(attr, sc.Integer):
-                    if value:
-                        setattr(item, name, int(value))
-                    else:
-                        setattr(item, name, None)
-                elif isinstance(attr, sc.Decimal):
-                    if value:
-                        setattr(item, name, Decimal(value))
-                    else:
-                        setattr(item, name, None)
+    #     return data
 
-                elif isinstance(attr, sc.Date):
-                    if value:
-                        # TODO: Need to improve this. Use dateutil?
-                        value = value.split('T')[0]  # strip off the time part
-                        d = datetime.strptime(value, "%Y-%m-%d")
-                    else:
-                        d = None
-                    setattr(item, name, d)
-                elif isinstance(attr, sc.DateTime):
-                    if value:
-                        # TODO: proper format here
-                        dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
-                    else:
-                        dt = None
-                    setattr(item, name, dt)
-                elif isinstance(attr, sc.Boolean):
-                    if str(value).lower() in ('true', 'yes', '1'):
-                        value = True
-                    elif str(value).lower() in ('false', 'no', '0'):
-                        value = False
-                    else:
-                        if value == '':
-                            value = None
-                        if value is not None:
-                            raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
-
-                    setattr(item, name, value)
-
-                else:
-                    raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
-
-        def _save_sequence(collection, schema, data):
-
-            existing_items = {str(item.model.id): item for item in collection.get_items()}
-
-            #seen_ids = []
-            ids_to_delete = []
-
-            print "EXISTING ITEMS: %s" % (existing_items,)
-            for (order_idx, value) in data.items():
-                if order_idx == '*':
-                    continue
-                # the data must contain 'id' parameter
-                # if the data should be saved into an existing item
-                item_id = value.get('id', None)
-                print "PROCESSING ITEM %s" % item_id
-
-                if value.get('__delete__', False):
-                    # Existing item must be deleted
-                    ids_to_delete.append(item_id)
-                    print "WILL_BE_DELETED: %s" % item_id
-
-                else:
-                    item = existing_items.get(item_id, None)
-                    del value['id']
-                    value['__schema__'] = schema
-                    if item is not None:
-                        # update an existing item
-                        #seen_ids.append(str(item_id))
-                        item.update(value, request)
-                    else:
-                        if value.get('__new__', False):
-                            # create a new item
-                            item = collection.create_subitem(params=value, request=request, wrap=True)
-                        else:
-                            # Item has not been found and the client does not indicate
-                            # that it's a new item - something is wrong
-                            raise ValueError("Nowhere to save data: %s" % (value,))
-
-
-            #ids_to_delete = [id for id in existing_items.keys() if id not in seen_ids]
-            print "DELETING: %s" % ids_to_delete
-            collection.delete_subitems(ids_to_delete, request)
-
-
-        schema = params.get('__schema__')
-        form_name = schema.__class__.__name__
-
-        if schema is None:
-            form_name = params.get('__formish_form__')
-            schema = self._find_schema_for_data_format(form_name)
-
-
-        _save_structure(self.model, schema, params)
 
 
 

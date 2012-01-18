@@ -276,11 +276,19 @@ def json_rest_get(context, request):
 
 from webapp.forms.data_format import IDataFormat
 
+
+def is_a_reader(context, request):
+    resource = context.__parent__
+    format_name = context.__name__[1:]
+    return resource._check_format_type(format_name, 'read')
+
 @view_config(context=IDataFormat,
     permission="rest.view",
     request_method="GET",
     renderer="better_json",
-    accept="text/plain")
+    accept="text/plain",
+    custom_predicates=[is_a_reader, ],
+    )
 def json_rest_get(context, request):
     """
     Returns a json dict representing the given object's data serialized using
