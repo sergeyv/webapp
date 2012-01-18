@@ -505,7 +505,8 @@ class RestResource(crud.Resource, FormAwareMixin):
         used in view predicates to raise a 404 if, say, a "reader" format
         is POSTed to.
         """
-        return format in self.__data_formats__[format_type]
+        return format_type in self.__data_formats__ and \
+               format in self.__data_formats__[format_type]
 
     @classmethod
     def _data_format_decorator(cls, name_or_form_cls, format_types):
