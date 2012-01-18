@@ -50,7 +50,7 @@
             slack += '|' + key + ':' + value;
         });
         return url + slack;
-    }
+    };
 
     View.prototype.new_filter_url = function (attr, value) {
         /* returns the current url with one of the filters changed */
@@ -58,7 +58,7 @@
         var args = $.extend({}, this.event.uri_args);
         args[attr] = value;
         return this.modified_url(args);
-    }
+    };
 
     View.prototype.new_sort_url = function (value) {
         /* returns the current url with sort_on and sort_order values changed */
@@ -72,7 +72,7 @@
         }
         args.sort_on = value;
         return this.modified_url(args);
-    }
+    };
 
 
     View.prototype.collectRestParams = function () {
@@ -84,12 +84,15 @@
         */
         var self = this,
             params = [];
-        if (self.options.data_format) {
+
+        /*if (self.options.data_format) {
             params.push("format=" + self.options.data_format);
-        }
-        if (self.options.ann) {
+        }*/
+
+        // not used/supported anymore
+        /*if (self.options.ann) {
             params.push("ann=1");
-        }
+        }*/
 
         $.each(self.event.uri_args, function (key, value) {
             params.push(key + "=" + value);
@@ -121,6 +124,11 @@
         }
 
         url = webapp.fillInPlaceholders(root, params);
+
+        if (self.options.data_format) {
+            url += "/@" + self.options.data_format;
+        }
+
 
         if (with_params === "with-params" ) {
                 params = self.collectRestParams();

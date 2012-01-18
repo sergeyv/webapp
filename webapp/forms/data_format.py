@@ -14,6 +14,18 @@ class IDataFormat(Interface):
     """ """
 
 
+class IDataFormatReader(IDataFormat):
+    """ """
+
+
+class IDataFormatWriter(IDataFormat):
+    """ """
+
+
+class IDataFormatLister(IDataFormat):
+    """ """
+
+
 def _default_item_serializer(item, structure, only_fields=None):
 
     data = {}
@@ -301,16 +313,40 @@ def _default_item_deserializer(model, schema, params, request):
     _save_structure(model, schema, params)
 
 
-class DataFormat(sc.Structure):
-    implements(IDataFormat)
+class DataFormatBase(object):
+
+    def __init__(self, structure):
+
+        self.structure = structure
+
+    def __call__(self):
+        return self.__class__(structure=self.structure)
+
+
+class DataFormatReader(DataFormatBase):
+    implements(IDataFormatReader)
 
     def serialize(self):
         # our parent is a Resource
         model = self.__parent__.model
-        structure = self
+        structure = self.structure
         return _default_item_serializer(model, structure)
+
+
+class DataFormatWriter(DataFormatBase):
+    implements(IDataFormatWriter)
 
     def deserialize(self, params, request):
         model = self.__parent__.model
-        structure = self
+        structure = self.structure
         return _default_item_deserializer(model, structure, params, request)
+
+
+class DataFormatLister(DataFormatBase):
+    implements(IDataFormatLister)
+
+    def listing(self, params, request):
+        model = self.__parent__.model
+        structure = self.structure
+        raise NotImplementedError("IMPLEMENT ME")
+        #return _default_item_deserializer(model, structure, params, request)
