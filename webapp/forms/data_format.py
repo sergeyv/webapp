@@ -342,11 +342,233 @@ class DataFormatWriter(DataFormatBase):
         return _default_item_deserializer(model, structure, params, request)
 
 
+class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
+    pass
+
+
 class DataFormatLister(DataFormatBase):
     implements(IDataFormatLister)
 
-    def listing(self, params, request):
-        model = self.__parent__.model
-        structure = self.structure
-        raise NotImplementedError("IMPLEMENT ME")
+
+    def _add_filters(self, query, request):
+        """
+        Add filter criteria to the query if there are `filter-<xxx>`
+        parameters in the request
+        """
+        collection = self.__parent__
+
+        model_class = collection.get_subitems_class()
+        filter_values = []
+        # NOTE: this should use collection.filter_fields as a basis
+        # so it's not possible to filter by fileds not
+        # explicitly listed in that property.
+        for f in collection.filter_fields:
+            val = request.GET.get("filter-%s" % f, None)
+            if val:
+                filter_values.append({'key': f, 'value': val})
+
+        for f in filter_values:
+            field = getattr(model_class, f['key'])
+            if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
+                # The attribute is a simple column
+                query = query.filter(field == f['value'])
+            else:
+                # The attribute is not a simple column so we suppose it's
+                # a relation. TODO: we may need a better check here
+                rel_class = collection.get_class_from_relation(field)
+                if not isinstance(rel_class, type):
+                    rel_class = rel_class.__class__
+
+                id_attr = getattr(rel_class, 'id')
+
+                query = query.join(rel_class).filter(id_attr == f['value'])
+
+        return query
+
+    def _add_search(self, query, request):
+        """
+        Adds a search criteria to the query if there's `search`
+        parameter in the request
+        """
+
+        collection = self.__parent__
+
+        model_class = collection.get_subitems_class()
+        search_criterion = request.GET.get('search', None)
+        # TODO: LIKE parameters need escaping. Or do they?
+        if search_criterion:
+            # search_fields is a tuple of fiels names
+            #which need to be searched
+            criteria = []
+            for field_name in collection.search_fields:
+                field_obj = getattr(model_class, field_name, None)
+                if field_obj is not None:
+                    criteria.append(field_obj.ilike('%' + search_criterion + '%'))
+            query = query.filter(sa.sql.expression.or_(*criteria))
+        return query
+
+
+    def get_items_listing(self, request, filter_condition=None):
+        """
+        Understands the following request parameters:
+
+            - filter-<field-name>:<value> - only return results where
+              `field-name` == `value`. Works for simple relations, i.e.
+              filter-client=49. (49 is client's `id` field, and this is
+              hard-coded at the moment). The field must be listed in  the
+              subclass's filter_fields property, which is a tuple.
+
+            - search=<sometext> - return results where one of the fields listed
+              in search_fields tuple (default - search_fields = ('name',)) is matched
+              using SQL LIKE operator
+
+            - meth=<methodname> - a subclass can define a method filter_methodname
+              which is getting passed the query object and request, which can make some
+              modifications of the query::
+
+                  class CompaniesCollection(...):
+                      def filter_has_vip_clients(self, query, request):
+                          return query.filter(Client.company_id==Company.id)\
+                              .filter(Client.is_vip==True)
+
+              then the client will be able to use this filter by specifying &meth=is_vip in the URL
+
+            - sort_on
+            - sort_order
+            - batch_size
+            - batch_start
+
+        Returns a dictionary in the following format::
+            {
+                'items': [{...}, {...}, {...}],
+                'total_count': 123, # the total numbers of items matching the current query, without batching
+                'has_more': True, # True if there are more items than returned (i.e. batching has limited the result)
+                'next_batch_start': 123 # the start of the next batch sequence
+            }
+        In case of `vocab` format the result is simpler::
+
+            {
+                'items': [(id, name), (id, name), (id, name)]
+            }
+
+        Also, batching is not applied in case of the `vocab` format.
+        """
+
+        collection = self.__parent__
+        #format = request.GET.get('format', 'listing')
+
+        order_by = request.GET.get('sort_on', None)
+        sort_order = request.GET.get('sort_order', None)
+
+
+        # TODO: CHECK IF THERE'S A HOOK ON THE SCHEMA ?
+        # See if a subclass defines a hook for processing this format
+        #resource = collection.wrap_child(self.create_transient_subitem(), name="empty")
+
+        #hook_name = "serialize_sequence_%s" % format
+        #meth = getattr(resource, hook_name, None)
+        #if meth is not None:
+        #    return meth()
+
+        # Proceed with the standard processing
+        if order_by is not None:
+            if sort_order == 'desc':
+                order_by = "-%s" % order_by
+            else:
+                order_by = "+%s" % order_by
+
+
+        data = {}
+
+        query = collection.get_items_query(filter_condition=filter_condition, order_by=order_by)
+
+
+        # CUSTOM QUERY MODIFIER
+        ### An initial approach to be able to specify some hooks in the subclass
+        ### so the client can invoke a filtering method by querying a special url:
+        ### /rest/collection?format=aaa&filter=min_clients&filter_params=5
+        ### would look for a method named 'filter_min_client' which is supposed
+        ### to return an SA clause element suitable for passing to .filter()
+        filter_meth_name = request.GET.get('meth', None)
+        if filter_meth_name:
+            # filter_param = request.get('param', None)
+            meth = getattr(self, 'filter_' + filter_meth_name)
+            query = meth(query, request)
+
+
+
+        # FILTERING
+        query = self._add_filters(query, request)
+
+        # SEARCH
+        query = self._add_search(query, request)
+
+
+        ### VOCABS - if the format is vocab we abort early since
+        ### we don't want/need batching
+        ### 'vocab' format is a special (simplified) case
+        ### - returns {'items': [(id, name), (id, name), ...]}
+        if format == 'vocab':
+            # items = self.get_items(order_by=order_by, wrap=False)
+            items = query.all()
+            result = [(item.id, str(item)) for item in items]
+            return {'items': result}
+
+
+        ## Now we have a full query which would retrieve all the objects
+        ## We are using it to get count of objects available using the current
+        ## filter settings
+        count = query.count()
+        data['total_count'] = count
+
+        # BATCH
+        # query = self._add_batch(query, request)
+        batch_size = request.GET.get('batch_size', collection.DEFAULT_RECORDS_PER_BATCH)
+        batch_size = int(batch_size)
+        batch_size = max(batch_size, collection.MIN_RECORDS_PER_BATCH)
+        batch_size = min(batch_size, collection.MAX_RECORDS_PER_BATCH)
+        batch_start = int(request.GET.get('batch_start', 0))
+
+        # Limit the result set to a single batch only
+        # request one record more than needed to see if there are
+        # more records
+        query = query.offset(batch_start).limit(batch_size + 1)
+
+
+        # query all the items
+        items = query.all()
+
+        if len(items) > batch_size:
+            data['has_more'] = True
+            data['next_batch_start'] = batch_start + batch_size
+
+        result = []
+
+        # # wrap SA objects
+        # items = [collection.wrap_child(model=model, name=str(model.id)) for model in items]
+
+        # # serialize the results
+        # for item in items:
+        #     i = item.serialize(format=format)
+        #     result.append(i)
+
+        for model in items:
+            i = _default_item_serializer(model, self.structure)
+            result.append(i)
+
+        # except AttributeError, e:
+        #     raise
+
+        ### FOR DEBUG REASONS
+        data['query'] = str(query)
+
+        data['items'] = result
+        return data
+
+    def listing(self, request):
+        #resource = self.__parent__
+        #structure = self.structure
+
+        return self.get_items_listing(request)
+        #raise NotImplementedError("IMPLEMENT ME")
         #return _default_item_deserializer(model, structure, params, request)

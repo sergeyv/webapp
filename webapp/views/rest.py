@@ -290,7 +290,7 @@ from webapp.forms.data_format import IDataFormatReader, IDataFormatWriter, IData
     accept="text/plain",
     # custom_predicates=[is_a_reader, ],
     )
-def json_rest_get(context, request):
+def json_rest_get_f(context, request):
     """
     Returns a json dict representing the given object's data serialized using
     one of the formats registered for the resource
@@ -322,3 +322,14 @@ def json_rest_get(context, request):
     transaction.abort()
     return data
 
+
+@view_config(context=IDataFormatLister,
+    permission="rest.list",
+    request_method="GET",
+    renderer="better_json",
+    accept="application/json")
+def json_rest_list_f(context, request, permission=""):
+    """
+    """
+    result = context.get_items_listing(request)
+    return result
