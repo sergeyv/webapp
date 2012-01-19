@@ -80,7 +80,8 @@ class RestSubobject(crud.Traversable):
             self.after_item_updated(request)
 
 
-from webapp.forms.data_format import DataFormatReader, DataFormatWriter, DataFormatReadWrite, DataFormatLister
+from webapp.forms.data_format import DataFormatReader, DataFormatWriter,\
+     DataFormatReadWrite, DataFormatLister, VocabLister
 
 
 class FormAwareMixin(object):
@@ -139,7 +140,7 @@ class FormAwareMixin(object):
             formats_dict = cls.__data_formats__
 
             data_format_factory = wrapper_cls(schemaish_cls)
-            formats_dict[schemaish_cls.__name__] = data_format_factory
+
             if additional_name is not None:
                 formats_dict[additional_name] = data_format_factory
             # it's important to return it otherwise nested decorators won't work
@@ -194,6 +195,17 @@ class FormAwareMixin(object):
         """
         """
         return cls._data_format_decorator(name_or_cls, DataFormatLister)
+
+
+    @classmethod
+    def allow_vocab_listing(cls):
+        """
+        """
+        if not hasattr(cls, '__data_formats__'):
+            cls.__data_formats__ = {}
+        formats_dict = cls.__data_formats__
+        formats_dict['vocab'] = VocabLister # no need to instantiate
+
 
 
 class RestCollection(FormAwareMixin, crud.Collection):
@@ -514,7 +526,7 @@ class RestResource(FormAwareMixin, crud.Resource):
         before and after the update and call "item updated" hooks
         """
 
-        form_name = params.get('__formish_form__')
+        #form_name = params.get('__formish_form__')
 
 
         #old_data = self.serialize(format=form_name)

@@ -19,7 +19,7 @@ class LoadableListbox(Widget):
 
         def augment_form(self, form):
             form['controller_id'].widget = \\
-                webapp.LoadableListbox(load_from="/rest/controllers?format=vocab")
+                webapp.LoadableListbox(load_from="/rest/controllers/@vocab")
 
     the only parameter is ``load_from``, which is the URL from which
     the widget will load its data.
@@ -28,14 +28,14 @@ class LoadableListbox(Widget):
     listboxes, i.e. when one changes another is reloaded::
 
         form['image_id'].widget = \\
-            webapp.LoadableListbox(load_from="/rest/controllers/:%s/images?format=vocab" % form['controller_id'].cssname)
+            webapp.LoadableListbox(load_from="/rest/controllers/:%s/images/@vocab" % form['controller_id'].cssname)
 
     if ``add_popup`` parameter is specified, a small + icon will be displayed
     next to the dropdown. Clicking on the icon will display a form which
     allows to add a new item to the list (the form needs to be configured separately)::
 
         form ['retailer_id'].widget = webapp.widgets.LoadableListbox(
-            load_from="/rest/retailers?format=vocab",
+            load_from="/rest/retailers/@vocab",
             add_popup="#/retailers/add",
         )
 

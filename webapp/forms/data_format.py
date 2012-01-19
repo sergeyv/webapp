@@ -408,7 +408,7 @@ class DataFormatLister(DataFormatBase):
         return query
 
 
-    def get_items_listing(self, request, filter_condition=None):
+    def get_items_listing(self, request):
         """
         Understands the following request parameters:
 
@@ -445,13 +445,6 @@ class DataFormatLister(DataFormatBase):
                 'has_more': True, # True if there are more items than returned (i.e. batching has limited the result)
                 'next_batch_start': 123 # the start of the next batch sequence
             }
-        In case of `vocab` format the result is simpler::
-
-            {
-                'items': [(id, name), (id, name), (id, name)]
-            }
-
-        Also, batching is not applied in case of the `vocab` format.
         """
 
         collection = self.__parent__
@@ -480,13 +473,13 @@ class DataFormatLister(DataFormatBase):
 
         data = {}
 
-        query = collection.get_items_query(filter_condition=filter_condition, order_by=order_by)
+        query = collection.get_items_query(order_by=order_by)
 
 
         # CUSTOM QUERY MODIFIER
         ### An initial approach to be able to specify some hooks in the subclass
         ### so the client can invoke a filtering method by querying a special url:
-        ### /rest/collection?format=aaa&filter=min_clients&filter_params=5
+        ### /rest/collection/@aaa&filter=min_clients&filter_params=5
         ### would look for a method named 'filter_min_client' which is supposed
         ### to return an SA clause element suitable for passing to .filter()
         filter_meth_name = request.GET.get('meth', None)
@@ -565,10 +558,57 @@ class DataFormatLister(DataFormatBase):
         data['items'] = result
         return data
 
-    def listing(self, request):
-        #resource = self.__parent__
-        #structure = self.structure
 
-        return self.get_items_listing(request)
-        #raise NotImplementedError("IMPLEMENT ME")
-        #return _default_item_deserializer(model, structure, params, request)
+
+class VocabLister(DataFormatLister):
+    """
+    In case of `vocab` format the result is simpler::
+
+        { 'items': [(id, name), (id, name), (id, name)] }
+
+    Also, batching is not applied in case of the `vocab` format.
+
+    """
+    implements(IDataFormatLister)
+
+    def __init__(self, dummy=None):
+        pass
+
+    def get_items_listing(self, request):
+
+        collection = self.__parent__
+        order_by = request.GET.get('sort_on', None)
+        sort_order = request.GET.get('sort_order', None)
+
+        # Proceed with the standard processing
+        if order_by is not None:
+            if sort_order == 'desc':
+                order_by = "-%s" % order_by
+            else:
+                order_by = "+%s" % order_by
+
+        data = {}
+        query = collection.get_items_query(order_by=order_by)
+        # CUSTOM QUERY MODIFIER
+        ### An initial approach to be able to specify some hooks in the subclass
+        ### so the client can invoke a filtering method by querying a special url:
+        ### /rest/collection/@aaa&filter=min_clients&filter_params=5
+        ### would look for a method named 'filter_min_client' which is supposed
+        ### to return an SA clause element suitable for passing to .filter()
+        filter_meth_name = request.GET.get('meth', None)
+        if filter_meth_name:
+            meth = getattr(self, 'filter_' + filter_meth_name)
+            query = meth(query, request)
+
+        # FILTERING
+        query = self._add_filters(query, request)
+
+        # SEARCH
+        query = self._add_search(query, request)
+
+        ### 'vocab' format is a special (simplified) case
+        ### - returns {'items': [(id, name), (id, name), ...]}
+        items = query.all()
+        result = [(item.id, str(item)) for item in items]
+        return {'items': result}
+
