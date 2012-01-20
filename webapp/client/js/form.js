@@ -200,7 +200,7 @@
         item_id = self.event.parameters.item_id || 'new';
 
         if (self.options.need_load_data) {
-            webapp.Read(self.getRestServiceUrl("with-params", { item_id: item_id }), function (data) {
+            webapp.Read(self.getRestUrl("with-params", { item_id: item_id }), function (data) {
                 self.fill_form(id_root, data);
 
                 // Only show the view after all the data is set.
@@ -470,7 +470,7 @@
             var $select = $(this).find('select');
             $select.change(function () {
                 var item_id = self.event.parameters.item_id || 'new',
-                    url = self.getRestServiceUrl("with-params",
+                    url = self.getRestUrl("with-params",
                         {
                             item_id: item_id
                         },
@@ -565,7 +565,7 @@
             meth = webapp.Create;
         }
 
-        meth(self.getRestServiceUrl("", {item_id: item_id}), form_data,
+        meth(self.getRestUrl("", {item_id: item_id}), form_data,
             function (data) {
 
                 /*

@@ -100,16 +100,11 @@
         return params;
     };
 
-    View.prototype.getRestServiceUrl = function (with_params, path_fragments, extra_params) {
+
+    View.prototype.getRestBase = function (path_fragments) {
         /*
-        * Finds and replaces placeholders in the rest_service_root
-        * options parameters with the actual values from the 'event.parameters' dict
-        * so if we have a view registered at /companies/:company_id/staff/:person_id, and its rest_service_root is
-        * /rest/companies/:company_id/:person_id, the view will load its data from /rest/companies/123/456
-        *
-        * @param with_params - if 'with-params' is passed, append arguments collected by collectRestParams
-        * @param path_fragments - allows to override variables from self.event.parameters for just one call
-        * @param extra_params - allows to override variables from self.event.parameters for just one call
+        * Replaces the placeholders and returns the url without data format
+        * or URL parameters - /rest/companies/123/contacts/
         */
         var self = this,
             root = webapp.rest_service_prefix + self.options.rest_service_root,
@@ -124,6 +119,34 @@
         }
 
         url = webapp.fillInPlaceholders(root, params);
+        return url;
+
+    };
+
+    View.prototype.getRestUrl = function (with_params, path_fragments, extra_params) {
+        /*
+        * Finds and replaces placeholders in the rest_service_root
+        * options parameters with the actual values from the 'event.parameters' dict
+        * so if we have a view registered at /companies/:company_id/staff/:person_id, and its rest_service_root is
+        * /rest/companies/:company_id/:person_id, the view will load its data from /rest/companies/123/456
+        *
+        * The resulting URL includes format name and any resp parameters, so it looks like
+        * /rest/companies/123/contacts/@listing?sort_on=name&batch_start=50
+        *
+        * @param with_params - if 'with-params' is passed, append arguments collected by collectRestParams
+        * @param path_fragments - allows to override variables from self.event.parameters for just one call
+        * @param extra_params - allows to override variables from self.event.parameters for just one call
+        */
+        var self = this,
+            url = self.getRestUrlBase(path_fragments),
+            params;
+
+        /* Not every view needs to load data */
+        if (!url) {
+            return "";
+        }
+
+        //url = webapp.fillInPlaceholders(root, params);
 
         if (self.options.data_format) {
             url += "/@" + self.options.data_format;

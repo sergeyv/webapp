@@ -97,7 +97,7 @@
 
         //this.parameters = parameters;
         if (self.options.need_load_data) {
-            webapp.Read(self.getRestServiceUrl("with-params"), function (data) {
+            webapp.Read(self.getRestUrl("with-params"), function (data) {
 
                 self.data = data;
                 self.renderData();
