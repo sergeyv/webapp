@@ -213,69 +213,86 @@ def json_rest_delete_item(context, request):
 
 
 
-@view_config(context=crud.IResource,
-    permission="rest.update",
-    request_method="PUT",
-    renderer="better_json",
-    accept="text/plain")
-def json_rest_update(context, request):
-    """
-    """
-    if hasattr(context, "before_item_updated"):
-        context.before_item_updated(request)
+# @view_config(context=crud.IResource,
+#     permission="rest.update",
+#     request_method="PUT",
+#     renderer="better_json",
+#     accept="text/plain")
+# def json_rest_update(context, request):
+#     """
+#     """
+#     if hasattr(context, "before_item_updated"):
+#         context.before_item_updated(request)
 
-    print "JSON_REST_UPDATE: request body %s" % (request.body)
-    params = json.loads(request.body)
+#     print "JSON_REST_UPDATE: request body %s" % (request.body)
+#     params = json.loads(request.body)
 
-    # Formish uses dotted syntax to deal with nested structures
-    # we need to unflatten it
-    params = dottedish.api.unflatten(params.items())
+#     # Formish uses dotted syntax to deal with nested structures
+#     # we need to unflatten it
+#     params = dottedish.api.unflatten(params.items())
 
-    # Resource.update returns nothing
-    context.update(params, request)
+#     # Resource.update returns nothing
+#     context.update(params, request)
 
-    return {'item_id': context.model.id}
+#     return {'item_id': context.model.id}
 
 
 # TODO: OBSOLETE
-@view_config(context=crud.IResource,
-    permission="rest.view",
-    request_method="GET",
-    renderer="better_json",
-    accept="text/plain")
-def json_rest_get(context, request):
+# @view_config(context=crud.IResource,
+#     permission="rest.view",
+#     request_method="GET",
+#     renderer="better_json",
+#     accept="text/plain")
+# def json_rest_get(context, request):
+#     """
+#     Returns a json dict representing the given object's data serialized using
+#     one of the formats registered for the resource
+#     """
+#     annotate = bool(request.GET.get('ann', False))
+
+
+#     # TODO: The code below has a lot of similarities with RestResource.get_empty
+#     format_name = request.GET.get('format', 'default')
+
+#     session = get_session()
+#     session.autoflush = False
+
+#     set_field = request.GET.get('set_field', None)
+#     if set_field is not None:
+#         set_value = request.GET.get('set_value', None)
+#         if set_value:
+#             # or use the deserialization machinery here?
+#             setattr(context.model, set_field, int(set_value))
+#             session.flush()
+
+#     only_fields = request.GET.get('only', None)
+#     if only_fields is not None:
+#         only_fields = [f.strip() for f in only_fields.split(',')]
+
+#     data = context.serialize(format=format_name, annotate=annotate, only_fields=only_fields)
+
+#     transaction.abort()
+#     return data
+
+
+from webapp.forms.data_format import (
+    IDataFormat,
+    IDataFormatReader,
+    IDataFormatWriter,
+    IDataFormatLister,
+    )
+
+
+def context_implements(typ):
     """
-    Returns a json dict representing the given object's data serialized using
-    one of the formats registered for the resource
+    A custom predicate to implement matching views to resources which
+    implement more than one interface - in this situation Pyramid has
+    trouble matching views to the second registered interface. See
+    https://github.com/Pylons/pyramid/issues/409#issuecomment-3578518
     """
-    annotate = bool(request.GET.get('ann', False))
-
-
-    # TODO: The code below has a lot of similarities with RestResource.get_empty
-    format_name = request.GET.get('format', 'default')
-
-    session = get_session()
-    session.autoflush = False
-
-    set_field = request.GET.get('set_field', None)
-    if set_field is not None:
-        set_value = request.GET.get('set_value', None)
-        if set_value:
-            # or use the deserialization machinery here?
-            setattr(context.model, set_field, int(set_value))
-            session.flush()
-
-    only_fields = request.GET.get('only', None)
-    if only_fields is not None:
-        only_fields = [f.strip() for f in only_fields.split(',')]
-
-    data = context.serialize(format=format_name, annotate=annotate, only_fields=only_fields)
-
-    transaction.abort()
-    return data
-
-
-from webapp.forms.data_format import IDataFormatReader, IDataFormatWriter, IDataFormatLister
+    def inner(context, request):
+        return typ.providedBy(context)
+    return inner
 
 
 # def is_a_reader(context, request):
@@ -283,18 +300,22 @@ from webapp.forms.data_format import IDataFormatReader, IDataFormatWriter, IData
 #     format_name = context.__name__[1:]
 #     return resource._check_format_type(format_name, 'read')
 
-@view_config(context=IDataFormatReader,
+
+
+@view_config(context=IDataFormat,
     permission="rest.view",
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
-    # custom_predicates=[is_a_reader, ],
+    custom_predicates=(context_implements(IDataFormatReader),),
     )
 def json_rest_get_f(context, request):
     """
     Returns a json dict representing the given object's data serialized using
     one of the formats registered for the resource
     """
+
+    # TODO: Check if context implements IDataFormatReader, raise Http404 if not
     #annotate = bool(request.GET.get('ann', False))
 
 
@@ -323,13 +344,43 @@ def json_rest_get_f(context, request):
     return data
 
 
-@view_config(context=IDataFormatLister,
+@view_config(context=IDataFormat,
     permission="rest.list",
     request_method="GET",
     renderer="better_json",
-    accept="application/json")
+    accept="application/json",
+    custom_predicates=(context_implements(IDataFormatLister),),
+    )
 def json_rest_list_f(context, request, permission=""):
     """
     """
+    # TODO: Check if context implements IDataFormatLister, raise Http404 if not
+
     result = context.get_items_listing(request)
     return result
+
+
+@view_config(context=IDataFormat,
+    permission="rest.update",
+    request_method="PUT",
+    renderer="better_json",
+    accept="text/plain",
+    custom_predicates=(context_implements(IDataFormatWriter),),
+    )
+def json_rest_update_f(context, request):
+    # TODO: Check if context implements IDataFormatWriter, raise Http404 if not
+
+    return context.update(request)
+
+
+### FOR DEBUG PURPOSES
+
+@view_config(name="formats",
+    context=crud.ITraversable,
+    permission="rest.view",
+    request_method="GET",
+    renderer="string",
+    accept="text/plain")
+def list_resource_formats(context, request):
+
+    return str(getattr(context, '__data_formats__', None))

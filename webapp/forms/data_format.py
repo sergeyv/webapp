@@ -5,6 +5,11 @@ from zope.interface import implements
 # from zope.interface import providedBy
 
 import cgi
+import json
+import dottedish
+
+import sqlalchemy as sa
+
 from webapp.forms import Literal
 from webapp import DynamicDefault
 from webapp.exc import WebappError
@@ -24,6 +29,9 @@ class IDataFormatWriter(IDataFormat):
 
 class IDataFormatLister(IDataFormat):
     """ """
+
+
+_marker = []
 
 
 def _default_item_serializer(item, structure, only_fields=None):
@@ -322,6 +330,9 @@ class DataFormatBase(object):
     def __call__(self):
         return self.__class__(structure=self.structure)
 
+    def __repr__(self):
+        return "<%s wrapping %s>" % (self.__class__.__name__, repr(self.structure))
+
 
 class DataFormatReader(DataFormatBase):
     implements(IDataFormatReader)
@@ -342,8 +353,50 @@ class DataFormatWriter(DataFormatBase):
         return _default_item_deserializer(model, structure, params, request)
 
 
+    def update(self, request):
+        """
+        Override the crud's method to compute a diff of item's state
+        before and after the update and call "item updated" hooks
+        """
+
+        resource = self.__parent__
+        structure = self.structure
+
+        # TODOXXX: Migrate before_item_updated everywhere
+        if hasattr(structure, "before_item_updated"):
+            structure.before_item_updated(request)
+
+        print "JSON_REST_UPDATE: request body %s" % (request.body)
+        params = json.loads(request.body)
+
+        # Formish uses dotted syntax to deal with nested structures
+        # we need to unflatten it
+        params = dottedish.api.unflatten(params.items())
+
+        #form_name = params.get('__formish_form__')
+
+
+        #old_data = self.serialize(format=form_name)
+        self.deserialize(params, request)
+        #new_data = self.serialize(format=form_name)
+        #diff = _dict_diff(old_data, new_data)
+        #request['webapp_update_diff'] = diff
+
+        #Flush session so changes have been applied
+        # before we call the after context hook
+        sa.orm.object_session(resource.model).flush()
+
+        # TODOXXX: Migrate after_item_updated everywhere
+        if hasattr(structure, "after_item_updated"):
+            structure.after_item_updated(request)
+
+
+        return {'item_id': resource.model.id}
+
+
+
 class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
-    pass
+    implements(IDataFormatReader, IDataFormatWriter)
 
 
 class DataFormatLister(DataFormatBase):

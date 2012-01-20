@@ -25,8 +25,6 @@ from webapp.exc import WebappFormError
 class IRestRootCollection(crud.ICollection):
     pass
 
-_marker = []
-
 
 class RestSubobject(crud.Traversable):
     """
@@ -119,8 +117,15 @@ class FormAwareMixin(object):
         return crud.Traversable.__getitem__(self, name)
 
     def _find_data_format(self, format):
-
-        return self.__data_formats__[format]
+        """
+        Find a data format registered for the resource by its name
+        """
+        try:
+            return self.__data_formats__[format]
+        except AttributeError:
+            raise WebappFormError("No formats are registered with %s" % self)
+        except KeyError:
+            raise WebappFormError("Format %s is registered with %s" % (format, self))
 
 
     @classmethod
@@ -141,6 +146,11 @@ class FormAwareMixin(object):
 
             data_format_factory = wrapper_cls(schemaish_cls)
 
+            # register the format with the name of the schema class, i.e. ContactEditForm
+            formats_dict[schemaish_cls.__name__] = data_format_factory
+            # also, if the format was registeres with
+            # @ContactResource.readwrite_format('edit'), we register the format with
+            # the name provided
             if additional_name is not None:
                 formats_dict[additional_name] = data_format_factory
             # it's important to return it otherwise nested decorators won't work
@@ -204,7 +214,7 @@ class FormAwareMixin(object):
         if not hasattr(cls, '__data_formats__'):
             cls.__data_formats__ = {}
         formats_dict = cls.__data_formats__
-        formats_dict['vocab'] = VocabLister # no need to instantiate
+        formats_dict['vocab'] = VocabLister  # no need to instantiate
 
 
 
