@@ -5,20 +5,14 @@
 #     License: refer to LICENSE.txt
 ##########################################
 
-import cgi
-from datetime import datetime, date
-from decimal import Decimal
 
 
 import sqlalchemy as sa
-import schemaish as sc
 from zope.interface import implements
 
 import crud
 
 from webapp.db import get_session
-from webapp.forms import Literal, get_form_registry_by_name
-from webapp import DynamicDefault
 from webapp.exc import WebappFormError
 
 
@@ -129,9 +123,9 @@ class FormAwareMixin(object):
         try:
             return self.__data_formats__[format]
         except AttributeError:
-            raise WebappFormError("No formats are registered with %s" % self)
+            raise WebappFormError('No formats registered for %s, looking for "%s"' % (self, format))
         except KeyError:
-            raise WebappFormError("Format %s is not registered with %s" % (format, self))
+            raise WebappFormError('Format "%s" is not registered with %s' % (format, self))
 
 
     @classmethod

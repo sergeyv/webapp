@@ -18,17 +18,17 @@ import transaction
 import crud
 
 from webapp.db import get_session
-from webapp.rest import IRestRootCollection
 # from webapp.forms import get_form
 
 # from webapp.testing import sluggish, explode
 
 
-@view_config(name="new",
-    context=crud.ICollection,
-    permission="rest.list",
-    request_method="GET",
-    renderer="better_json")
+# TODOXXX: Remote validation!
+# @view_config(name="new",
+#     context=crud.ICollection,
+#     permission="rest.list",
+#     request_method="GET",
+#     renderer="better_json")
 def json_rest_empty(context, request):
     """
     Returns an empty item with all fields set to default values
@@ -73,41 +73,41 @@ def _create_item(context, request):
 
 
     # TODO: Add validation here
-    new_item = context.create_subitem(params=params, request=request)
+    new_item = context._create__subitem_(params=params, request=request)
 
 
     return {'item_id': new_item.id}
 
 
 
-@view_config(name="new",
-    context=crud.ICollection,
-    permission="rest.create",
-    request_method="PUT",
-    renderer="better_json",
-    accept="text/plain")
+# @view_config(name="new",
+#     context=crud.ICollection,
+#     permission="rest.create",
+#     request_method="PUT",
+#     renderer="better_json",
+#     accept="text/plain")
 def json_rest_create_new(context, request):
     """
     """
     return _create_item(context, request)
 
 
-@view_config(context=crud.ICollection,
-    permission="rest.create",
-    request_method="POST",
-    renderer="better_json",
-    accept="text/plain")
+# @view_config(context=crud.ICollection,
+#     permission="rest.create",
+#     request_method="POST",
+#     renderer="better_json",
+#     accept="text/plain")
 def json_rest_create(context, request):
     """
     """
     return _create_item(context, request)
 
 
-@view_config(context=crud.ICollection,
-    permission="rest.list",
-    request_method="GET",
-    renderer="better_json",
-    accept="application/json")
+# @view_config(context=crud.ICollection,
+#     permission="rest.list",
+#     request_method="GET",
+#     renderer="better_json",
+#     accept="application/json")
 def json_rest_list(context, request, permission=""):
     """
     """
@@ -290,7 +290,7 @@ def context_implements(*types):
     trouble matching views to the second registered interface. See
     https://github.com/Pylons/pyramid/issues/409#issuecomment-3578518
 
-    Accepts a list of interfaces - if ANY of them is implemented the function
+    Accepts a list of interfaces - if ANY of them are implemented the function
     returns True
     """
     def inner(context, request):

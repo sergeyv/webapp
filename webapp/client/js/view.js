@@ -89,11 +89,6 @@
             params.push("format=" + self.options.data_format);
         }*/
 
-        // not used/supported anymore
-        /*if (self.options.ann) {
-            params.push("ann=1");
-        }*/
-
         $.each(self.event.uri_args, function (key, value) {
             params.push(key + "=" + value);
         });

@@ -136,6 +136,11 @@ def _save_sequence(collection, schema, data, request):
     #seen_ids = []
     ids_to_delete = []
 
+    # Manually create a Writer to serialize each individual item
+    fmt = DataFormatWriter(structure=schema)
+    fmt.__name__ = "@edit"
+
+
     print "EXISTING ITEMS: %s" % (existing_items,)
     for (order_idx, value) in data.items():
         if order_idx == '*':
@@ -155,26 +160,22 @@ def _save_sequence(collection, schema, data, request):
             del value['id']
             value['__schema__'] = schema
             if item is not None:
-                fmt = DataFormatWriter(structure=schema)
-                fmt.__name__ = "@edit"
+                # insert the writer into the traversal context
                 fmt.__parent__ = item
-
-                # update an existing item
-                #seen_ids.append(str(item_id))
                 fmt.deserialize(value, request)
             else:
                 if value.get('__new__', False):
-                    # TODOXXX: new items are created via collection.create_subitem
-                    # create a new item
-                    item = collection.create_subitem(params=value, request=request, wrap=True)
+                    def _setter(resource):
+                        # a callback is called from create_subitem after
+                        # the item was created but before it was flushed
+                        fmt.__parent__ = resource
+                        fmt.deserialize(value, request)
+                    item = collection.create_subitem(setter_fn=_setter, request=request, wrap=True)
                 else:
                     # Item has not been found and the client does not indicate
                     # that it's a new item - something is wrong
                     raise ValueError("Nowhere to save data: %s" % (value,))
 
-
-    # TODOXXX: new items are deleted via collection.delete_subitems - collection is not available
-    #ids_to_delete = [id for id in existing_items.keys() if id not in seen_ids]
     print "DELETING: %s" % ids_to_delete
     collection.delete_subitems(ids_to_delete, request)
 
@@ -433,13 +434,6 @@ class DataFormatCreator(DataFormatBase):
         """
 
         collection = self.__parent__
-        model = collection.create_subitem(request=request)
-        #session = webapp.get_session()
-        #session.add(model)
-
-        # TODOXXX: Migrate before_item_updated everywhere
-        #if hasattr(structure, "before_item_updated"):
-        #    structure.before_item_updated(request)
 
         params = json.loads(request.body)
         structure = self.structure
@@ -448,15 +442,17 @@ class DataFormatCreator(DataFormatBase):
         # we need to unflatten it
         params = dottedish.api.unflatten(params.items())
         #self.deserialize(params, request)
-        _default_item_deserializer(model, structure, params, request)
 
-        #sa.orm.object_session(resource.model).flush()
-        # TODOXXX: Migrate after_item_updated everywhere
+        def _setter(resource):
+            _default_item_deserializer(resource, structure, params, request)
+
+        resource = collection.create_subitem(setter_fn=_setter, wrap=True, request=request)
+
         if hasattr(structure, "after_item_updated"):
-            structure.after_item_updated(request)
+            structure.after_item_created(request)
 
 
-        return {'item_id': model.id}
+        return {'item_id': resource.model.id}
 
 
 class DataFormatReadWrite(DataFormatReader, DataFormatWriter):

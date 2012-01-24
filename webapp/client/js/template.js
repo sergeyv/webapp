@@ -10,7 +10,6 @@
         -identifier
         - rest_service_root
         - data_format
-        - ann
         - after_data_loaded (function)
         - need_load_data
         */
@@ -18,6 +17,7 @@
             need_load_data: true
         }, options);
         webapp.View.apply(this, [opts]);
+        this.options.data_format = this.options.data_format || this.options.identifier;
     }
 
     Template.prototype = new webapp.View();

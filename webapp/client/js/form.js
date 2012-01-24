@@ -22,8 +22,6 @@
         }, options);
 
         webapp.Template.apply(this, [opts]);
-
-        this.options.data_format = this.options.data_format || this.options.identifier;
     }
 
     Form.prototype = new webapp.Template();
@@ -250,7 +248,7 @@
         */
         if ( first_lvl == undefined )
             first_lvl = true;
-            
+
         var self = this,
             is_array = function (arg) {
                 return (arg && typeof arg === 'object' &&
@@ -287,7 +285,7 @@
         if ( first_lvl )
         {
             // Fill out data provided by server with defaults provided in the URI
-            
+
             var mergeobjs = function ( obj1, obj2 )
             {
                 $.each(obj1, function (name, value) {

@@ -6,7 +6,6 @@
         // a nice side-effect of this is that it's doing a deep-copy
         var opts = $.extend({
             batch_size: 50,
-            data_format: 'listing',
             searchable: true,
             partials: {
                 /// add a default filtering partial - if there's no
