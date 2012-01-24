@@ -1,13 +1,11 @@
-import schemaish as sc
-
-from zope.interface import Interface
-from zope.interface import implements
-# from zope.interface import providedBy
-
-import cgi
+from datetime import datetime
 import json
-import dottedish
+import cgi
 
+from zope.interface import Interface, implements
+
+import schemaish as sc
+import dottedish
 import sqlalchemy as sa
 
 from webapp.forms import Literal
@@ -30,6 +28,9 @@ class IDataFormatWriter(IDataFormat):
 class IDataFormatLister(IDataFormat):
     """ """
 
+
+class IDataFormatCreator(IDataFormat):
+    """ """
 
 _marker = []
 
@@ -86,29 +87,22 @@ def _default_item_serializer(item, structure, only_fields=None):
                 subitems_schema = structure_field
                 value = _default_item_serializer(value, subitems_schema)
             elif isinstance(structure_field, sc.String):
-                #print "SERIALIZING A STRING ATTRIBUTE: %s -> %s" % (name, structure_field)
                 if value is not None:
                     value = str(value)
             elif isinstance(structure_field, sc.Integer):
-                #print "SERIALIZING AN INTEGER ATTRIBUTE: %s -> %s" % (name, structure_field)
                 if value is not None:
                     value = int(value)
             elif isinstance(structure_field, sc.Decimal):
-                #print "SERIALIZING A DECIMAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                 if value is not None:
                     value = float(value)
             elif isinstance(structure_field, sc.Boolean):
-                #print "SERIALIZING A BOOLEAN ATTRIBUTE: %s -> %s" % (name, structure_field)
                 if value is not None:
                     value = bool(value)
             elif isinstance(structure_field, sc.Date):
-                #print "SERIALIZING A DATE ATTRIBUTE: %s -> %s = %s" % (name, structure_field, value)
                 pass
             elif isinstance(structure_field, sc.DateTime):
-                #print "SERIALIZING A DATETIME ATTRIBUTE: %s -> %s" % (name, structure_field)
                 pass
             elif isinstance(structure_field, Literal):
-                #print "SERIALIZING A LITERAL ATTRIBUTE: %s -> %s" % (name, structure_field)
                 pass
             else:
                 raise WebappError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
@@ -133,182 +127,206 @@ def _default_item_serializer(item, structure, only_fields=None):
     return data
 
 
-def _default_item_deserializer(model, schema, params, request):
+def _save_sequence(collection, schema, data, request):
 
-    def _all_data_fields_are_empty(value):
-        """
-        Returns True if all fields of a dict are false-y
-        """
-        if not value:
-            return True
-        for v in value.values():
-            if v:
-                return False
+    ### TODOXXX: _save_sequence expects a collection as an argument
 
-        return True
+    existing_items = {str(item.model.id): item for item in collection.get_items()}
 
-    def _get_attribute_class(item, name):
-        """
-        nicked from crud - returns an SA relation given an attribute name
-        """
-        relation = getattr(item.__class__, name)
-        arg = relation.property.argument
-        if callable(arg):
-            related_class = arg()
+    #seen_ids = []
+    ids_to_delete = []
+
+    print "EXISTING ITEMS: %s" % (existing_items,)
+    for (order_idx, value) in data.items():
+        if order_idx == '*':
+            continue
+        # the data must contain 'id' parameter
+        # if the data should be saved into an existing item
+        item_id = value.get('id', None)
+        print "PROCESSING ITEM %s" % item_id
+
+        if value.get('__delete__', False):
+            # Existing item must be deleted
+            ids_to_delete.append(item_id)
+            print "WILL_BE_DELETED: %s" % item_id
+
         else:
-            related_class = arg.class_
-        return related_class
+            item = existing_items.get(item_id, None)
+            del value['id']
+            value['__schema__'] = schema
+            if item is not None:
+                fmt = DataFormatWriter(structure=schema)
+                fmt.__name__ = "@edit"
+                fmt.__parent__ = item
 
-    def _save_structure(item, schema, data):
-
-        attrs = schema.attrs
-
-        print "SAVING %s INTO %s USING %s" % (data, item, schema)
-        flattened = getattr(schema, "__flatten_subforms__", [])
-
-        for (name, attr) in attrs:
-            value = data.get(name, _marker)
-            if value is _marker:
-                print "### No data passed for attr %s <%s>" % (name, data)
-                continue
-
-            # Nested structures
-            if isinstance(attr, sc.Structure):
-                print "STRUCTURE!"
-                subschema = attr
-                if name in flattened:
-                    # Flattened subforms are saved directly into the item
-                    _save_structure(item, subschema, value)
+                # update an existing item
+                #seen_ids.append(str(item_id))
+                fmt.deserialize(value, request)
+            else:
+                if value.get('__new__', False):
+                    # TODOXXX: new items are created via collection.create_subitem
+                    # create a new item
+                    item = collection.create_subitem(params=value, request=request, wrap=True)
                 else:
-
-                    # AutoFillDropdown requires the serializer
-                    # to flush the session session before serializing sequences
-                    # to load subobjects which were just linked to our item
-                    # Example:
-                    #     item.client_id =  123
-                    #     ... need to flush the session here so item.client is loaded
-                    #     item.client.name = "Client One"
-
-                    session = sa.orm.object_session(item)
-                    session.flush()
-
-                    subitem = getattr(item, name, None)
-                    print "SUBITEM: %s" % (value)
-                    if subitem is None:
-                        # Do not create a subitem if all data fields are empty
-                        # - this may not work with defaults
-                        if _all_data_fields_are_empty(value):
-                            continue
-
-                        cls = _get_attribute_class(item, name)
-                        subitem = cls()
-                        setattr(item, name, subitem)
-                    _save_structure(subitem, subschema, value)
-
-            # Sequences of structures
-            elif isinstance(attr, sc.Sequence):
-                #collection = getattr(item, name)
-                #subitems_cls = _get_attribute_class(item, name)
-                # __getitem__ takes care about inserting a collection
-                # into the traversal context etc.
-                collection = self[name]
-                _save_sequence(collection, attr.attr, value)
+                    # Item has not been found and the client does not indicate
+                    # that it's a new item - something is wrong
+                    raise ValueError("Nowhere to save data: %s" % (value,))
 
 
-            # Simple attributes
-            elif isinstance(attr, sc.String):
-                # Convert empty strings to NULLs
-                # - otherwise it fails with empty values
-                # in enums
+    # TODOXXX: new items are deleted via collection.delete_subitems - collection is not available
+    #ids_to_delete = [id for id in existing_items.keys() if id not in seen_ids]
+    print "DELETING: %s" % ids_to_delete
+    collection.delete_subitems(ids_to_delete, request)
+
+
+def _all_data_fields_are_empty(value):
+    """
+    Returns True if all fields of a dict are false-y
+    """
+    if not value:
+        return True
+    for v in value.values():
+        if v:
+            return False
+
+    return True
+
+
+def _get_attribute_class(item, name):
+    """
+    nicked from crud - returns an SA relation given an attribute name
+    """
+    relation = getattr(item.__class__, name)
+    arg = relation.property.argument
+    if callable(arg):
+        related_class = arg()
+    else:
+        related_class = arg.class_
+    return related_class
+
+
+def _save_structure(resource, schema, data, request):
+
+    attrs = schema.attrs
+
+    model = resource.model
+
+    print "SAVING %s INTO %s USING %s" % (data, model, schema)
+    flattened = getattr(schema, "__flatten_subforms__", [])
+
+    for (name, attr) in attrs:
+        value = data.get(name, _marker)
+        if value is _marker:
+            print "### No data passed for attr %s <%s>" % (name, data)
+            continue
+
+        # Nested structures
+        if isinstance(attr, sc.Structure):
+            print "STRUCTURE!"
+            subschema = attr
+            if name in flattened:
+                # Flattened subforms are saved directly into the model
+                _save_structure(resource, subschema, value, request)
+            else:
+
+                # AutoFillDropdown requires the serializer
+                # to flush the session session before serializing sequences
+                # to load subobjects which were just linked to our model
+                # Example:
+                #     model.client_id =  123
+                #     ... need to flush the session here so model.client is loaded
+                #     model.client.name = "Client One"
+
+                session = sa.orm.object_session(model)
+                session.flush()
+
+                submodel = getattr(model, name, None)
+                print "SUBmodel: %s" % (value)
+                if submodel is None:
+                    # Do not create a submodel if all data fields are empty
+                    # - this may not work with defaults
+                    if _all_data_fields_are_empty(value):
+                        continue
+
+                    cls = _get_attribute_class(model, name)
+                    submodel = cls()
+                    setattr(model, name, submodel)
+                subresource = resource.wrap_child(submodel, name=name)
+                _save_structure(subresource, subschema, value, request)
+
+        # Sequences of structures
+        elif isinstance(attr, sc.Sequence):
+            #collection = getattr(model, name)
+            #submodels_cls = _get_attribute_class(model, name)
+            # __getmodel__ takes care about inserting a collection
+            # into the traversal context etc.
+
+            ### TODOXXX: Sequence saving is meant to operate in the context of
+            ### the Resource
+            from webapp.rest import RestCollection
+
+            collection = RestCollection(name, name)  # model[name]
+            collection.__parent__ = resource
+
+            #collection.__data_formats__ = {
+            #    'edit': DataFormatWriter
+            #}
+            _save_sequence(collection, attr.attr, value, request)
+
+
+        # Simple attributes
+        elif isinstance(attr, sc.String):
+            # Convert empty strings to NULLs
+            # - otherwise it fails with empty values
+            # in enums
+            if value == '':
+                value = None
+
+            setattr(model, name, value)
+        elif isinstance(attr, sc.Integer):
+            if value:
+                setattr(model, name, int(value))
+            else:
+                setattr(model, name, None)
+        elif isinstance(attr, sc.Decimal):
+            if value:
+                setattr(model, name, Decimal(value))
+            else:
+                setattr(model, name, None)
+
+        elif isinstance(attr, sc.Date):
+            if value:
+                # TODO: Need to improve this. Use dateutil?
+                value = value.split('T')[0]  # strip off the time part
+                d = datetime.strptime(value, "%Y-%m-%d")
+            else:
+                d = None
+            setattr(model, name, d)
+        elif isinstance(attr, sc.DateTime):
+            if value:
+                # TODO: proper format here
+                dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+            else:
+                dt = None
+            setattr(model, name, dt)
+        elif isinstance(attr, sc.Boolean):
+            if str(value).lower() in ('true', 'yes', '1'):
+                value = True
+            elif str(value).lower() in ('false', 'no', '0'):
+                value = False
+            else:
                 if value == '':
                     value = None
+                if value is not None:
+                    raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
 
-                setattr(item, name, value)
-            elif isinstance(attr, sc.Integer):
-                if value:
-                    setattr(item, name, int(value))
-                else:
-                    setattr(item, name, None)
-            elif isinstance(attr, sc.Decimal):
-                if value:
-                    setattr(item, name, Decimal(value))
-                else:
-                    setattr(item, name, None)
+            setattr(model, name, value)
 
-            elif isinstance(attr, sc.Date):
-                if value:
-                    # TODO: Need to improve this. Use dateutil?
-                    value = value.split('T')[0]  # strip off the time part
-                    d = datetime.strptime(value, "%Y-%m-%d")
-                else:
-                    d = None
-                setattr(item, name, d)
-            elif isinstance(attr, sc.DateTime):
-                if value:
-                    # TODO: proper format here
-                    dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
-                else:
-                    dt = None
-                setattr(item, name, dt)
-            elif isinstance(attr, sc.Boolean):
-                if str(value).lower() in ('true', 'yes', '1'):
-                    value = True
-                elif str(value).lower() in ('false', 'no', '0'):
-                    value = False
-                else:
-                    if value == '':
-                        value = None
-                    if value is not None:
-                        raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
-
-                setattr(item, name, value)
-
-            else:
-                raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
-
-    def _save_sequence(collection, schema, data):
-
-        existing_items = {str(item.model.id): item for item in collection.get_items()}
-
-        #seen_ids = []
-        ids_to_delete = []
-
-        print "EXISTING ITEMS: %s" % (existing_items,)
-        for (order_idx, value) in data.items():
-            if order_idx == '*':
-                continue
-            # the data must contain 'id' parameter
-            # if the data should be saved into an existing item
-            item_id = value.get('id', None)
-            print "PROCESSING ITEM %s" % item_id
-
-            if value.get('__delete__', False):
-                # Existing item must be deleted
-                ids_to_delete.append(item_id)
-                print "WILL_BE_DELETED: %s" % item_id
-
-            else:
-                item = existing_items.get(item_id, None)
-                del value['id']
-                value['__schema__'] = schema
-                if item is not None:
-                    # update an existing item
-                    #seen_ids.append(str(item_id))
-                    item.update(value, request)
-                else:
-                    if value.get('__new__', False):
-                        # create a new item
-                        item = collection.create_subitem(params=value, request=request, wrap=True)
-                    else:
-                        # Item has not been found and the client does not indicate
-                        # that it's a new item - something is wrong
-                        raise ValueError("Nowhere to save data: %s" % (value,))
+        else:
+            raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 
 
-        #ids_to_delete = [id for id in existing_items.keys() if id not in seen_ids]
-        print "DELETING: %s" % ids_to_delete
-        collection.delete_subitems(ids_to_delete, request)
-
+def _default_item_deserializer(resource, schema, params, request):
 
     #schema = params.get('__schema__')
     #form_name = schema.__class__.__name__
@@ -318,7 +336,7 @@ def _default_item_deserializer(model, schema, params, request):
     #    schema = self._find_schema_for_data_format(form_name)
 
 
-    _save_structure(model, schema, params)
+    _save_structure(resource, schema, params, request)
 
 
 class DataFormatBase(object):
@@ -348,9 +366,9 @@ class DataFormatWriter(DataFormatBase):
     implements(IDataFormatWriter)
 
     def deserialize(self, params, request):
-        model = self.__parent__.model
+        resource = self.__parent__
         structure = self.structure
-        return _default_item_deserializer(model, structure, params, request)
+        return _default_item_deserializer(resource, structure, params, request)
 
 
     def update(self, request):
@@ -393,6 +411,52 @@ class DataFormatWriter(DataFormatBase):
 
         return {'item_id': resource.model.id}
 
+
+class DataFormatCreator(DataFormatBase):
+    implements(IDataFormatCreator)
+
+    def serialize(self):
+        # our parent is a Collection
+        collection = self.__parent__
+        model = collection.create_transient_subitem()
+        structure = self.structure
+        return _default_item_serializer(model, structure)
+
+    def deserialize(self, params, request):
+        # our parent is a Collection
+
+        structure = self.structure
+        return _default_item_deserializer(self.model, structure, params, request)
+
+    def create(self, request):
+        """
+        """
+
+        collection = self.__parent__
+        model = collection.create_subitem(request=request)
+        #session = webapp.get_session()
+        #session.add(model)
+
+        # TODOXXX: Migrate before_item_updated everywhere
+        #if hasattr(structure, "before_item_updated"):
+        #    structure.before_item_updated(request)
+
+        params = json.loads(request.body)
+        structure = self.structure
+
+        # Formish uses dotted syntax to deal with nested structures
+        # we need to unflatten it
+        params = dottedish.api.unflatten(params.items())
+        #self.deserialize(params, request)
+        _default_item_deserializer(model, structure, params, request)
+
+        #sa.orm.object_session(resource.model).flush()
+        # TODOXXX: Migrate after_item_updated everywhere
+        if hasattr(structure, "after_item_updated"):
+            structure.after_item_updated(request)
+
+
+        return {'item_id': model.id}
 
 
 class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
@@ -505,16 +569,6 @@ class DataFormatLister(DataFormatBase):
 
         order_by = request.GET.get('sort_on', None)
         sort_order = request.GET.get('sort_order', None)
-
-
-        # TODO: CHECK IF THERE'S A HOOK ON THE SCHEMA ?
-        # See if a subclass defines a hook for processing this format
-        #resource = collection.wrap_child(self.create_transient_subitem(), name="empty")
-
-        #hook_name = "serialize_sequence_%s" % format
-        #meth = getattr(resource, hook_name, None)
-        #if meth is not None:
-        #    return meth()
 
         # Proceed with the standard processing
         if order_by is not None:

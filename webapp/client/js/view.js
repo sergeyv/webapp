@@ -138,7 +138,7 @@
         * @param extra_params - allows to override variables from self.event.parameters for just one call
         */
         var self = this,
-            url = self.getRestUrlBase(path_fragments),
+            url = self.getRestBase(path_fragments),
             params;
 
         /* Not every view needs to load data */

@@ -60,17 +60,16 @@ def _create_item(context, request):
     params = dottedish.api.unflatten(params.items())
 
 
-    # See if a subclass defines a hook for processing this format
-    format = params.get('__formish_form__', None)
+    # NOT USED?
+    # format = params.get('__formish_form__', None)
+    # if format is not None:
+    #     # See if a subclass defines a hook for processing this format
+    #     resource = context.wrap_child(context.create_transient_subitem(), name="empty")
 
-    if format is not None:
-        # See if a subclass defines a hook for processing this format
-        resource = context.wrap_child(context.create_transient_subitem(), name="empty")
-
-        hook_name = "deserialize_sequence_%s" % format
-        meth = getattr(resource, hook_name, None)
-        if meth is not None:
-            return meth(params)
+    #     hook_name = "deserialize_sequence_%s" % format
+    #     meth = getattr(resource, hook_name, None)
+    #     if meth is not None:
+    #         return meth(params)
 
 
     # TODO: Add validation here
@@ -280,18 +279,25 @@ from webapp.forms.data_format import (
     IDataFormatReader,
     IDataFormatWriter,
     IDataFormatLister,
+    IDataFormatCreator
     )
 
 
-def context_implements(typ):
+def context_implements(*types):
     """
     A custom predicate to implement matching views to resources which
     implement more than one interface - in this situation Pyramid has
     trouble matching views to the second registered interface. See
     https://github.com/Pylons/pyramid/issues/409#issuecomment-3578518
+
+    Accepts a list of interfaces - if ANY of them is implemented the function
+    returns True
     """
     def inner(context, request):
-        return typ.providedBy(context)
+        for typ in types:
+            if typ.providedBy(context):
+                return True
+        return False
     return inner
 
 
@@ -307,12 +313,12 @@ def context_implements(typ):
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
-    custom_predicates=(context_implements(IDataFormatReader),),
+    custom_predicates=(context_implements(IDataFormatReader, IDataFormatCreator),),
     )
 def json_rest_get_f(context, request):
     """
     Returns a json dict representing the given object's data serialized using
-    one of the formats registered for the resource
+    the current data format
     """
 
     # TODO: Check if context implements IDataFormatReader, raise Http404 if not
@@ -343,7 +349,6 @@ def json_rest_get_f(context, request):
     transaction.abort()
     return data
 
-
 @view_config(context=IDataFormat,
     permission="rest.list",
     request_method="GET",
@@ -354,8 +359,6 @@ def json_rest_get_f(context, request):
 def json_rest_list_f(context, request, permission=""):
     """
     """
-    # TODO: Check if context implements IDataFormatLister, raise Http404 if not
-
     result = context.get_items_listing(request)
     return result
 
@@ -365,12 +368,25 @@ def json_rest_list_f(context, request, permission=""):
     request_method="PUT",
     renderer="better_json",
     accept="text/plain",
-    custom_predicates=(context_implements(IDataFormatWriter),),
+    custom_predicates=(context_implements(IDataFormatWriter),)
     )
 def json_rest_update_f(context, request):
     # TODO: Check if context implements IDataFormatWriter, raise Http404 if not
 
     return context.update(request)
+
+
+@view_config(context=IDataFormat,
+    permission="rest.create",
+    request_method="PUT",
+    renderer="better_json",
+    accept="text/plain",
+    custom_predicates=(context_implements(IDataFormatCreator),)
+    )
+def json_rest_create_f(context, request):
+    # TODO: Check if context implements IDataFormatWriter, raise Http404 if not
+
+    return context.create(request)
 
 
 ### FOR DEBUG PURPOSES
