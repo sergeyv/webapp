@@ -301,11 +301,18 @@ def context_implements(*types):
     return inner
 
 
-# def is_a_reader(context, request):
-#     resource = context.__parent__
-#     format_name = context.__name__[1:]
-#     return resource._check_format_type(format_name, 'read')
+# TODOXXX: The method should be POST
+@view_config(context=IDataFormat,
+    permission="rest.create",
+    request_method="PUT",
+    renderer="better_json",
+    accept="text/plain",
+    custom_predicates=(context_implements(IDataFormatCreator),)
+    )
+def json_rest_create_f(context, request):
+    # TODO: Check if context implements IDataFormatWriter, raise Http404 if not
 
+    return context.create(request)
 
 
 @view_config(context=IDataFormat,
@@ -313,7 +320,7 @@ def context_implements(*types):
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
-    custom_predicates=(context_implements(IDataFormatReader, IDataFormatCreator),),
+    custom_predicates=(context_implements(IDataFormatReader),),
     )
 def json_rest_get_f(context, request):
     """
@@ -321,20 +328,6 @@ def json_rest_get_f(context, request):
     the current data format
     """
     return context.read(request)
-
-
-@view_config(context=IDataFormat,
-    permission="rest.list",
-    request_method="GET",
-    renderer="better_json",
-    accept="application/json",
-    custom_predicates=(context_implements(IDataFormatLister),),
-    )
-def json_rest_list_f(context, request, permission=""):
-    """
-    """
-    result = context.get_items_listing(request)
-    return result
 
 
 @view_config(context=IDataFormat,
@@ -351,16 +344,17 @@ def json_rest_update_f(context, request):
 
 
 @view_config(context=IDataFormat,
-    permission="rest.create",
-    request_method="PUT",
+    permission="rest.list",
+    request_method="GET",
     renderer="better_json",
-    accept="text/plain",
-    custom_predicates=(context_implements(IDataFormatCreator),)
+    accept="application/json",
+    custom_predicates=(context_implements(IDataFormatLister),),
     )
-def json_rest_create_f(context, request):
-    # TODO: Check if context implements IDataFormatWriter, raise Http404 if not
-
-    return context.create(request)
+def json_rest_list_f(context, request, permission=""):
+    """
+    """
+    result = context.get_items_listing(request)
+    return result
 
 
 ### FOR DEBUG PURPOSES

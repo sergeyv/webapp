@@ -52,11 +52,14 @@ def _default_item_serializer(item, structure, only_fields=None):
             print "SKIPPING FIELD %s" % name
             continue
 
-
-        value = getattr(item, name, default)
+        # Allow to specify callbacks defined on schema
+        # to serialize specific attributes
+        if hasattr(structure, 'serialize_' + name):
+            meth = getattr(structure, 'serialize_' + name)
+            value = meth(item)
+        else:
+            value = getattr(item, name, default)
         #structure_field = getattr(structure, name, default)
-
-        # print "Starting with %s of %s" % (name, item)
 
 
         if name in flattened:
@@ -171,7 +174,7 @@ def _save_sequence(collection, schema, data, request):
                         # the item was created but before it was flushed
                         fmt.__parent__ = resource
                         fmt.deserialize(value, request)
-                    item = collection.create_subitem(setter_fn=_setter, request=request, wrap=True)
+                    item = collection.create_subitem(setter_fn=_setter, wrap=True)
                 else:
                     # Item has not been found and the client does not indicate
                     # that it's a new item - something is wrong
@@ -222,8 +225,12 @@ def _save_structure(resource, schema, data, request):
             print "### No data passed for attr %s <%s>" % (name, data)
             continue
 
-        # Nested structures
-        if isinstance(attr, sc.Structure):
+        if hasattr(schema, 'deserialize_' + name):
+            # Support for deserialization hooks for individual attributes
+            meth = getattr(schema, 'deserialize_' + name)
+            meth(model, value)
+        elif isinstance(attr, sc.Structure):
+            # Nested structures
             print "STRUCTURE!"
             subschema = attr
             if name in flattened:
@@ -330,14 +337,6 @@ def _save_structure(resource, schema, data, request):
 
 def _default_item_deserializer(resource, schema, params, request):
 
-    #schema = params.get('__schema__')
-    #form_name = schema.__class__.__name__
-
-    #if schema is None:
-    #    form_name = params.get('__formish_form__')
-    #    schema = self._find_schema_for_data_format(form_name)
-
-
     _save_structure(resource, schema, params, request)
 
 
@@ -361,14 +360,16 @@ class DataFormatReader(DataFormatBase):
         # our parent is a Resource
         model = self.__parent__.model
         structure = self.structure
-
-        # Structure can completely override the default logic
-        if hasattr(structure, "serialize"):
-            return structure.serialize(self, request)
-
         return _default_item_serializer(model, structure)
 
     def read(self, request):
+
+        structure = self.structure
+
+        # Structure can completely override the default logic
+        if hasattr(structure, "read"):
+            return structure.read(self, request)
+
         import webapp
 
         session = webapp.get_session()
@@ -410,8 +411,8 @@ class DataFormatWriter(DataFormatBase):
         structure = self.structure
 
         # Structure can completely override the default logic
-        if hasattr(structure, "deserialize"):
-            return structure.deserialize(self, request)
+        if hasattr(structure, "update"):
+            return structure.update(self, request)
 
 
         ### Proceed with the standard logic
@@ -448,44 +449,53 @@ class DataFormatWriter(DataFormatBase):
         return {'item_id': resource.model.id}
 
 
-class DataFormatCreator(DataFormatBase):
-    implements(IDataFormatCreator)
+class DataFormatCreator(DataFormatReader):
+    """
+    A data format which can create subitems in a collection.
+    It also implements IDataFormatReader because the client needs
+    to be able to load defaults etc.
+    """
+    implements(IDataFormatReader, IDataFormatCreator)
 
-    def serialize(self):
+    def serialize(self, request):
         # our parent is a Collection
         collection = self.__parent__
         model = collection.create_transient_subitem()
         structure = self.structure
         return _default_item_serializer(model, structure)
 
-    def deserialize(self, params, request):
+    def create_and_deserialize(self, params, request):
+        """
+        Creates an item and sets data passed in params
+        """
         # our parent is a Collection
 
         structure = self.structure
-        return _default_item_deserializer(self.model, structure, params, request)
-
-    def create(self, request):
-        """
-        """
-
+        #return _default_item_deserializer(self.model, structure, params, request)
         collection = self.__parent__
-
-        params = json.loads(request.body)
-        structure = self.structure
-
-        # Formish uses dotted syntax to deal with nested structures
-        # we need to unflatten it
-        params = dottedish.api.unflatten(params.items())
-        #self.deserialize(params, request)
 
         def _setter(resource):
             _default_item_deserializer(resource, structure, params, request)
 
-        resource = collection.create_subitem(setter_fn=_setter, wrap=True, request=request)
+        return collection.create_subitem(setter_fn=_setter, wrap=True)
 
-        if hasattr(structure, "after_item_updated"):
-            structure.after_item_created(request)
 
+    def create(self, request):
+        """
+        """
+        params = json.loads(request.body)
+        params = dottedish.api.unflatten(params.items())
+
+        if hasattr(self.structure, "before_item_created"):
+            self.structure.before_item_created(params, request)
+
+        resource = self.create_and_deserialize(params, request)
+
+        if hasattr(self.structure, "after_item_created"):
+            self.structure.after_item_created(resource, request)
+
+        if hasattr(resource, "after_item_created"):
+            resource.after_item_created(request)
 
         return {'item_id': resource.model.id}
 
