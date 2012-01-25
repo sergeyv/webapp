@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import cgi
+import transaction
 
 from zope.interface import Interface, implements
 
@@ -356,11 +357,38 @@ class DataFormatBase(object):
 class DataFormatReader(DataFormatBase):
     implements(IDataFormatReader)
 
-    def serialize(self):
+    def serialize(self, request):
         # our parent is a Resource
         model = self.__parent__.model
         structure = self.structure
+
+        # Structure can completely override the default logic
+        if hasattr(structure, "serialize"):
+            return structure.serialize(self, request)
+
         return _default_item_serializer(model, structure)
+
+    def read(self, request):
+        import webapp
+
+        session = webapp.get_session()
+        session.autoflush = False
+
+        set_field = request.GET.get('set_field', None)
+        if set_field is not None:
+            set_value = request.GET.get('set_value', None)
+            if set_value:
+                # or use the deserialization machinery here?
+                setattr(context.model, set_field, int(set_value))
+                session.flush()
+
+        only_fields = request.GET.get('only', None)
+        if only_fields is not None:
+            only_fields = [f.strip() for f in only_fields.split(',')]
+
+        data = self.serialize(request)
+        transaction.abort()
+        return data
 
 
 class DataFormatWriter(DataFormatBase):
@@ -381,12 +409,19 @@ class DataFormatWriter(DataFormatBase):
         resource = self.__parent__
         structure = self.structure
 
+        # Structure can completely override the default logic
+        if hasattr(structure, "deserialize"):
+            return structure.deserialize(self, request)
+
+
+        ### Proceed with the standard logic
+
         # TODOXXX: Migrate before_item_updated everywhere
         if hasattr(structure, "before_item_updated"):
             structure.before_item_updated(request)
 
         print "JSON_REST_UPDATE: request body %s" % (request.body)
-        params = json.loads(request.body)
+        params = request.json_body  # json.loads(request.body)
 
         # Formish uses dotted syntax to deal with nested structures
         # we need to unflatten it

@@ -320,34 +320,8 @@ def json_rest_get_f(context, request):
     Returns a json dict representing the given object's data serialized using
     the current data format
     """
+    return context.read(request)
 
-    # TODO: Check if context implements IDataFormatReader, raise Http404 if not
-    #annotate = bool(request.GET.get('ann', False))
-
-
-    # TODO: The code below has a lot of similarities with RestResource.get_empty
-    #format_name = request.GET.get('format', 'default')
-
-    #import pdb; pdb.set_trace();
-    session = get_session()
-    session.autoflush = False
-
-    set_field = request.GET.get('set_field', None)
-    if set_field is not None:
-        set_value = request.GET.get('set_value', None)
-        if set_value:
-            # or use the deserialization machinery here?
-            setattr(context.model, set_field, int(set_value))
-            session.flush()
-
-    only_fields = request.GET.get('only', None)
-    if only_fields is not None:
-        only_fields = [f.strip() for f in only_fields.split(',')]
-
-    data = context.serialize()
-
-    transaction.abort()
-    return data
 
 @view_config(context=IDataFormat,
     permission="rest.list",
