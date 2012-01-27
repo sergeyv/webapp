@@ -123,7 +123,7 @@ class FormAwareMixin(object):
         try:
             return self.__data_formats__[format]
         except AttributeError:
-            raise WebappFormError('No formats registered for %s, looking for "%s"' % (self, format))
+            raise WebappFormError('No formats registered for %s, class %s, looking for "%s"' % (self, self.__class__, format))
         except KeyError:
             raise WebappFormError('Format "%s" is not registered with %s' % (format, self))
 
