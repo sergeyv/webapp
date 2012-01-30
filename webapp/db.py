@@ -7,7 +7,6 @@
 
 import threading
 
-from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
@@ -109,6 +108,11 @@ class WebappBase(object):
 Base = declarative_base(cls=WebappBase)
 
 def initialize_sql(db_string, db_echo, populate_fn=None):
+
+    # zope.sqlalchemy is not present in worker processes -
+    # ultimately we either need to stop importing webapp from non-web code
+    # or move db stuff somewhere out of webapp
+    from zope.sqlalchemy import ZopeTransactionExtension
 
     engine = create_engine(db_string, echo=db_echo)
 
