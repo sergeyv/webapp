@@ -275,7 +275,8 @@
     WebApp.prototype.fillInPlaceholders = function (templ, params) {
         /// accepts a string with some :placeholders in it - i.e.
         /// /users/:user_id/edit and params object containing {user_id: 345}
-        /// and returns a strings where placeholders are replaved by the values
+        /// and returns a string where placeholders are replaced with
+        ///  the values
         /// from the params object, i.e. /users/345/edit
 
         return templ.replace(
@@ -322,9 +323,9 @@
             {
                 var dot_parts = pair[0].split('.'),
                     cur_path = uri_args;
-                
+
                 // Traverses the structure and creates items as it goes along
-                for ( var di = 0; di < dot_parts.length - 1; di += 1 ) 
+                for ( var di = 0; di < dot_parts.length - 1; di += 1 )
                 {
                     var dot_part = dot_parts[di];
                     var m;
@@ -335,7 +336,7 @@
 
                         if ( cur_path[ m[1] ][ parseInt( m[2] ) ] == undefined )
                             cur_path[ m[1] ][ parseInt( m[2] ) ] = {};
-                            
+
                         cur_path = cur_path[ m[1] ][ parseInt( m[2] ) ];
                     }
                     else // Just a normal object
@@ -344,10 +345,10 @@
                         {
                             cur_path[ dot_part ] = {};
                         }
-                        
+
                     }
                 }
-                
+
                 // The path to the attribute has been created at this point so now we can finally set it.
                 cur_path[ dot_parts[ dot_parts.length -1 ] ] = pair[1]
             }
