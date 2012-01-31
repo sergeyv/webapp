@@ -13,22 +13,21 @@ import json
 # import schemaish as sc
 import dottedish
 from pyramid.view import view_config
-import transaction
 
 import crud
 
-from webapp.db import get_session
-# from webapp.forms import get_form
+from webapp.forms.data_format import (
+    IDataFormat,
+    IDataFormatReader,
+    IDataFormatWriter,
+    IDataFormatLister,
+    IDataFormatCreator
+    )
 
 # from webapp.testing import sluggish, explode
 
 
-# TODOXXX: Remote validation!
-# @view_config(name="new",
-#     context=crud.ICollection,
-#     permission="rest.list",
-#     request_method="GET",
-#     renderer="better_json")
+# TODOXXX: fix remote validation
 def json_rest_empty(context, request):
     """
     Returns an empty item with all fields set to default values
@@ -47,72 +46,6 @@ def json_rest_empty(context, request):
 
     return context.get_empty(request)
 
-
-def _create_item(context, request):
-    """
-    """
-    if hasattr(context, "before_item_created"):
-        context.before_item_created(request)
-    params = json.loads(request.body)
-    print "+JSON_REST_CREATE: %s" % (params)
-    # Formish uses dotted syntax to deal with nested structures
-    # we need to unflatten it
-    params = dottedish.api.unflatten(params.items())
-
-
-    # NOT USED?
-    # format = params.get('__formish_form__', None)
-    # if format is not None:
-    #     # See if a subclass defines a hook for processing this format
-    #     resource = context.wrap_child(context.create_transient_subitem(), name="empty")
-
-    #     hook_name = "deserialize_sequence_%s" % format
-    #     meth = getattr(resource, hook_name, None)
-    #     if meth is not None:
-    #         return meth(params)
-
-
-    # TODO: Add validation here
-    new_item = context._create__subitem_(params=params, request=request)
-
-
-    return {'item_id': new_item.id}
-
-
-
-# @view_config(name="new",
-#     context=crud.ICollection,
-#     permission="rest.create",
-#     request_method="PUT",
-#     renderer="better_json",
-#     accept="text/plain")
-def json_rest_create_new(context, request):
-    """
-    """
-    return _create_item(context, request)
-
-
-# @view_config(context=crud.ICollection,
-#     permission="rest.create",
-#     request_method="POST",
-#     renderer="better_json",
-#     accept="text/plain")
-def json_rest_create(context, request):
-    """
-    """
-    return _create_item(context, request)
-
-
-# @view_config(context=crud.ICollection,
-#     permission="rest.list",
-#     request_method="GET",
-#     renderer="better_json",
-#     accept="application/json")
-def json_rest_list(context, request, permission=""):
-    """
-    """
-    result = context.get_items_listing(request)
-    return result
 
 
 @view_config(name="filters",
@@ -209,80 +142,6 @@ def json_rest_delete_item(context, request):
     return result
 
 
-
-
-
-# @view_config(context=crud.IResource,
-#     permission="rest.update",
-#     request_method="PUT",
-#     renderer="better_json",
-#     accept="text/plain")
-# def json_rest_update(context, request):
-#     """
-#     """
-#     if hasattr(context, "before_item_updated"):
-#         context.before_item_updated(request)
-
-#     print "JSON_REST_UPDATE: request body %s" % (request.body)
-#     params = json.loads(request.body)
-
-#     # Formish uses dotted syntax to deal with nested structures
-#     # we need to unflatten it
-#     params = dottedish.api.unflatten(params.items())
-
-#     # Resource.update returns nothing
-#     context.update(params, request)
-
-#     return {'item_id': context.model.id}
-
-
-# TODO: OBSOLETE
-# @view_config(context=crud.IResource,
-#     permission="rest.view",
-#     request_method="GET",
-#     renderer="better_json",
-#     accept="text/plain")
-# def json_rest_get(context, request):
-#     """
-#     Returns a json dict representing the given object's data serialized using
-#     one of the formats registered for the resource
-#     """
-#     annotate = bool(request.GET.get('ann', False))
-
-
-#     # TODO: The code below has a lot of similarities with RestResource.get_empty
-#     format_name = request.GET.get('format', 'default')
-
-#     session = get_session()
-#     session.autoflush = False
-
-#     set_field = request.GET.get('set_field', None)
-#     if set_field is not None:
-#         set_value = request.GET.get('set_value', None)
-#         if set_value:
-#             # or use the deserialization machinery here?
-#             setattr(context.model, set_field, int(set_value))
-#             session.flush()
-
-#     only_fields = request.GET.get('only', None)
-#     if only_fields is not None:
-#         only_fields = [f.strip() for f in only_fields.split(',')]
-
-#     data = context.serialize(format=format_name, annotate=annotate, only_fields=only_fields)
-
-#     transaction.abort()
-#     return data
-
-
-from webapp.forms.data_format import (
-    IDataFormat,
-    IDataFormatReader,
-    IDataFormatWriter,
-    IDataFormatLister,
-    IDataFormatCreator
-    )
-
-
 def context_implements(*types):
     """
     A custom predicate to implement matching views to resources which
@@ -353,8 +212,7 @@ def json_rest_update_f(context, request):
 def json_rest_list_f(context, request, permission=""):
     """
     """
-    result = context.get_items_listing(request)
-    return result
+    return context.get_items_listing(request)
 
 
 ### FOR DEBUG PURPOSES

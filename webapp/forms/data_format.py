@@ -414,12 +414,11 @@ class DataFormatWriter(DataFormatBase):
         if hasattr(structure, "update"):
             return structure.update(self, request)
 
-
-        ### Proceed with the standard logic
-
-        # TODOXXX: Migrate before_item_updated everywhere
         if hasattr(structure, "before_item_updated"):
-            structure.before_item_updated(request)
+            structure.before_item_updated(self, request)
+
+        if hasattr(resource, "before_item_updated"):
+            resource.before_item_updated(self, request)
 
         print "JSON_REST_UPDATE: request body %s" % (request.body)
         params = request.json_body  # json.loads(request.body)
@@ -427,9 +426,6 @@ class DataFormatWriter(DataFormatBase):
         # Formish uses dotted syntax to deal with nested structures
         # we need to unflatten it
         params = dottedish.api.unflatten(params.items())
-
-        #form_name = params.get('__formish_form__')
-
 
         #old_data = self.serialize(format=form_name)
         self.deserialize(params, request)
@@ -441,10 +437,11 @@ class DataFormatWriter(DataFormatBase):
         # before we call the after context hook
         sa.orm.object_session(resource.model).flush()
 
-        # TODOXXX: Migrate after_item_updated everywhere
         if hasattr(structure, "after_item_updated"):
-            structure.after_item_updated(request)
+            structure.after_item_updated(self, request)
 
+        if hasattr(resource, "after_item_updated"):
+            resource.after_item_updated(self, request)
 
         return {'item_id': resource.model.id}
 

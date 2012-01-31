@@ -14,6 +14,7 @@ import crud
 
 from webapp.db import get_session
 from webapp.exc import WebappFormError
+from webapp.forms import get_form_registry_by_name
 
 
 class IRestRootCollection(crud.ICollection):
@@ -56,6 +57,8 @@ class RestSubobject(crud.Traversable):
             rest_service_root: "/rest/emails/:item_id/autoresponder"
         }));
 
+    NOTE: Now you can achieve virtually the same results with standard
+    data formats machinery
     """
     implements(crud.IResource)
 
@@ -103,9 +106,6 @@ class FormAwareMixin(object):
         return get_form_registry_by_name('default')
 
     def __getitem__(self, name):
-
-        #if isinstance(self, RestCollection):
-        #    import pdb; pdb.set_trace()
 
         if name.startswith('@'):
             data_format_factory = self._find_data_format(name[1:])
@@ -390,172 +390,5 @@ class RestResource(FormAwareMixin, crud.Resource):
     """
     Some additional methods for formatting
     """
-
-
-    #@classmethod
-    # def _find_schema_for_data_format(self, format):
-
-    #     form_registry = self.find_form_registry()
-
-    #     if isinstance(format, sc.Structure):
-    #         return format
-
-    #     schema = None
-
-    #     form_name = self.data_formats.get(format, None)
-    #     form = None
-    #     if form_name is not None:
-    #         form = form_registry.get_form(self.data_formats[format])
-    #         if form is None:
-    #             raise ValueError("Can't find form %s for %s" % (form_name, self.__class__.__name__))
-    #         schema = form.structure.attr
-    #     else:
-    #         # A client can either pass a format name (i.e. 'add'),
-    #         # or, as a shortcut for forms, directly the form name (i.e. 'ServerAddForm')
-    #         # so we don't need to specify the format in the route's definition.
-    #         # in the latter case we still want to make sure the form is listed as
-    #         # one of our formats.
-    #         if format in self.data_formats.values():
-    #             form = form_registry.get_form(format)
-    #             schema = form.structure.attr
-
-    #         ### Support for finding format in class parents - I'm not sure
-    #         ### we're using this anywhere
-    #         #else:
-    #             #from crud.registry import get_resource_for_model, get_model_for_resource
-    #             #model_cls = get_model_for_resource(cls)
-    #             #for parent_class in model_cls.__bases__:
-    #                 #resource_class = get_resource_for_model(parent_class)
-    #                 #print "GOT PARENT RESOURCE: %s" % resource_class
-    #                 #if hasattr(resource_class, "_find_schema_for_data_format"):
-    #                     #schema = resource_class._find_schema_for_data_format(format)
-    #                     #if schema is not None:
-    #                         #break
-
-
-    #             #if schema is None:
-    #                 #from pyramid.httpexceptions import HTTPBadRequest
-    #                 #e = HTTPBadRequest("Format '%s' is not registered for %s" % (format, cls))
-    #                 #e.status = '444 Data Format Not Found'
-    #                 #raise e
-
-
-
-    #     if schema is None:
-    #         raise WebappFormError("%s form is not registered, but is listed as the"\
-    #             " '%s' format for %s class" % (form_name, format, self.__class__))
-    #     return schema
-
-
-    # def serialize(self, format='default', annotate=False, only_fields=None):
-    #     """
-    #     - requires 'format' parameter - which must correspond to one of formats
-    #       registered in `data_formats` property. This will determine which
-    #       fields will be serialized
-
-    #     - optionally takes an "annotate" parameter - in this case the returned
-    #       dict will have `_ann` attribute, which will be a list of a schema
-    #       fields: _ann: [{name:'fieldname', title: 'Field Title'}, ...]
-
-    #     - only_fields tells the serializer to omit the fields which are not in the list
-    #       (the fields still need to be in the schema though)
-
-    #     """
-
-    #     structure = self._find_schema_for_data_format(format)
-
-    #     # A form can define a serialization hook
-    #     if hasattr(structure, "serialize"):
-    #         return structure.serialize(self)
-
-        # OBSOLETE, being phases out
-        # A subclass may define a method serialize_formatname(self, item, structure) which will be called instead of the standard serializer
-        # meth = getattr(self, "serialize_%s" % format, self._default_item_serializer)
-
-        # data = meth(self.model, structure, only_fields=only_fields)
-
-        # if annotate:
-        #     data['_ann'] = self._annotate_fields(structure)
-
-        # return data
-
-
-    # def _annotate_fields(self, structure):
-    #     """
-    #     Extract some additional data from our schema
-    #     (namely - field titles) to facilitate automated rendering
-    #     """
-    #     data = []
-    #     # structure.attrs is a list of (name,field) tuples
-    #     for (name, field) in structure.attrs:
-    #         f = {
-    #             'name': name,
-    #             'title': field.title,
-    #         }
-    #         data.append(f)
-
-    #     return data
-
-
-
-
-    # def deserialize(self, params, request):
-    #     """
-    #     Recursively applies data from a Formish form to an SA model,
-    #     using the form's schema to ensure only the attributes from the form are set.
-    #     This supposes that the form submitted is a formish form
-    #     """
-    #     # TODO: Add validation here
-
-    #     schema = params.get('__schema__')
-
-    #     if schema is not None:
-    #         form_name = schema.__class__.__name__
-    #     else:
-    #         form_name = params.get('__formish_form__')
-
-    #     # A Resource can define a deserialization hook
-    #     # be declaring a method deserialize_FormName.
-    #     meth = getattr(self, 'deserialize_%s' % form_name, None)
-    #     if meth is not None:
-    #         return meth(params, request)
-
-    #     if schema is None:
-    #         schema = self._find_schema_for_data_format(form_name)
-
-    #     # Alternatively, the form can define a custom
-    #     # deserializer. This approach seems to be better, so
-    #     # custom deserializers on a resource should be deprecated.
-    #     # In fact, the default deserializer can be moved to a base class
-    #     # from which all forms will be subclassed
-    #     meth = getattr(schema, 'deserialize', None)
-    #     if meth is not None:
-    #         return meth(self, params, request)
-
-
-    #     self.default_item_deserializer(params, request)
-
-
-    # def update(self, params, request):
-    #     """
-    #     Override the crud's method to compute a diff of item's state
-    #     before and after the update and call "item updated" hooks
-    #     """
-
-    #     #form_name = params.get('__formish_form__')
-
-
-    #     #old_data = self.serialize(format=form_name)
-    #     self.deserialize(params, request)
-    #     #new_data = self.serialize(format=form_name)
-    #     #diff = _dict_diff(old_data, new_data)
-    #     #request['webapp_update_diff'] = diff
-
-    #     #Flush session so changes have been applied
-    #     # before we call the after context hook
-    #     sa.orm.object_session(self.model).flush()
-
-    #     if hasattr(self, "after_item_updated"):
-    #         self.after_item_updated(request)
 
 
