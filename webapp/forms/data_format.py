@@ -483,6 +483,13 @@ class DataFormatCreator(DataFormatReader):
     def create(self, request):
         """
         """
+
+        structure = self.structure
+
+        # Structure can completely override the default logic
+        if hasattr(structure, "create"):
+            return structure.create(self, request)
+
         params = json.loads(request.body)
         params = dottedish.api.unflatten(params.items())
 
