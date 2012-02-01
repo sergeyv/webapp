@@ -229,6 +229,7 @@
         var self = this,
             invoke_async_action = function ($link) {
                 var meth = webapp.Read,
+                    need_send_data = false,
                     callback = function () {
 
                         /// find all classes which start with webappOnSuccess
@@ -247,11 +248,15 @@
 
                 if ($link.hasClass("webappMethodDelete")) {
                     meth = webapp.Delete;
+                    need_send_data = false;
+                } else if ($link.hasClass("webappMethodPut")) {
+                    meth = webapp.Update;
+                    need_send_data = true;
+                } else if ($link.hasClass("webappMethodPost")) {
+                    meth = webapp.Create;
+                    need_send_data = true;
                 }
 
-                if ($link.hasClass("webappMethodPut")) {
-                    meth = webapp.Update;
-                }
 
                 if ($link.hasClass('webappSendData')) {
                     data = $link.data('send') || {};
@@ -262,7 +267,7 @@
                             return self[meth_name]();
                         }
                         return {};
-                    })());
+                    }()));
 
                     /// if there's a class webappCollectDataMethod-methodName
                     /// we will extend `data` with what methodName returns
@@ -277,7 +282,16 @@
 
                 }
 
-                meth($link.attr('href'), data, callback);
+                /// the signatures of webapp.Read and webapp.Delete
+                /// require 2 parameters - url and callback, while
+                /// webapp.Create and webapp.Update also accept `data`
+                /// parameter which unfortunately is in the middle
+                /// we may need to refactor this because it's kinda ugly
+                if (need_send_data) {
+                    meth($link.attr('href'), data, callback);
+                } else {
+                    meth($link.attr('href'), callback);
+                }
 
                 if ($link.hasClass("webappGoBack")) {
                     webapp.relocateTo(webapp.previousPageUrl());
