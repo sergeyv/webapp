@@ -13,6 +13,7 @@ import json
 # import schemaish as sc
 import dottedish
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPNotFound
 
 import crud
 
@@ -197,8 +198,8 @@ def json_rest_get_f(context, request):
     custom_predicates=(context_implements(IDataFormatWriter),)
     )
 def json_rest_update_f(context, request):
-    # TODO: Check if context implements IDataFormatWriter, raise Http404 if not
-
+    """
+    """
     return context.update(request)
 
 
@@ -213,6 +214,57 @@ def json_rest_list_f(context, request, permission=""):
     """
     """
     return context.get_items_listing(request)
+
+
+# Remote validation
+
+def _do_validate(context, request):
+    """
+    The client invokes an url like /rest/users/123/@view/v/name?name=john;
+    this function checks if there's a validation hook named "validate_name"
+    either on the structure or on the resource and calls them.
+
+    If no hook found raises 404
+    """
+
+    if len(request.subpath) != 1:
+        raise HTTPNotFound("Need to provide validator name")
+
+    validator_name = 'validate_' + request.subpath[0]
+
+    format = context
+    res_or_coll = format.__parent__
+    structure = format.structure
+
+
+    if hasattr(structure, validator_name):
+        return getattr(structure, validator_name)(format, request)
+    if hasattr(res_or_coll, validator_name):
+        return getattr(res_or_coll, validator_name)(format, request)
+
+    raise HTTPNotFound("No validator found for attribute %s" % request.subpath[0])
+
+
+@view_config(name="v",  # for 'Vendetta', obviously
+    context=IDataFormatWriter,
+    permission="rest.update",
+    request_method="GET",
+    renderer="better_json",
+    accept="text/plain",
+    )
+def validate_on_update(context, request):
+    return _do_validate(context, request)
+
+
+@view_config(name="v",  # for 'Vendetta', obviously
+    context=IDataFormatCreator,
+    permission="rest.create",
+    request_method="GET",
+    renderer="better_json",
+    accept="text/plain",
+    )
+def validate_on_create(context, request):
+    return _do_validate(context, request)
 
 
 ### FOR DEBUG PURPOSES

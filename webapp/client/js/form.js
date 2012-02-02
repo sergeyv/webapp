@@ -43,7 +43,32 @@
 
     Form.prototype.setValidationRules = function () {
         var self = this,
-            rules = webapp.getValidationRules(self.options.identifier);
+            rules = $.extend({}, webapp.getValidationRules(self.options.identifier)); // make a copy
+
+
+        /// 'remote' rules have only attribute name, we need to turn it into a full url
+        $.each(rules, function (field_name, field_rules) {
+            $.each(field_rules, function (rule_name, rule_value) {
+                var rule;
+                if (rule_name == 'remote') {
+                    rule_value = rule_value.url || rule_value;
+                    rule = {
+                        url: self.getRestUrl() + "/v/" + rule_value
+                    };
+
+                    /// a form can define a dict of callbacks to be called
+                    /// when remote val.idation completes:
+                    /// this.on_remote_validation = {
+                    ///     user_details.name: function () { alert("hello!") }
+                    /// }
+                    if (self.on_remote_validation &&
+                        self.on_remote_validation[field_name]) {
+                            rule.complete = self.on_remote_validation[field_name];
+                        }
+                    rules[field_name][rule_name] = rule;
+                }
+            });
+        });
 
         self.form.validate({ rules: rules,
             submitHandler: function () {
@@ -184,7 +209,7 @@
 
         self.register_combination_changes();
 
-        self.validation_remote_modify();
+        // self.validation_remote_modify();
 
         if (self.options.need_save_data) {
             // Set validation
@@ -634,32 +659,32 @@
         });
     };
 
-    Form.prototype.validation_remote_modify = function() {
-        /*
-        TODOXXX: As far as I understand the code, this directly modifies
-        values in webapp.validation_rules object - which is populated just
-        ONCE for each form when the form template is loaded,
-        so the urls will be modified when the form is
-        invoked THE FIRST TIME and will stay THE SAME for each subsequent
-        invocation of the form, even for a different item
+    // Form.prototype.validation_remote_modify = function() {
+    //     /*
+    //     TODOXXX: As far as I understand the code, this directly modifies
+    //     values in webapp.validation_rules object - which is populated just
+    //     ONCE for each form when the form template is loaded,
+    //     so the urls will be modified when the form is
+    //     invoked THE FIRST TIME and will stay THE SAME for each subsequent
+    //     invocation of the form, even for a different item
 
-        INVESTIGATE. Actually, it doesn't work at the moment so
-        I'll just short-circuit it
-        */
+    //     INVESTIGATE. Actually, it doesn't work at the moment so
+    //     I'll just short-circuit it
+    //     */
 
-        return; // BANG!
+    //     return; // BANG!
 
-        var validation_rules = webapp.validation_rules[this.options.identifier];
-        for(var i in validation_rules)
-        {
-            var rule = validation_rules[i];
-            if(rule.remote)
-            {
-                rule.remote = webapp.fillInPlaceholders(rule.remote, this.event.parameters);
-            }
-        }
+    //     var validation_rules = webapp.validation_rules[this.options.identifier];
+    //     for(var i in validation_rules)
+    //     {
+    //         var rule = validation_rules[i];
+    //         if(rule.remote)
+    //         {
+    //             rule.remote = webapp.fillInPlaceholders(rule.remote, this.event.parameters);
+    //         }
+    //     }
 
-    };
+    // };
 
     webapp.Form = Form;
 

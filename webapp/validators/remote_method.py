@@ -1,10 +1,10 @@
 from validatish import Validator
 
-class RemoteMethod(Validator):
+class Remote(Validator):
 
-    def __init__(self, remote_method, message=None):
+    def __init__(self, validator_name, message=None):
         self.message = message
-        self.remote_method = remote_method
+        self.validator_name = validator_name
 
     def __call__(self, v):
         print("Doesn't reach here.")

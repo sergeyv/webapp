@@ -39,10 +39,10 @@ def get_validators_for_field(field):
             if isinstance(validator, v.Max):
                 validators['max'] = validator.max_val
 
-    if v.validation_includes(field.attr.validator, v.RemoteMethod):
+    if v.validation_includes(field.attr.validator, v.Remote):
         for validator in field.attr.validator.validators:
-            if isinstance(validator, v.RemoteMethod):
-                validators['remote'] = validator.remote_method
+            if isinstance(validator, v.Remote):
+                validators['remote'] = validator.validator_name
 
 
     return validators
