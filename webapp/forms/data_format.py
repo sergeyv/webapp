@@ -2,7 +2,6 @@ from datetime import datetime
 import json
 import cgi
 import transaction
-
 from zope.interface import Interface, implements
 
 import schemaish as sc
@@ -132,8 +131,6 @@ def _default_item_serializer(item, structure, only_fields=None):
 
 
 def _save_sequence(collection, schema, data, request):
-
-    ### TODOXXX: _save_sequence expects a collection as an argument
 
     existing_items = {str(item.model.id): item for item in collection.get_items()}
 
@@ -270,8 +267,8 @@ def _save_structure(resource, schema, data, request):
             # __getmodel__ takes care about inserting a collection
             # into the traversal context etc.
 
-            ### TODOXXX: Sequence saving is meant to operate in the context of
-            ### the Resource
+            ### Sequence saving is meant to operate in the context of
+            ### the Resource - create a collection and use it for saving
             from webapp.rest import RestCollection
 
             collection = RestCollection(name, name)  # model[name]
@@ -403,8 +400,9 @@ class DataFormatWriter(DataFormatBase):
 
     def update(self, request):
         """
-        Override the crud's method to compute a diff of item's state
-        before and after the update and call "item updated" hooks
+        Serializes the data from request into the resource
+        (which is our parent here), checking if any hooks exist on
+        the structure and on the resource and calling them if the exist.
         """
 
         resource = self.__parent__
@@ -420,18 +418,11 @@ class DataFormatWriter(DataFormatBase):
         if hasattr(resource, "before_item_updated"):
             resource.before_item_updated(self, request)
 
-        print "JSON_REST_UPDATE: request body %s" % (request.body)
-        params = request.json_body  # json.loads(request.body)
-
         # Formish uses dotted syntax to deal with nested structures
         # we need to unflatten it
+        params = request.json_body
         params = dottedish.api.unflatten(params.items())
-
-        #old_data = self.serialize(format=form_name)
         self.deserialize(params, request)
-        #new_data = self.serialize(format=form_name)
-        #diff = _dict_diff(old_data, new_data)
-        #request['webapp_update_diff'] = diff
 
         #Flush session so changes have been applied
         # before we call the after context hook
@@ -499,7 +490,7 @@ class DataFormatCreator(DataFormatReader):
             self.structure.after_item_created(resource, request)
 
         if hasattr(resource, "after_item_created"):
-            resource.after_item_created(request)
+            resource.after_item_created(self, request)
 
         return {'item_id': resource.model.id}
 
