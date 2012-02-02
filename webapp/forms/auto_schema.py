@@ -46,24 +46,39 @@ def reflect(cls):
     #self._fields.update((field.key, field) for field in L)
 
 
-class AutoSchema(sc.Structure):
+def auto_schema(model_cls):
+    """
+    A decorator to auto-reflect model's attributes
+    and create a schema::
 
-    model = None
+        @webapp.auto_schema(models.User)
+        class UserView(sc.Structure):
+            extra_attr = sc.String()
 
-    def __init__(self, **kwargs):
+    Any attributes reflected from the model will be
+    appended to the attributes manually defined on the
+    schema class
+    """
 
-        super(AutoSchema, self).__init__(**kwargs)
-        if 'model' in kwargs:
-            self.model = kwargs['model']
-        attrs = reflect(self.model)
-
+    def _inner(schema_cls):
+        attrs = reflect(model_cls)
         for attr in attrs:
+            print ""
             attr_type = attr.property.columns[0].type
             if isinstance(attr_type, sa.Integer):
-                self.add(attr.key, sc.Integer())
+                value = sc.Integer()
             elif isinstance(attr_type, sa.DateTime):
-                self.add(attr.key, sc.DateTime())
+                value = sc.DateTime()
             else:
-                self.add(attr.key, sc.String())
+                value = sc.String()
 
+            print "SETTING %s on %s to %s" % (attr.key, schema_cls, value)
+            setattr(schema_cls, attr.key, value)
+            # sc.Structure is based on _StructureMeta metaclass
+            # which builds a list of all schema attributes when a new subclass
+            # of sc.Structure is created. See attr.py in schemaish
+            schema_cls.__schemaish_structure_attrs__.append((attr.key, value))
+            schema_cls.attrs.append((attr.key, value))
+        return schema_cls
 
+    return _inner

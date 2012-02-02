@@ -8,7 +8,7 @@
 
 # Imports
 from .fields import Literal, Group
-from .auto_schema import AutoSchema
+from .auto_schema import auto_schema
 from .validators import get_field_class_with_validators, is_option_selected
 from .registry import FormRegistry, get_form_registry_by_name, loadable, LoadableForm
 
