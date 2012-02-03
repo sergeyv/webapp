@@ -33,13 +33,24 @@ Data Formats
 """"""""""""
 Forms are also used to define "data formats" to serialize data coming to and from the server::
 
+    @crud.resource(models.Student)
+    class StudentResource(webapp.RestResource):
+        pass
+
+    class StudentsCollection(webapp.RestCollection):
+        subitems_source = models.Student
+
+Then we register a couple of forms as 'data formats' of StudentResurce::
+
     @webapp.loadable
+    @StudentsCollection.listing_format('list')
     class StudentListing(sc.Structure):
         last_name=sc.String()
         initial=sc.String()
         age=sc.String()
 
     @webapp.loadable
+    @StudentResource.readwrite_format
     class StudentViewForm(sc.Structure):
         first_name = sc.String()
         last_name = sc.String()
@@ -51,18 +62,10 @@ Forms are also used to define "data formats" to serialize data coming to and fro
             title=sc.String(),
         ))
 
-Then we register these two forms as 'data formats' of StudentResurce::
-
-    crud.resource(models.Student)
-    class StudentProxy(webapp.RestProxy):
-        data_formats = {
-            'default': StudentListing,
-            'view': StudentAddForm,
-        }
 
 Now the client can request data in a specific format::
 
-    GET /students?format=listing
+    GET /students/@list
 
 which will return::
 
@@ -73,8 +76,11 @@ which will return::
 
 Forms are also used to de-serialize data coming from the client and create/update SA models
 
+
 Data formats inheritance
 """"""""""""""""""""""""
+
+NOTE: This feature does not work at the moment
 
 Data formats defined in parent classes can be used in descendent classes too. Inheritance is only needed on the level of SA models, Resource classes do not need to relate to each other::
 
@@ -82,17 +88,6 @@ Data formats defined in parent classes can be used in descendent classes too. In
         ...
 
     class School(Institution):
-        ...
-
-
-Define some forms::
-
-    @webapp.loadable
-    class InstitutionView(sc.Structure):
-        ...
-
-    @webapp.loadable
-    class SchoolEdit(sc.Structure):
         ...
 
 Now on to resources declaration::
@@ -109,7 +104,19 @@ Now on to resources declaration::
             'edit': 'SchoolEdit',
         }
 
-As you can see, SchoolResource does not define ``view`` data format. However, if we request ``/rest/schools/123?format=view``, the framework will detect that SchoolResource is a resource for the School model, and School model is a subclass of Institution, and the resource registered for Institution (InstitutionResource) does indeed define that format, so it will be used to serialize the data.
+Define some forms::
+
+    @Institution.readonly_format('view')
+    class InstitutionView(sc.Structure):
+        ...
+
+    @webapp.loadable
+    @SchoolResource.readwrite_format
+    class SchoolEdit(sc.Structure):
+        ...
+
+As you can see, SchoolResource does not define ``view`` data format. However, if we request ``/rest/schools/123/@view``, the framework will detect that SchoolResource is a resource for the School model, and School model is a subclass of Institution, and the resource registered for Institution (InstitutionResource) does indeed define that format, so it will be used to serialize the data.
+
 
 Client
 """"""
