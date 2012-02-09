@@ -97,11 +97,21 @@
 
         //this.parameters = parameters;
         if (self.options.need_load_data) {
-            webapp.Read(self.getRestUrl("with-params"), function (data) {
+            webapp.log("reading " + self.getRestUrl("with-params"));
+
+            /// when a request is already active we need to abort the previous
+            /// request first because chances are the old request will take
+            /// longer than the new one, so the view will be re-rendered with
+            /// the old data. This primarily manifests with incremental search
+            if (self.current_request) {
+                self.current_request.abort();
+            }
+
+            self.current_request = webapp.Read(self.getRestUrl("with-params"), function (data) {
 
                 self.data = data;
                 self.renderData();
-
+                delete self.current_request;
             });
         } else {
             self.data = {};
