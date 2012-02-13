@@ -79,6 +79,12 @@ def _recursively_augment(form):
     if hasattr(structure, 'augment_form'):
         structure.augment_form(form)
 
+LOADABLE_ERROR_MSG = """
+Format %s is marked as loadable but it's not registered as
+either create_format, writeonly_format or readwrite_format for any collection
+or resource, so it's likely a misconfiguration. If you're using read-only forms,
+mark the structure with __allow_loadable__ = True
+"""
 
 class FormRegistry(object):
 
@@ -111,6 +117,9 @@ class FormRegistry(object):
         schema = cls()
         form = LoadableForm(schema)
         form.name = name
+
+        if not getattr(schema, '__allow_loadable__', False):
+           raise WebappFormError(LOADABLE_ERROR_MSG % schema.__class__)
 
         # Find any subforms and call their
         # augment_form methods so we can set up widgets etc.

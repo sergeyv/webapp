@@ -339,6 +339,8 @@ def _default_item_deserializer(resource, schema, params, request):
 
 class DataFormatBase(object):
 
+    __allow_loadable__ = False
+
     def __init__(self, structure):
 
         self.structure = structure
@@ -391,6 +393,8 @@ class DataFormatReader(DataFormatBase):
 
 class DataFormatWriter(DataFormatBase):
     implements(IDataFormatWriter)
+
+    __allow_loadable__ = True
 
     def deserialize(self, params, request):
         resource = self.__parent__
@@ -445,6 +449,8 @@ class DataFormatCreator(DataFormatReader):
     """
     implements(IDataFormatReader, IDataFormatCreator)
 
+    __allow_loadable__ = True
+
     def serialize(self, request):
         # our parent is a Collection
         collection = self.__parent__
@@ -497,6 +503,8 @@ class DataFormatCreator(DataFormatReader):
 
 class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
     implements(IDataFormatReader, IDataFormatWriter)
+
+    __allow_loadable__ = True
 
 
 class DataFormatLister(DataFormatBase):

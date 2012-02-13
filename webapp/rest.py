@@ -144,6 +144,9 @@ class FormAwareMixin(object):
                 cls.__data_formats__ = {}
             formats_dict = cls.__data_formats__
 
+            if not hasattr(schemaish_cls, "__allow_loadable__"):
+                schemaish_cls.__allow_loadable__ = wrapper_cls.__allow_loadable__
+
             data_format_factory = wrapper_cls(schemaish_cls)
 
             # register the format with the name of the schema class, i.e. ContactEditForm
@@ -191,6 +194,7 @@ class FormAwareMixin(object):
     def writeonly_format(cls, name_or_cls):
         """
         """
+
         return cls._data_format_decorator(name_or_cls, DataFormatWriter)
 
     @classmethod
