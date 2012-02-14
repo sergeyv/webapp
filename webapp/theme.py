@@ -129,3 +129,8 @@ class AssetRegistry(object):
         except ValueError:
             pass
 
+    def replace_js_assets(self, new_assets):
+        self.js_assets = new_assets
+
+    def replace_css_assets(self, new_assets):
+        self.css_assets = new_assets
