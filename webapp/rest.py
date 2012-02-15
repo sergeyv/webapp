@@ -16,6 +16,12 @@ from webapp.db import get_session
 from webapp.exc import WebappFormError
 from webapp.forms import get_form_registry_by_name
 
+FORMAT_ALREADY_REGISTERED_MSG = """
+Format %s has been already registered for %s,
+   the current value is: %s
+   trying to re-register with: %s
+"""
+
 
 class IRestRootCollection(crud.ICollection):
     pass
@@ -150,6 +156,12 @@ class FormAwareMixin(object):
             data_format_factory = wrapper_cls(schemaish_cls)
 
             # register the format with the name of the schema class, i.e. ContactEditForm
+            if schemaish_cls.__name__ in formats_dict:
+                raise WebappFormError(FORMAT_ALREADY_REGISTERED_MSG,
+                    schemaish_cls.__name__, cls,
+                    formats_dict[schemaish_cls.__name__],
+                    data_format_factory
+                    )
             formats_dict[schemaish_cls.__name__] = data_format_factory
             # also, if the format was registeres with
             # @ContactResource.readwrite_format('edit'), we register the format with
