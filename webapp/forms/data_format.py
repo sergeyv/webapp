@@ -752,7 +752,7 @@ class VocabLister(DataFormatLister):
         ### to return an SA clause element suitable for passing to .filter()
         filter_meth_name = request.GET.get('meth', None)
         if filter_meth_name:
-            meth = getattr(self, 'filter_' + filter_meth_name)
+            meth = getattr(collection, 'filter_' + filter_meth_name)
             query = meth(query, request)
 
         # FILTERING
