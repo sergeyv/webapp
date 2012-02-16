@@ -351,6 +351,10 @@ class DataFormatBase(object):
     def __repr__(self):
         return "<%s wrapping %s>" % (self.__class__.__name__, repr(self.structure))
 
+    @property
+    def __acl__(self):
+        return getattr(self.structure, '__acl__', [])
+
 
 class DataFormatReader(DataFormatBase):
     implements(IDataFormatReader)

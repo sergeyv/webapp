@@ -144,7 +144,7 @@
         //url = webapp.fillInPlaceholders(root, params);
 
         if (self.options.data_format) {
-            url += "/@" + self.options.data_format;
+            url += "@" + self.options.data_format;
         }
 
 

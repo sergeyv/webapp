@@ -50,19 +50,17 @@ def json_rest_empty(context, request):
 
 
 @view_config(name="filters",
-    context=crud.ICollection,
+    context=IDataFormatLister,
     permission="rest.list",
     request_method="GET",
     renderer="better_json")
 def json_rest_filters(context, request):
     """
-    Returns a list of possible filters for the current section
-
-    TODO: Is it restful or not?
+    Returns a list of possible filters for the current collection
+    (although it's called in the context of a DataFormat, like this:
+    /rest/servers/@listing/filters )
     """
-    print "JSON_REST_FILTERS: request body %s" % (request.body)
-
-    fn = getattr(context, 'get_filters', None)
+    fn = getattr(context.__parent__, 'get_filters', None)
     if fn is not None:
         result = fn(request)
         return result
@@ -81,7 +79,9 @@ def json_rest_incremental(context, request):
     Returns a list of items which match a search string
     Should return just id:title pairs, not full objects
 
-    TODO: Is it restful or not?
+    TODOXXX: This should work in the context of a DataFormatListing,
+    so if no listing format thet there's no lsting. Currently it's not possible
+    to restrict the incremental search per-collection
     """
     print "JSON_REST_INCREMENTAL: request body %s" % (request.body)
 

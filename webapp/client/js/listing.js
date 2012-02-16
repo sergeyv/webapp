@@ -6,16 +6,25 @@
         // a nice side-effect of this is that it's doing a deep-copy
         var opts = $.extend({
             batch_size: 50,
-            searchable: true,
-            partials: {
+            searchable: true//,
+            /*partials: {
                 /// add a default filtering partial - if there's no
                 /// placeholder in the template it's not invoked anyway
                 filters: new webapp.Filters({
-                    rest_service_root: options.rest_service_root + "/filters"
+                    rest_service_root: options.rest_service_root + (options.data_format|options.identifier) + "/filters"
                 })
-            }
+            }*/
         }, options);
         webapp.Template.apply(this, [opts]);
+
+        if (!this.options.partials) {
+            this.options.partials = {};
+        }
+
+
+        /*TODOXXX: This is broken, make it work in the context of the format:
+        "/rest/servers/123/@ServersListing/filters"
+        (also consider moving filtering setting to formats?)*/
 
     }
 
@@ -26,17 +35,24 @@
 
     Listing.prototype.init = function () {
 
-    /// this is called when the view is first shown
+        /// this is called when the view is first shown
         var self = this,
             node_id = self.options.identifier + '-view',
             $node;
+
+
+        ///
+        this.options.partials.filters = new webapp.Filters({
+            rest_service_root: self.getRestUrl()  + "/filters"
+        });
 
         // this is how to call a 'super' method in JS
         webapp.Template.prototype.init.call(this);
 
 
+
         /// find or create the body template container
-        node_id = self.options.identifier + '-row-template';
+        /*node_id = self.options.identifier + '-row-template';
         self.row_template = $("#" + node_id);
         if (!self.row_template.length) {
             /// Create and append a node if not found
@@ -44,7 +60,7 @@
 
             $("body").append($node);
             self.row_template = $("#" + node_id);
-        }
+        }*/
 
     };
 
