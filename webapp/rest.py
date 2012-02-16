@@ -17,9 +17,9 @@ from webapp.exc import WebappFormError
 from webapp.forms import get_form_registry_by_name
 
 FORMAT_ALREADY_REGISTERED_MSG = """
-Format %s has been already registered for %s,
-   the current value is: %s
-   trying to re-register with: %s
+Format %(fmt_name)s has been already registered for %(resource)s,
+   the current value is: %(current)s
+   trying to re-register with: %(new)s
 """
 
 
@@ -157,10 +157,12 @@ class FormAwareMixin(object):
 
             # register the format with the name of the schema class, i.e. ContactEditForm
             if schemaish_cls.__name__ in formats_dict:
-                raise WebappFormError(FORMAT_ALREADY_REGISTERED_MSG,
-                    schemaish_cls.__name__, cls,
-                    formats_dict[schemaish_cls.__name__],
-                    data_format_factory
+                raise WebappFormError(FORMAT_ALREADY_REGISTERED_MSG % {
+                        'fmt_name': schemaish_cls.__name__,
+                        'resource': cls,
+                        'current': formats_dict[schemaish_cls.__name__],
+                        'new': data_format_factory
+                    }
                     )
             formats_dict[schemaish_cls.__name__] = data_format_factory
             # also, if the format was registeres with
