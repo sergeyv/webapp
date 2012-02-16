@@ -144,6 +144,11 @@
         //url = webapp.fillInPlaceholders(root, params);
 
         if (self.options.data_format) {
+            ///Check if the url ends with a slash and add
+            /// one if it doesn't
+            if (url.indexOf('/', url.length - 1) == -1) {
+                url += '/';
+            }
             url += "@" + self.options.data_format;
         }
 

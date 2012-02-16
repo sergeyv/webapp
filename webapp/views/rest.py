@@ -170,9 +170,8 @@ def context_implements(*types):
     custom_predicates=(context_implements(IDataFormatCreator),)
     )
 def json_rest_create_f(context, request):
-    # TODO: Check if context implements IDataFormatWriter, raise Http404 if not
-
     return context.create(request)
+
 
 
 @view_config(context=IDataFormat,
