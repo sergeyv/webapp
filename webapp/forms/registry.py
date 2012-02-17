@@ -119,7 +119,7 @@ class FormRegistry(object):
         form.name = name
 
         if not getattr(schema, '__allow_loadable__', False):
-           raise WebappFormError(LOADABLE_ERROR_MSG % schema.__class__)
+            raise WebappFormError(LOADABLE_ERROR_MSG % schema.__class__)
 
         # Find any subforms and call their
         # augment_form methods so we can set up widgets etc.
