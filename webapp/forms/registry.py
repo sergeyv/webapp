@@ -135,7 +135,14 @@ class FormRegistry(object):
 
 
     def get_form(self, name):
-        return self.forms[name]
+        try:
+            return self.forms[name]
+        except KeyError:
+            raise WebappFormError("Form %s is not registered in registry %s" % (name, self))
+
+    def __repr__(self):
+        return "<%s '%s'>" % (self.__class__, self.app_name)
+
 
 # Create a default form registry to support the old behaviour
 # TODO: Do we want to remove it eventually?
