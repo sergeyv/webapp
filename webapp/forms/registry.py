@@ -86,6 +86,7 @@ or resource, so it's likely a misconfiguration. If you're using read-only forms,
 mark the structure with __allow_loadable__ = True
 """
 
+
 class FormRegistry(object):
 
     forms = None

@@ -516,7 +516,7 @@
 
     Form.prototype.reloadLoadable = function ($select) {
         var self = this,
-            from = self.mangle_url($select.attr("href"), $select);
+            from = self.mangle_url(webapp.rest_service_prefix + $select.attr("href"), $select);
 
         /// empty 'from' url signals that we shouldn't attempt to load the data
         /// just yet (i.e. a master listbox was not loaded yet)
