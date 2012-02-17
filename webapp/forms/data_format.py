@@ -349,7 +349,10 @@ class DataFormatBase(object):
         return self.__class__(structure=self.structure)
 
     def __repr__(self):
-        return "<%s wrapping %s>" % (self.__class__.__name__, repr(self.structure))
+        if hasattr(self,'structure'):
+            return "<%s wrapping %s>" % (self.__class__.__name__, repr(self.structure))
+        else:
+            return "<%s wrapping >" % self.__class__.__name__
 
     @property
     def __acl__(self):
