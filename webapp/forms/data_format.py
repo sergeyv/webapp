@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 import json
 import cgi
 import transaction
