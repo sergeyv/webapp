@@ -80,7 +80,7 @@ def json_rest_incremental(context, request):
     Should return just id:title pairs, not full objects
 
     TODOXXX: This should work in the context of a DataFormatListing,
-    so if no listing format thet there's no lsting. Currently it's not possible
+    so if no listing format then there'd be no listing. Currently it's not possible
     to restrict the incremental search per-collection
     """
     print "JSON_REST_INCREMENTAL: request body %s" % (request.body)
