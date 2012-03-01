@@ -6,6 +6,7 @@
 ##########################################
 
 
+from pyramid.security import Allow
 
 import sqlalchemy as sa
 from zope.interface import implements
@@ -232,12 +233,18 @@ class FormAwareMixin(object):
 
 
     @classmethod
-    def allow_vocab_listing(cls):
+    def allow_vocab_listing(cls, *args):
         """
+
         """
         if not hasattr(cls, '__data_formats__'):
             cls.__data_formats__ = {}
-        cls.__data_formats__['vocab'] = VocabLister  # no need to instantiate
+
+
+        v = cls.__data_formats__.setdefault('vocab', VocabLister())
+
+        for role in args:
+            v.__acl__.append((Allow, role, 'rest.list',))
 
 
 

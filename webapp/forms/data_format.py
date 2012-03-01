@@ -515,67 +515,63 @@ class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
     __allow_loadable__ = True
 
 
+def _add_filters_to_query(collection, query, request):
+    """
+    Add filter criteria to the query if there are `filter-<xxx>`
+    parameters in the request
+    """
+    model_class = collection.get_subitems_class()
+    filter_values = []
+    # NOTE: this should use collection.filter_fields as a basis
+    # so it's not possible to filter by fileds not
+    # explicitly listed in that property.
+    for f in collection.filter_fields:
+        val = request.GET.get("filter-%s" % f, None)
+        if val:
+            filter_values.append({'key': f, 'value': val})
+
+    for f in filter_values:
+        field = getattr(model_class, f['key'])
+        if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
+            # The attribute is a simple column
+            query = query.filter(field == f['value'])
+        else:
+            # The attribute is not a simple column so we suppose it's
+            # a relation. TODO: we may need a better check here
+            rel_class = collection.get_class_from_relation(field)
+            if not isinstance(rel_class, type):
+                rel_class = rel_class.__class__
+
+            id_attr = getattr(rel_class, 'id')
+
+            query = query.join(rel_class).filter(id_attr == f['value'])
+
+    return query
+
+def _add_search_to_query(collection, query, request):
+    """
+    Adds a search criteria to the query if there's `search`
+    parameter in the request
+    """
+
+    model_class = collection.get_subitems_class()
+    search_criterion = request.GET.get('search', None)
+    # TODO: LIKE parameters need escaping. Or do they?
+    if search_criterion:
+        # search_fields is a tuple of fiels names
+        #which need to be searched
+        criteria = []
+        for field_name in collection.search_fields:
+            field_obj = getattr(model_class, field_name, None)
+            if field_obj is not None:
+                criteria.append(field_obj.ilike('%' + search_criterion + '%'))
+        query = query.filter(sa.sql.expression.or_(*criteria))
+    return query
+
+
+
 class DataFormatLister(DataFormatBase):
     implements(IDataFormatLister)
-
-
-    def _add_filters(self, query, request):
-        """
-        Add filter criteria to the query if there are `filter-<xxx>`
-        parameters in the request
-        """
-        collection = self.__parent__
-
-        model_class = collection.get_subitems_class()
-        filter_values = []
-        # NOTE: this should use collection.filter_fields as a basis
-        # so it's not possible to filter by fileds not
-        # explicitly listed in that property.
-        for f in collection.filter_fields:
-            val = request.GET.get("filter-%s" % f, None)
-            if val:
-                filter_values.append({'key': f, 'value': val})
-
-        for f in filter_values:
-            field = getattr(model_class, f['key'])
-            if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
-                # The attribute is a simple column
-                query = query.filter(field == f['value'])
-            else:
-                # The attribute is not a simple column so we suppose it's
-                # a relation. TODO: we may need a better check here
-                rel_class = collection.get_class_from_relation(field)
-                if not isinstance(rel_class, type):
-                    rel_class = rel_class.__class__
-
-                id_attr = getattr(rel_class, 'id')
-
-                query = query.join(rel_class).filter(id_attr == f['value'])
-
-        return query
-
-    def _add_search(self, query, request):
-        """
-        Adds a search criteria to the query if there's `search`
-        parameter in the request
-        """
-
-        collection = self.__parent__
-
-        model_class = collection.get_subitems_class()
-        search_criterion = request.GET.get('search', None)
-        # TODO: LIKE parameters need escaping. Or do they?
-        if search_criterion:
-            # search_fields is a tuple of fiels names
-            #which need to be searched
-            criteria = []
-            for field_name in collection.search_fields:
-                field_obj = getattr(model_class, field_name, None)
-                if field_obj is not None:
-                    criteria.append(field_obj.ilike('%' + search_criterion + '%'))
-            query = query.filter(sa.sql.expression.or_(*criteria))
-        return query
-
 
     def get_items_listing(self, request):
         """
@@ -650,10 +646,10 @@ class DataFormatLister(DataFormatBase):
 
 
         # FILTERING
-        query = self._add_filters(query, request)
+        query = _add_filters_to_query(self.__parent__, query, request)
 
         # SEARCH
-        query = self._add_search(query, request)
+        query = _add_search_to_query(self.__parent__, query, request)
 
 
         ### VOCABS - if the format is vocab we abort early since
@@ -719,7 +715,7 @@ class DataFormatLister(DataFormatBase):
 
 
 
-class VocabLister(DataFormatLister):
+class VocabLister(object):
     """
     In case of `vocab` format the result is simpler::
 
@@ -727,11 +723,19 @@ class VocabLister(DataFormatLister):
 
     Also, batching is not applied in case of the `vocab` format.
 
+    Note that it inherits from object, not from DataFormatBase
+    because the latter has __acl__ property so we can't set our
+    __acl__ attribute
+
     """
     implements(IDataFormatLister)
 
     def __init__(self, dummy=None):
+        self.__acl__ = []
         pass
+
+    def __call__(self):
+        return self
 
     def get_items_listing(self, request):
 
@@ -760,10 +764,10 @@ class VocabLister(DataFormatLister):
             query = meth(query, request)
 
         # FILTERING
-        query = self._add_filters(query, request)
+        query = _add_filters_to_query(self.__parent__, query, request)
 
         # SEARCH
-        query = self._add_search(query, request)
+        query = _add_search_to_query(self.__parent__, query, request)
 
         ### 'vocab' format is a special (simplified) case
         ### - returns {'items': [(id, name), (id, name), ...]}
