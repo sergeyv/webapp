@@ -71,11 +71,6 @@ span.required-marker {
     border-left: none;
 }
 
-.asyncTaskPending {
-    background: transparent url("images/ajax-spinner-small.gif") right center no-repeat;
-    padding-right: 16px;
-}
-
 a.iconAdd {
     display: inline-block;
     vertical-align:text-bottom;
