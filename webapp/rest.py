@@ -42,7 +42,7 @@ class RestSubobject(crud.Traversable):
 
             def deserialize(self, params, request):
                 email = self.__parent__.model
-                return invoke_action_async(email, "set_autoresponder", params)
+                return invoke_action_after_commit(email, "set_autoresponder", params, request)
 
     Then we can use it like this::
 
