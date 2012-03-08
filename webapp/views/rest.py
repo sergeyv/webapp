@@ -6,6 +6,7 @@
 ##########################################
 
 import json
+import time
 
 # from webob import Response
 
@@ -212,7 +213,10 @@ def json_rest_update_f(context, request):
 def json_rest_list_f(context, request, permission=""):
     """
     """
-    return context.get_items_listing(request)
+    start = time.time()
+    data = context.get_items_listing(request)
+    data['stats']['total_time'] = time.time() - start
+    return data
 
 
 # Remote validation

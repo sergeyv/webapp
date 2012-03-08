@@ -568,7 +568,13 @@ def _add_search_to_query(collection, query, request):
         query = query.filter(sa.sql.expression.or_(*criteria))
     return query
 
+def _add_eagerload_to_query(format, query):
+    structure = format.structure
 
+    for rel in getattr(structure, '__sa_eagerload__', []):
+        query = query.options(sa.orm.joinedload_all(rel))
+
+    return query
 
 class DataFormatLister(DataFormatBase):
     implements(IDataFormatLister)
@@ -611,7 +617,6 @@ class DataFormatLister(DataFormatBase):
                 'next_batch_start': 123 # the start of the next batch sequence
             }
         """
-
         collection = self.__parent__
         #format = request.GET.get('format', 'listing')
 
@@ -643,6 +648,9 @@ class DataFormatLister(DataFormatBase):
             meth = getattr(self, 'filter_' + filter_meth_name)
             query = meth(query, request)
 
+
+        # EAGERLOAD
+        query = _add_eagerload_to_query(self, query)
 
 
         # FILTERING
