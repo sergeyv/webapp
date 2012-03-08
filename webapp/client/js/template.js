@@ -161,6 +161,17 @@
             self.options.after_data_loaded(self);
         }
 
+
+        if (self.data.stats && $("#stats-view").length) {
+            var q = [];
+            $("#stats-query-count").text(self.data.stats.query_count);
+            $("#stats-time-elapsed").text(self.data.stats.time_elapsed*1000);
+            $.each(self.data.stats.queries, function (idx, val) {
+                q.push('<li>' + val[0] + '</li>');
+            });
+            $("#stats-queries").html('<ol>' + q.join('\n') + '</ol>');
+        }
+
     };
 
 

@@ -49,7 +49,7 @@ def _default_item_serializer(item, structure, only_fields=None):
 
         # the client is not interested in this field, skip
         if (only_fields is not None) and (name not in only_fields):
-            print "SKIPPING FIELD %s" % name
+            #print "SKIPPING FIELD %s" % name
             continue
 
         # Allow to specify callbacks defined on schema
@@ -66,7 +66,7 @@ def _default_item_serializer(item, structure, only_fields=None):
             # This is to support __flatten_subforms__ attrubute of a schema
             # - we may choose to build a form from several sc.Structure blocks to separate the data logically (and visually) but still
             # be able to save it as it was a sigle flat form
-            print "FLAT!"
+            #print "FLAT!"
             value = _default_item_serializer(item, structure_field)
         elif value is not default:
 
@@ -79,7 +79,7 @@ def _default_item_serializer(item, structure, only_fields=None):
 
             # Recursively serialize lists of subitems
             if isinstance(structure_field, sc.Sequence):
-                print "SERIALIZING A SEQUENCE: %s -> %s" % (name, structure_field)
+                #print "SERIALIZING A SEQUENCE: %s -> %s" % (name, structure_field)
 
                 subitems_schema = structure_field.attr
                 subitems = []
@@ -87,7 +87,7 @@ def _default_item_serializer(item, structure, only_fields=None):
                     subitems.append(_default_item_serializer(subitem, subitems_schema))
                 value = subitems
             elif isinstance(structure_field, sc.Structure):
-                print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
+                #print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
                 subitems_schema = structure_field
                 value = _default_item_serializer(value, subitems_schema)
             elif isinstance(structure_field, sc.String):
@@ -127,7 +127,7 @@ def _default_item_serializer(item, structure, only_fields=None):
 
         data[name] = value
 
-    print "EXTRACTED DATA: %s" % data
+    #print "EXTRACTED DATA: %s" % data
     return data
 
 
@@ -143,19 +143,19 @@ def _save_sequence(collection, schema, data, request):
     fmt.__name__ = "@edit"
 
 
-    print "EXISTING ITEMS: %s" % (existing_items,)
+    #print "EXISTING ITEMS: %s" % (existing_items,)
     for (order_idx, value) in data.items():
         if order_idx == '*':
             continue
         # the data must contain 'id' parameter
         # if the data should be saved into an existing item
         item_id = value.get('id', None)
-        print "PROCESSING ITEM %s" % item_id
+        #print "PROCESSING ITEM %s" % item_id
 
         if value.get('__delete__', False):
             # Existing item must be deleted
             ids_to_delete.append(item_id)
-            print "WILL_BE_DELETED: %s" % item_id
+            #print "WILL_BE_DELETED: %s" % item_id
 
         else:
             item = existing_items.get(item_id, None)
@@ -178,7 +178,7 @@ def _save_sequence(collection, schema, data, request):
                     # that it's a new item - something is wrong
                     raise ValueError("Nowhere to save data: %s" % (value,))
 
-    print "DELETING: %s" % ids_to_delete
+    #print "DELETING: %s" % ids_to_delete
     collection.delete_subitems(ids_to_delete, request)
 
 
@@ -214,13 +214,13 @@ def _save_structure(resource, schema, data, request):
 
     model = resource.model
 
-    print "SAVING %s INTO %s USING %s" % (data, model, schema)
+    #print "SAVING %s INTO %s USING %s" % (data, model, schema)
     flattened = getattr(schema, "__flatten_subforms__", [])
 
     for (name, attr) in attrs:
         value = data.get(name, _marker)
         if value is _marker:
-            print "### No data passed for attr %s <%s>" % (name, data)
+            #print "### No data passed for attr %s <%s>" % (name, data)
             continue
 
         if hasattr(schema, 'deserialize_' + name):
@@ -229,7 +229,7 @@ def _save_structure(resource, schema, data, request):
             meth(model, value)
         elif isinstance(attr, sc.Structure):
             # Nested structures
-            print "STRUCTURE!"
+            #print "STRUCTURE!"
             subschema = attr
             if name in flattened:
                 # Flattened subforms are saved directly into the model
@@ -248,7 +248,7 @@ def _save_structure(resource, schema, data, request):
                 session.flush()
 
                 submodel = getattr(model, name, None)
-                print "SUBmodel: %s" % (value)
+                #print "SUBmodel: %s" % (value)
                 if submodel is None:
                     # Do not create a submodel if all data fields are empty
                     # - this may not work with defaults
@@ -707,10 +707,20 @@ class DataFormatLister(DataFormatBase):
         # except AttributeError, e:
         #     raise
 
-        ### FOR DEBUG REASONS
-        data['query'] = str(query)
-
         data['items'] = result
+
+        ### DEBUG INFO
+        ### TODOXXX: Make it dependent on DEBUG setting or something
+        import webapp
+        sess = webapp.get_session()
+
+        stats = {
+            'query_count': sess.stats.query_count,
+            'time_elapsed': sess.stats.time_elapsed,
+            'queries': sess.stats.queries,
+        }
+
+        data['stats'] = stats
         return data
 
 
