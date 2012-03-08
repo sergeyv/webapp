@@ -23,25 +23,17 @@ class QueryStats(object):
 
     def add_query(self, statement, elapsed):
         self.queries += [(statement, elapsed)]
-        self.time_elapsed += elapsed
+        #self.time_elapsed += elapsed
         self.query_count += 1
 
     def __repr__(self):
         return "%s(query_count=%d, time_elapsed=%0.4f)" % (self.__class__.__name__, self.query_count, self.time_elapsed)
 
 
-class QueryStatsProxy(ConnectionProxy):
-    """
-    When creating the engine...
-        engine = create_engine("...", proxy=QueryStatsProxy())
-    """
-    def cursor_execute(self, execute, cursor, statement, parameters, context, executemany):
-        now = time.time()
-        try:
-            return execute(cursor, statement, parameters, context)
-        finally:
-            elapsed = time.time() - now
-            webapp.get_session().stats.add_query(statement, elapsed)
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    webapp.get_session().stats.add_query(str(statement), str(parameters))
+
+#event.listen(engine, "before_execute", before_execute)
 
 
 class SessionStatsBase(SessionBase):
