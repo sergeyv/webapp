@@ -119,6 +119,8 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
     engine = create_engine(db_string, echo=db_echo)
     event.listen(engine, "before_cursor_execute", before_cursor_execute)
 
+    # TODOXXX: We probably don't want SessionStatsBase to be used in
+    # the worker process
     session = scoped_session(sessionmaker(class_=SessionStatsBase, extension=ZopeTransactionExtension()))
     session.configure(bind=engine)
 

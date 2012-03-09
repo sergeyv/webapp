@@ -576,6 +576,30 @@ def _add_eagerload_to_query(format, query):
 
     return query
 
+
+def _add_stats(data, request):
+    """
+    Add `stats` key to the data which contains info on SQl queries executed
+    """
+    settings = request.registry.settings
+    if settings is not None:
+        import webapp
+        sess = webapp.get_session()
+
+        if settings.get('debug_templates', False):
+            stats = {
+                'query_count': sess.stats.query_count,
+                'queries': sess.stats.queries,
+            }
+        else:
+            stats = {
+                'query_count': sess.stats.query_count,
+            }
+
+        data['stats'] = stats
+    return data
+
+
 class DataFormatLister(DataFormatBase):
     implements(IDataFormatLister)
 
@@ -717,18 +741,8 @@ class DataFormatLister(DataFormatBase):
 
         data['items'] = result
 
-        ### DEBUG INFO
-        ### TODOXXX: Make it dependent on DEBUG setting or something
-        import webapp
-        sess = webapp.get_session()
+        data = _add_stats(data, request)
 
-        stats = {
-            'query_count': sess.stats.query_count,
-            'time_elapsed': sess.stats.time_elapsed,
-            'queries': sess.stats.queries,
-        }
-
-        data['stats'] = stats
         return data
 
 

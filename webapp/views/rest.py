@@ -215,7 +215,8 @@ def json_rest_list_f(context, request, permission=""):
     """
     start = time.time()
     data = context.get_items_listing(request)
-    data['stats']['total_time'] = time.time() - start
+
+    data.setdefault('stats', {})['total_time'] = time.time() - start
     return data
 
 
