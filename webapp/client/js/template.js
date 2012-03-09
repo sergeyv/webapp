@@ -52,20 +52,56 @@
     Template.prototype.showViewFirstTime = function (container) {
 
         var self = this,
-            load_from = webapp.templates_prefix + self.options.identifier + ".html";
+            load_template_from = webapp.templates_prefix + self.options.identifier + ".html",
+            load_data_from = self.getRestUrl("with-params"),
+            node_id = self.options.identifier + '-view',
+            $node;
 
 
         self.init();
 
-        // $.get does not process the data, and $(elem).load does some processing
-        $.ajax({
-            url: load_from,
-            cache: false,
-            success: function (data) {
-                self.template.text(data);
-                self.showView(container);
+        /// find or create the view container
+        self.view = $("#" + node_id);
+        if (!self.view.length) {
+            /// Create and append a node if not found
+            $node = ($('<div id="' + node_id + '" class="contentView">'));
+
+            $("#content-views").append($node);
+            self.view = $("#" + node_id);
+        }
+
+        // http://api.jquery.com/jQuery.when/
+        // http://api.jquery.com/category/deferred-object/
+        $.when(
+            $.ajax({
+                url: load_template_from,
+                cache: false /*,
+                success: function (data) {
+                    self.showView(container);
+                }*/
+            }),
+            $.ajax({
+                type: "GET",
+                url: load_data_from,
+                cache: false
+            })
+        ).done(function (template_xhr,  data_xhr) {
+            self.template.text(template_xhr[0]);
+            self.data = data_xhr[0];
+            self.renderData();
+
+
+            if (!self.options.is_partial) {
+                // Show the view.
+                webapp.log("Set active view!");
+                webapp.controller.setActiveView(self);
+            } else {
+                self.view.removeClass("loading");
             }
+
+
         });
+
 
     };
 
@@ -87,6 +123,8 @@
             }
         } else {
             self.view = container;
+            self.data = data;
+            self.renderData();
         }
 
         this.populateView();
@@ -141,7 +179,7 @@
             self.view.html(self.template.jqote({data: self.data, view: self}));
         } catch (err) {
             //alert(self.template.html());
-            self.view.text(err.message);
+            alert(err.message);
             if (!webapp.testmode) {
                 txt = "There was an error on this page.<br />"
                     + "Error description: <strong>"
