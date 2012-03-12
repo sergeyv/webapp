@@ -99,7 +99,7 @@ class AssetRegistry(object):
     def render_javascript_assets(self):
         lines = ["<!-- JS assets -->"]
         for r in self.js_assets:
-            line = """<script language="javascript" src="%s"></script>""" % r
+            line = """<script type="text/javascript" src="%s"></script>""" % r
             lines.append(line)
 
         return "\n".join(lines)

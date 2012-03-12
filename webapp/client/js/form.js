@@ -78,9 +78,11 @@
 
     };
 
+    Form.prototype._get_template_load_url = function () {
+        return  webapp.forms_prefix + this.options.identifier;
+    };
 
-
-    Form.prototype.showViewFirstTime = function () {
+    /*Form.prototype.showViewFirstTime = function () {
 
         var self = this,
             load_from = webapp.forms_prefix + self.options.identifier;
@@ -94,7 +96,7 @@
             self.template.text(data);
             self.showView();
         });
-    };
+    };*/
 
 
     Form.prototype.genericAugmentForm = function () {
@@ -185,7 +187,7 @@
 
 
 
-    Form.prototype.populateView = function () {
+    /*Form.prototype.populateView = function () {
         var self = this,
             item_id,
             id_root;
@@ -195,9 +197,50 @@
         // This renders the template
         self.renderData();
 
+
+        if (self.options.need_load_data) {
+            webapp.Read(self.getRestUrl("with-params", { item_id: item_id }), function (data) {
+                self.fill_form(id_root, data);
+
+                // Only show the view after all the data is set.
+                webapp.controller.setActiveView(self);
+            });
+        } else {
+            webapp.controller.setActiveView(self);
+        }
+
+
+    };*/
+
+
+    Form.prototype.renderData = function () {
+        var self = this,
+            txt,
+            q = [],
+            item_id,
+            id_root;
+
+        if (!self.template) {
+            alert("Template not found!");
+        }
+
+
+        try {
+            self.view.html($.jqote(self.template, {data: {}, view: self}));
+        } catch (err) {
+            //alert(self.template.html());
+            alert(err.message);
+            if (!webapp.testmode) {
+                txt = "There was an error on this page.<br />"
+                    + "Error description: <strong>"
+                    + err.message + "</strong>";
+                webapp.showMessage(txt, "Template error: " + err.name);
+            }
+        }
+
+
         self.bindFormControls();
         self.populateLoadables();
-
 
         self.genericAugmentForm();
 
@@ -205,7 +248,7 @@
         self.augmentForm();
 
         // and bind stuff
-        self.bindFormControls();
+        //self.bindFormControls();
 
         self.register_combination_changes();
 
@@ -221,34 +264,16 @@
 
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
+        self.fill_form(id_root, self.data);
 
-        if (self.options.need_load_data) {
-            webapp.Read(self.getRestUrl("with-params", { item_id: item_id }), function (data) {
-                self.fill_form(id_root, data);
-
-                // Only show the view after all the data is set.
-                webapp.controller.setActiveView(self);
-            });
-        } else {
-            webapp.controller.setActiveView(self);
+        if (self.options.after_data_loaded) {
+            self.options.after_data_loaded(self);
         }
-
 
     };
 
     // ----------------------------------------------------------------------- //
 
-
-    // I disable the form.
-    Form.prototype.disableForm = function () {
-        // Disable the fields.
-    };
-
-
-    // I enable the form.
-    Form.prototype.enableForm = function () {
-        // Enable the fields.
-    };
 
 
     Form.prototype.resetForm = function () {

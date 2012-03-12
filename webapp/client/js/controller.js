@@ -61,14 +61,8 @@
 
         event.is_popup = true;
         view.event = event;
+        view.showView();
 
-        if (!view.alreadyInitialized && view.showViewFirstTime) {
-            view.showViewFirstTime();
-            view.alreadyInitialized = true;
-        } else {
-            // Show the given view.
-            view.showView();
-        }
     };
 
 
@@ -83,16 +77,7 @@
         }
 
         view.event = event;
-
-        /// Do the initial view set-up before the first showing.
-        /// Allows us, say, to load the view contents on demand
-        if (!view.alreadyInitialized && view.showViewFirstTime) {
-            view.showViewFirstTime();
-            view.alreadyInitialized = true;
-        } else {
-            // Show the given view.
-            view.showView();
-        }
+        view.showView();
 
         // Store the given view as the current view.
         this.currentView = view;

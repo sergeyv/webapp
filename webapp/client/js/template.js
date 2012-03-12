@@ -27,19 +27,8 @@
     Template.prototype.init = function () {
         /// this is called when the view is first shown
         var self = this,
-            node_id = self.options.identifier + '-view',
+            node_id,
             $node;
-
-        /// find or create the template container
-        node_id = self.options.identifier + '-template';
-        self.template = $("#" + node_id);
-        if (!self.template.length) {
-            /// Create and append a node if not found
-            $node = ($('<script type="text/x-jqote-template" id="' + node_id + '">'));
-
-            $("body").append($node);
-            self.template = $("#" + node_id);
-        }
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -47,20 +36,8 @@
             });
         }
 
-    };
-
-    Template.prototype.showViewFirstTime = function (container) {
-
-        var self = this,
-            load_template_from = webapp.templates_prefix + self.options.identifier + ".html",
-            load_data_from = self.getRestUrl("with-params"),
-            node_id = self.options.identifier + '-view',
-            $node;
-
-
-        self.init();
-
         /// find or create the view container
+        node_id = self.options.identifier + '-view',
         self.view = $("#" + node_id);
         if (!self.view.length) {
             /// Create and append a node if not found
@@ -70,42 +47,97 @@
             self.view = $("#" + node_id);
         }
 
-        // http://api.jquery.com/jQuery.when/
-        // http://api.jquery.com/category/deferred-object/
-        $.when(
-            $.ajax({
-                url: load_template_from,
-                cache: false /*,
-                success: function (data) {
-                    self.showView(container);
-                }*/
-            }),
-            $.ajax({
-                type: "GET",
-                url: load_data_from,
-                cache: false
-            })
-        ).done(function (template_xhr,  data_xhr) {
-            self.template.text(template_xhr[0]);
-            self.data = data_xhr[0];
-            self.renderData();
-
-
-            if (!self.options.is_partial) {
-                // Show the view.
-                webapp.log("Set active view!");
-                webapp.controller.setActiveView(self);
-            } else {
-                self.view.removeClass("loading");
-            }
-
-
-        });
-
-
     };
 
+    Template.prototype._get_template_load_url = function () {
+        return webapp.templates_prefix + this.options.identifier + ".html";
+    };
+
+    Template.prototype._get_ajax_calls = function () {
+        /*
+         * Returns a Deferred object which tracks the progress of zero or
+         * more AJAX calls to load resources needed to render the view
+         * (normally - a template and JSON data)
+         * http://api.jquery.com/jQuery.when/
+         * http://api.jquery.com/category/deferred-object/
+         * http://stackoverflow.com/questions/9633507/jquery-deferred-object-and-ajax-calls
+         */
+        var self = this,
+            calls = [];
+
+        if (!self.template) {
+            calls.push($.ajax({
+                    url: self._get_template_load_url(),
+                    cache: false
+                }));
+        } else {
+            calls.push(null);
+        }
+
+        if (self.options.need_load_data) {
+            calls.push($.ajax({
+                    type: "GET",
+                    url: self.getRestUrl("with-params"),
+                    cache: false
+                }));
+        } else {
+            calls.push(null);
+        }
+        return $.when.apply(null, calls);
+    };
+
+    Template.prototype._ajax_finished = function (template_xhr,  data_xhr) {
+
+        var self = this;
+        /// template_xhr may be null in case it's not the first time
+        /// we're invoking this view (templates are loaded once
+        /// and then cached)
+        if (template_xhr) {
+            self.template = template_xhr[0];
+        }
+
+        /// data_xhr may be null if need_load_data is false
+        self.data = data_xhr?data_xhr[0]:{};
+        self.renderData();
+
+        $.each(self.options.partials || [], function (partial_name, partial) {
+            partial.deferred.done(function (template_xhr,  data_xhr) {
+                partial.view = self.view.find('.partial[data-partial="' + partial_name + '"]');
+                partial._ajax_finished(template_xhr,  data_xhr);
+            });
+        });
+
+        if (!self.options.is_partial) {
+            // Show the view.
+            webapp.log("Set active view!");
+            webapp.controller.setActiveView(self);
+        } else {
+            self.view.removeClass("loading");
+        }
+    }
+
     Template.prototype.showView = function (container) {
+
+        var self = this;
+
+
+        self.init();
+
+
+        if (self.options.partials) {
+            $.each(self.options.partials, function (idx, partial) {
+                partial.event = self.event;
+                partial.deferred = partial._get_ajax_calls();
+            });
+        }
+
+        self._get_ajax_calls().done(function (template_xhr,  data_xhr) {
+            self._ajax_finished(template_xhr,  data_xhr);
+        });
+    };
+
+
+    /*Template.prototype.showView = function (container) {
 
         var self = this,
             node_id = self.options.identifier + '-view',
@@ -128,9 +160,9 @@
         }
 
         this.populateView();
-    };
+    };*/
 
-    Template.prototype.populateView = function () {
+    /*Template.prototype.populateView = function () {
         var self = this;
 
         //this.parameters = parameters;
@@ -164,19 +196,20 @@
             self.view.removeClass("loading");
         }
 
-    };
+    };*/
 
     Template.prototype.renderData = function () {
         var self = this,
-            txt;
+            txt,
+            q = [];
 
-        if (!self.template.length) {
+        if (!self.template) {
             alert("Template not found!");
         }
 
 
         try {
-            self.view.html(self.template.jqote({data: self.data, view: self}));
+            self.view.html($.jqote(self.template, {data: self.data, view: self}));
         } catch (err) {
             //alert(self.template.html());
             alert(err.message);
@@ -201,10 +234,9 @@
 
 
         if (self.data.stats && $("#stats-view").length) {
-            var q = [];
             $("#stats-query-count").text(self.data.stats.query_count);
-            $("#stats-time-elapsed").text(self.data.stats.time_elapsed*1000);
-            $("#stats-total-time").text(self.data.stats.total_time*1000);
+            $("#stats-time-elapsed").text(self.data.stats.time_elapsed * 1000);
+            $("#stats-total-time").text(self.data.stats.total_time * 1000);
             $.each(self.data.stats.queries, function (idx, val) {
                 q.push('<li>' + val[0] + '<strong> &mdash; ' + val[1] + '</strong></li>');
             });
@@ -214,76 +246,42 @@
     };
 
 
-    Template.prototype.initPartials = function () {
-
-        var self = this;
-        self.view.find(".partial").each(function (idx, val) {
-            var container = $(this),
-                msg = container.data("loading_msg"),
-                partial_id = container.data("partial"),
-                partial;
-
-            container.addClass("loading").text(msg);
-            if (self.options.partials) {
-                partial = self.options.partials[partial_id];
-            }
-
-            if (!partial) {
-                webapp.log("Partial " + partial_id + " not found!");
-                return;// this actually a 'continue' - breaks the current $.each iteration
-            }
-
-            partial.event = self.event;
-
-            /// Do the initial view set-up before the first showing.
-            /// Allows us, say, to load the view contents on demand
-            if (!partial.alreadyInitialized && partial.showViewFirstTime) {
-                partial.showViewFirstTime(container);
-                partial.alreadyInitialized = true;
-            } else {
-                // Show the given view.
-                partial.showView(container);
-            }
-
-        });
-    };
-
     /*
-        * Template allows links to have some special classes
-        * which modify their behaviour:
-        *
-        * - webappAsyncAction - clicking on the link pings the target URL
-        *   without the page being reloaded. The server response is discarded
-        *
-        * - webappInvokeOnLoad - the URL will be pinged when the view is shown
-        *
-        * - webappConfirmDialog - shows a confirmation dialog, only pings the URL
-        *   if the user chooses OK. The link's title tag is used for
-        *   the dialog's message text
-        *
-        * - webappMethodDelete - uses DELETE instead of POST (otherwise it's GET)
-        *   We can add more methods when needed though it's not yet
-        *   clear how to send any data in a POST or PUT request.
-        *
-        * - webappSendData - sends the data from the link's data-send attribute
-        *
-        * - webappCollectDataMethod-<methodName> - invokes a method of the view
-        *   and extends the data to be sent to the server with whatever the method returns
-        *
-        *
-        * - webappGoBack - after the async action has been invoked,
-        *   redirect to the previous page
-        *
-        * - webappOnSuccess-<method_name> - invoke a specified method
-        *   of the view object after the call succeeds,
-        *   i.e. webappOnSuccess-populateView will reload
-        *   the data from the server and re-render the template with that data.
-        *
-        * - webappPopup - display the target link in the popup. It is possible to
-        *   invoke an async action and show the view in a popup at the same time
-        *   by specifying both urls separated by a hash: /rest/some/url#/some/view
-        *
-        */
+    * Template allows links to have some special classes
+    * which modify their behaviour:
+    *
+    * - webappAsyncAction - clicking on the link pings the target URL
+    *   without the page being reloaded. The server response is discarded
+    *
+    * - webappInvokeOnLoad - the URL will be pinged when the view is shown
+    *
+    * - webappConfirmDialog - shows a confirmation dialog, only pings the URL
+    *   if the user chooses OK. The link's title tag is used for
+    *   the dialog's message text
+    *
+    * - webappMethodDelete - uses DELETE instead of POST (otherwise it's GET)
+    *   We can add more methods when needed though it's not yet
+    *   clear how to send any data in a POST or PUT request.
+    *
+    * - webappSendData - sends the data from the link's data-send attribute
+    *
+    * - webappCollectDataMethod-<methodName> - invokes a method of the view
+    *   and extends the data to be sent to the server with whatever the method returns
+    *
+    *
+    * - webappGoBack - after the async action has been invoked,
+    *   redirect to the previous page
+    *
+    * - webappOnSuccess-<method_name> - invoke a specified method
+    *   of the view object after the call succeeds,
+    *   i.e. webappOnSuccess-populateView will reload
+    *   the data from the server and re-render the template with that data.
+    *
+    * - webappPopup - display the target link in the popup. It is possible to
+    *   invoke an async action and show the view in a popup at the same time
+    *   by specifying both urls separated by a hash: /rest/some/url#/some/view
+    *
+    */
     Template.prototype.augmentView = function () {
 
         var self = this,
@@ -444,7 +442,7 @@
 
         });
 
-        self.initPartials();
+        //self.initPartials();
     };
 
 

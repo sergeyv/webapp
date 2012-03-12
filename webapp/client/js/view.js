@@ -30,16 +30,15 @@
                 self.decorateView();
             }
         }
+        this.alreadyInitialized = true;
     };
 
 
     View.prototype.showView = function () {
+        if (!this.alreadyInitialized) {
+            this.init();
+        }
         webapp.controller.setActiveView(this);
-    };
-
-    View.prototype.showViewFirstTime = function () {
-        this.init();
-        this.showView();
     };
 
 
@@ -146,15 +145,15 @@
         if (self.options.data_format) {
             ///Check if the url ends with a slash and add
             /// one if it doesn't
-            if (url.indexOf('/', url.length - 1) == -1) {
+            if (url.indexOf('/', url.length - 1) === -1) {
                 url += '/';
             }
             url += "@" + self.options.data_format;
         }
 
 
-        if (with_params === "with-params" ) {
-                params = self.collectRestParams();
+        if (with_params === "with-params") {
+            params = self.collectRestParams();
         } else {
             params = [];
         }

@@ -22,7 +22,8 @@
 
         var self = this;
 
-        self.view.find("select").chosen().change(function () {
+        /* .chosen() removed */
+        self.view.find("select").change(function () {
             var $select = $(this),
                 url = self.new_filter_url("filter-"+$select.data("filter-id"), $select.val());
             webapp.relocateTo(url);
