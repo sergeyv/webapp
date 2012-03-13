@@ -118,11 +118,15 @@
 
     Template.prototype.showView = function (container) {
 
-        var self = this;
+        var self = this,
+            ajax_calls;
 
 
         self.init();
 
+        /// make sure we initiate template/json loading before we
+        /// start loading the partials
+        ajax_calls = self._get_ajax_calls();
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -131,7 +135,7 @@
             });
         }
 
-        self._get_ajax_calls().done(function (template_xhr,  data_xhr) {
+        ajax_calls.done(function (template_xhr,  data_xhr) {
             self._ajax_finished(template_xhr,  data_xhr);
         });
     };
