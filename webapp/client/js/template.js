@@ -117,7 +117,7 @@
         }
     }
 
-    Template.prototype.showView = function (container) {
+    Template.prototype.show = function (container) {
         this.init();
         this.reload();
     };

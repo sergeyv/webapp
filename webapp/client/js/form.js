@@ -82,22 +82,6 @@
         return  webapp.forms_prefix + this.options.identifier;
     };
 
-    /*Form.prototype.showViewFirstTime = function () {
-
-        var self = this,
-            load_from = webapp.forms_prefix + self.options.identifier;
-
-
-        self.init();
-
-        // $.get does not process the data, and $(elem).load does some processing
-        $.get(load_from, function (data) {
-            //
-            self.template.text(data);
-            self.showView();
-        });
-    };*/
-
 
     Form.prototype.genericAugmentForm = function () {
         /// Do stuff we want on every form

@@ -34,7 +34,7 @@
     };
 
 
-    View.prototype.showView = function () {
+    View.prototype.show = function () {
         if (!this.alreadyInitialized) {
             this.init();
         }
@@ -190,7 +190,7 @@
         return this;
     }
 
-    RedirectView.prototype.showView = function () {
+    RedirectView.prototype.show = function () {
         webapp.relocateTo(this.target_url);
     };
 

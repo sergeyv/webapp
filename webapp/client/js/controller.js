@@ -61,7 +61,7 @@
 
         event.is_popup = true;
         view.event = event;
-        view.showView();
+        view.show();
 
     };
 
@@ -77,7 +77,7 @@
         }
 
         view.event = event;
-        view.showView();
+        view.show();
 
         // Store the given view as the current view.
         this.currentView = view;
