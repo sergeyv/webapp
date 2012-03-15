@@ -186,34 +186,7 @@
     };
 
 
-
-    /*Form.prototype.populateView = function () {
-        var self = this,
-            item_id,
-            id_root;
-
-
-        self.data = {};
-        // This renders the template
-        self.renderData();
-
-
-        if (self.options.need_load_data) {
-            webapp.Read(self.getRestUrl("with-params", { item_id: item_id }), function (data) {
-                self.fill_form(id_root, data);
-
-                // Only show the view after all the data is set.
-                webapp.controller.setActiveView(self);
-            });
-        } else {
-            webapp.controller.setActiveView(self);
-        }
-
-
-    };*/
-
-
-    Form.prototype.renderData = function () {
+    Form.prototype.render = function () {
         var self = this,
             txt,
             q = [],

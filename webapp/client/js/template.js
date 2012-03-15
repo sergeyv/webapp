@@ -98,8 +98,9 @@
 
         /// data_xhr may be null if need_load_data is false
         self.data = data_xhr?data_xhr[0]:{};
-        self.renderData();
+        self.render();
 
+        /// wait for each partial to finish loading and render it
         $.each(self.options.partials || [], function (partial_name, partial) {
             partial.deferred.done(function (template_xhr,  data_xhr) {
                 partial.view = self.view.find('.partial[data-partial="' + partial_name + '"]');
@@ -117,12 +118,20 @@
     }
 
     Template.prototype.showView = function (container) {
+        this.init();
+        this.reload();
+    };
+
+
+
+    Template.prototype.reload = function () {
+        /*
+         * Loads JSON data and template (if necessarry)
+         * and re-renders the view when they're loaded
+         */
 
         var self = this,
             ajax_calls;
-
-
-        self.init();
 
         /// make sure we initiate template/json loading before we
         /// start loading the partials
@@ -139,6 +148,7 @@
             self._ajax_finished(template_xhr,  data_xhr);
         });
     };
+
 
 
     /*Template.prototype.showView = function (container) {
@@ -160,13 +170,13 @@
         } else {
             self.view = container;
             self.data = data;
-            self.renderData();
+            self.render();
         }
 
-        this.populateView();
+        this.reload();
     };*/
 
-    /*Template.prototype.populateView = function () {
+    /*Template.prototype.reload = function () {
         var self = this;
 
         //this.parameters = parameters;
@@ -184,12 +194,12 @@
             self.current_request = webapp.Read(self.getRestUrl("with-params"), function (data) {
 
                 self.data = data;
-                self.renderData();
+                self.render();
                 delete self.current_request;
             });
         } else {
             self.data = {};
-            self.renderData();
+            self.render();
         }
 
         if (!self.options.is_partial) {
@@ -202,7 +212,7 @@
 
     };*/
 
-    Template.prototype.renderData = function () {
+    Template.prototype.render = function () {
         var self = this,
             txt,
             q = [];
@@ -278,7 +288,7 @@
     *
     * - webappOnSuccess-<method_name> - invoke a specified method
     *   of the view object after the call succeeds,
-    *   i.e. webappOnSuccess-populateView will reload
+    *   i.e. webappOnSuccess-reload will reload
     *   the data from the server and re-render the template with that data.
     *
     * - webappPopup - display the target link in the popup. It is possible to

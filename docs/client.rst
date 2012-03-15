@@ -229,13 +229,13 @@ The above snippet would send {one: 123, two:'hello!'} to the server
 
 - ``webappOnSuccess-<method_name>`` - invoke a specified method
   of the view object after the call succeeds,
-  i.e. webappOnSuccess-populateView will reload
+  i.e. webappOnSuccess-reload will reload
   the data from the server and re-render the template with that data.
 
 .. code-block:: html
 
     <td> <!-- Delete Item -->
-        <a class="webappAsyncAction webappConfirmDialog webappMethodDelete webappOnSuccess-populateView" href="#/clients/<%=client.id %>"
+        <a class="webappAsyncAction webappConfirmDialog webappMethodDelete webappOnSuccess-reload" href="#/clients/<%=client.id %>"
         title="Do you really want to delete this client?">X</a>
     </td>
 
