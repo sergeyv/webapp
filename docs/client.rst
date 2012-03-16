@@ -84,7 +84,7 @@ element is shown:
 
     <div id="content-views">
 
-        <div id="404-view" class="contentView">
+        <div id="http404-view" class="contentView">
             <h1>404 - Page Not Found</h1>
             <p>Sorry, but the page you requested could not be found.</p>
             <p>Try going back to the <a href="#/">home page</a>.</p>

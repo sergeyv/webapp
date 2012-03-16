@@ -83,6 +83,9 @@
         } else {
             calls.push(null);
         }
+
+        self.current_ajax_calls = calls;
+
         return $.when.apply(null, calls);
     };
 
@@ -115,13 +118,32 @@
         } else {
             self.view.removeClass("loading");
         }
+
+        delete self.current_ajax_calls;
     }
+
+    Template.prototype._abort_ajax_calls = function () {
+        /*
+         * Abort any pending AJAX calls - used before reloading the view
+         * because we're not interested in the results of the previous calls
+         */
+        if (this.current_ajax_calls) {
+            $.each(this.current_ajax_calls || [], function (idx, ajax) {
+                ajax && ajax.abort();
+            });
+            delete this.current_ajax_calls;
+        }
+
+        $.each(this.options.partials || [], function (idx, partial) {
+            partial._abort_ajax_calls();
+        });
+
+    };
 
     Template.prototype.show = function (container) {
         this.init();
         this.reload();
     };
-
 
 
     Template.prototype.reload = function () {
@@ -131,11 +153,17 @@
          */
 
         var self = this,
-            ajax_calls;
+            ajax_calls_deferred;
+
+        /// abort all pending AJAX calls - in case the view is reloaded
+        /// before the previous request finished we're not interested in the
+        /// previous calls results anyway
+        /// NOTE: Commented out because it works kinda unpredictably
+        ///self._abort_ajax_calls();
 
         /// make sure we initiate template/json loading before we
         /// start loading the partials
-        ajax_calls = self._get_ajax_calls();
+        ajax_calls_deferred = self._get_ajax_calls();
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -144,75 +172,15 @@
             });
         }
 
-        ajax_calls.done(function (template_xhr,  data_xhr) {
+        ajax_calls_deferred.done(function (template_xhr,  data_xhr) {
             self._ajax_finished(template_xhr,  data_xhr);
         });
     };
 
-
-
-    /*Template.prototype.showView = function (container) {
-
-        var self = this,
-            node_id = self.options.identifier + '-view',
-            $node;
-
-        if (!container) {
-            /// find or create the view container
-            self.view = $("#" + node_id);
-            if (!self.view.length) {
-                /// Create and append a node if not found
-                $node = ($('<div id="' + node_id + '" class="contentView">'));
-
-                $("#content-views").append($node);
-                self.view = $("#" + node_id);
-            }
-        } else {
-            self.view = container;
-            self.data = data;
-            self.render();
-        }
-
-        this.reload();
-    };*/
-
-    /*Template.prototype.reload = function () {
-        var self = this;
-
-        //this.parameters = parameters;
-        if (self.options.need_load_data) {
-            webapp.log("reading " + self.getRestUrl("with-params"));
-
-            /// when a request is already active we need to abort the previous
-            /// request first because chances are the old request will take
-            /// longer than the new one, so the view will be re-rendered with
-            /// the old data. This primarily manifests with incremental search
-            if (self.current_request) {
-                self.current_request.abort();
-            }
-
-            self.current_request = webapp.Read(self.getRestUrl("with-params"), function (data) {
-
-                self.data = data;
-                self.render();
-                delete self.current_request;
-            });
-        } else {
-            self.data = {};
-            self.render();
-        }
-
-        if (!self.options.is_partial) {
-            // Show the view.
-            webapp.log("Set active view!");
-            webapp.controller.setActiveView(self);
-        } else {
-            self.view.removeClass("loading");
-        }
-
-    };*/
-
     Template.prototype.render = function () {
+        /*
+         * Renders the already-loaded template and data
+         */
         var self = this,
             txt,
             q = [];
@@ -450,13 +418,8 @@
             } else {
                 webapp.showMessage("POPUP VIEW NOT FOUND: "  + hash);
             }
-
             return false;
-
-
         });
-
-        //self.initPartials();
     };
 
 
