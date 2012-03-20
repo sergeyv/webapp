@@ -276,7 +276,7 @@ class RestCollection(FormAwareMixin, crud.Collection):
         data = {}
 
         model_class = self.get_subitems_class()
-
+        parent_inst = getattr(self.__parent__, 'model', None)
         session = get_session()
 
         for attribute_name in self.filter_fields:
@@ -288,10 +288,16 @@ class RestCollection(FormAwareMixin, crud.Collection):
 
             if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
                 # The attribute is a simple column
-                result = session.query(field, sa.func.count(field))\
+
+                q = session.query(field, sa.func.count(field))\
                     .group_by(field)\
-                    .order_by(field)\
-                    .all()
+                    .order_by(field)
+
+                if parent_inst is not None:
+                    # limit the query only to items which belong to our parent
+                    q = q.with_parent(parent_inst)
+
+                result = q.all()
 
                 d = []
                 for r in result:
@@ -311,7 +317,11 @@ class RestCollection(FormAwareMixin, crud.Collection):
                     .join(model_class)\
                     .group_by(id_attr, name_attr)\
                     .order_by(name_attr)
-                #q = q.with_parent(self.model, attribute_name)
+
+                if parent_inst is not None:
+                    # limit the query only to items which belong to our parent
+                    q = q.with_parent(parent_inst)
+
                 result = q.all()
                 r = []
                 for item in result:
