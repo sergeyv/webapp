@@ -263,73 +263,11 @@ class RestCollection(FormAwareMixin, crud.Collection):
     MAX_RECORDS_PER_BATCH = 400
     LIMIT_INCREMENTAL_RESULTS = 25
 
-    filter_fields = ()
-
     # by default we search by 'name' field. A subclass may
     # override this setting to provide more than one field
     # which will be ORed togeter
     # i.e. ... WHERE name LIKE 'abc%' OR hostname LIKE 'abc%' ...
     search_fields = ('name',)
-
-    def get_filters(self, request):
-
-        data = {}
-
-        model_class = self.get_subitems_class()
-        parent_inst = getattr(self.__parent__, 'model', None)
-        session = get_session()
-
-        for attribute_name in self.filter_fields:
-            field = getattr(model_class, attribute_name, None)
-            if field is None:
-
-                raise AttributeError("Class %s has no attribute %s" % (model_class, attribute_name))
-
-
-            if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
-                # The attribute is a simple column
-
-                q = session.query(field, sa.func.count(field))\
-                    .group_by(field)\
-                    .order_by(field)
-
-                if parent_inst is not None:
-                    # limit the query only to items which belong to our parent
-                    q = q.with_parent(parent_inst)
-
-                result = q.all()
-
-                d = []
-                for r in result:
-                    d.append([str(r[0]), str(r[0]), str(r[1])])
-                data[attribute_name] = d
-            else:
-                # The attribute is not a simple column so we suppose it's
-                # a relation. TODO: we may need a better check here
-                rel_class = self.get_class_from_relation(field)
-                if not isinstance(rel_class, type):
-                    rel_class = rel_class.__class__
-
-                id_attr = getattr(rel_class, 'id')
-                name_attr = getattr(rel_class, 'name')
-
-                q = session.query(id_attr, name_attr, sa.func.count(model_class.id))\
-                    .join(model_class)\
-                    .group_by(id_attr, name_attr)\
-                    .order_by(name_attr)
-
-                if parent_inst is not None:
-                    # limit the query only to items which belong to our parent
-                    q = q.with_parent(parent_inst)
-
-                result = q.all()
-                r = []
-                for item in result:
-                    r.append([item.id, item.name, item[2]])
-                data[attribute_name] = r
-
-        return data
-
 
 
     def get_empty(self, request):

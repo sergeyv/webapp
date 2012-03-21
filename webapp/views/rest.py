@@ -57,17 +57,10 @@ def json_rest_empty(context, request):
     renderer="better_json")
 def json_rest_filters(context, request):
     """
-    Returns a list of possible filters for the current collection
-    (although it's called in the context of a DataFormat, like this:
-    /rest/servers/@listing/filters )
+    Returns a list of possible filters for the current DataFormat:
+    /rest/servers/@listing/filters
     """
-    fn = getattr(context.__parent__, 'get_filters', None)
-    if fn is not None:
-        result = fn(request)
-        return result
-
-    # TODO: Do something meaningful
-    return {'result': "HELLO! No filters found!"}
+    return context.get_filters(request)
 
 
 @view_config(name="incremental",

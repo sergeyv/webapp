@@ -12,6 +12,7 @@ import sqlalchemy as sa
 from webapp.forms import Literal
 from webapp import DynamicDefault
 from webapp.exc import WebappError
+from webapp.db import get_session
 
 
 class IDataFormat(Interface):
@@ -515,17 +516,18 @@ class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
     __allow_loadable__ = True
 
 
-def _add_filters_to_query(collection, query, request):
+def _add_filters_to_query(collection, query, filter_fields, request):
     """
     Add filter criteria to the query if there are `filter-<xxx>`
     parameters in the request
     """
     model_class = collection.get_subitems_class()
     filter_values = []
-    # NOTE: this should use collection.filter_fields as a basis
+    # NOTE: this should use filter_fields as a basis
+    # to iterate over (and not the data in the request)
     # so it's not possible to filter by fileds not
-    # explicitly listed in that property.
-    for f in collection.filter_fields:
+    # explicitly passed to the function.
+    for f in filter_fields:
         val = request.GET.get("filter-%s" % f, None)
         if val:
             filter_values.append({'key': f, 'value': val})
@@ -611,7 +613,7 @@ class DataFormatLister(DataFormatBase):
               `field-name` == `value`. Works for simple relations, i.e.
               filter-client=49. (49 is client's `id` field, and this is
               hard-coded at the moment). The field must be listed in  the
-              subclass's filter_fields property, which is a tuple.
+              structure's __filter_fields__ property, which is a tuple.
 
             - search=<sometext> - return results where one of the fields listed
               in search_fields tuple (default - search_fields = ('name',)) is matched
@@ -678,7 +680,11 @@ class DataFormatLister(DataFormatBase):
 
 
         # FILTERING
-        query = _add_filters_to_query(self.__parent__, query, request)
+        query = _add_filters_to_query(
+            collection=self.__parent__,
+            query=query,
+            filter_fields=getattr(self.structure, '__filter_fields__', []),
+            request=request)
 
         # SEARCH
         query = _add_search_to_query(self.__parent__, query, request)
@@ -747,6 +753,82 @@ class DataFormatLister(DataFormatBase):
 
 
 
+    def get_filters(self, request):
+        """
+        Returns a dict with filters and possible values; the keys of the dict
+        are field names and the values a 3-tuples of id, name and count::
+
+            {
+                "type": [
+                    [1, "Fruit", 576],
+                    [2, "Vegetables", 37],
+                    [3, "Berries", 288],
+                ]
+            }
+        """
+
+        data = {}
+
+        collection = self.__parent__
+        model_class = collection.get_subitems_class()
+        parent_inst = getattr(collection.__parent__, 'model', None)
+        session = get_session()
+
+        filter_fields = getattr(self.structure, '__filter_fields__', [])
+
+
+        for attribute_name in filter_fields:
+            field = getattr(model_class, attribute_name, None)
+            if field is None:
+
+                raise AttributeError("Class %s has no attribute %s" % (model_class, attribute_name))
+
+
+            if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
+                # The attribute is a simple column
+
+                q = session.query(field, sa.func.count(field))\
+                    .group_by(field)\
+                    .order_by(field)
+
+                if parent_inst is not None:
+                    # limit the query only to items which belong to our parent
+                    q = q.with_parent(parent_inst)
+
+                result = q.all()
+
+                d = []
+                for r in result:
+                    d.append([str(r[0]), str(r[0]), str(r[1])])
+                data[attribute_name] = d
+            else:
+                # The attribute is not a simple column so we suppose it's
+                # a relation. TODO: we may need a better check here
+                rel_class = collection.get_class_from_relation(field)
+                if not isinstance(rel_class, type):
+                    rel_class = rel_class.__class__
+
+                # Note: initially it was using session.query(...).join(model_class)...
+                # but it was producing an extra join so the counts were all wrong
+                # .select_from() fixes the problem
+                q = session.query(rel_class.id, rel_class.name, sa.func.count(model_class.id))\
+                    .select_from(sa.orm.join(model_class, rel_class))\
+                    .group_by(rel_class.id, rel_class.name)\
+                    .order_by(rel_class.name)
+
+                if parent_inst is not None:
+                   # limit the query only to items which belong to our parent
+                   q = q.with_parent(parent_inst)
+
+                result = q.all()
+                r = []
+                for item in result:
+                    r.append([item.id, item.name, item[2]])
+                data[attribute_name] = r
+
+        return data
+
+
 class VocabLister(object):
     """
     In case of `vocab` format the result is simpler::
@@ -795,8 +877,8 @@ class VocabLister(object):
             meth = getattr(collection, 'filter_' + filter_meth_name)
             query = meth(query, request)
 
-        # FILTERING
-        query = _add_filters_to_query(self.__parent__, query, request)
+        # NO FILTERING - figure out where to get __filter_fields__ from in this case
+        # query = _add_filters_to_query(self.__parent__, query, request)
 
         # SEARCH
         query = _add_search_to_query(self.__parent__, query, request)
