@@ -461,7 +461,13 @@ class DataFormatCreator(DataFormatReader):
     __allow_loadable__ = True
 
     def serialize(self, request):
-        # our parent is a Collection
+        """
+        This mathod creates a transient item (because no actual item exists)
+        and serializes it. It server to load defaults etc. when a create from is
+        displayed.
+
+        Our parent here is a Collection
+        """
         collection = self.__parent__
         model = collection.create_transient_subitem()
         structure = self.structure
