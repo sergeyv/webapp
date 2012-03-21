@@ -56,6 +56,11 @@
         // deep-copy
         var args = $.extend({}, this.event.uri_args);
         args[attr] = value;
+
+        // we want to go to the first page if filtering changes
+        if (attr != 'batch_start') {
+            args.batch_start = 0;
+        }
         return this.modified_url(args);
     };
 
@@ -70,6 +75,7 @@
             }
         }
         args.sort_on = value;
+        args.batch_start = 0; // we want to go to the first page if sorting changes
         return this.modified_url(args);
     };
 
