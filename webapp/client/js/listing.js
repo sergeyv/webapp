@@ -124,7 +124,7 @@
         function render_pager() {
             var total = self.data.total_count,
                 batch_size = self.event.uri_args.batch_size || self.options.batch_size,
-                pages = Math.floor(total / batch_size + 0.5),
+                pages = Math.ceil(total / batch_size),
                 batch_start = self.event.uri_args.batch_start || 0,
                 current = Math.floor(batch_start / batch_size),
                 i = 0,
