@@ -243,8 +243,11 @@ class FormAwareMixin(object):
 
         v = cls.__data_formats__.setdefault('vocab', VocabLister())
 
+
         for role in args:
-            v.__acl__.append((Allow, role, 'rest.list',))
+            t = (Allow, role, 'rest.list',)
+            if not t in v.__acl__:
+                v.__acl__.append(t)
 
 
 
