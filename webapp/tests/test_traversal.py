@@ -26,15 +26,6 @@ fr = webapp.FormRegistry("traversal")
 SCHOOL_ID = 321
 
 
-# forms
-@fr.loadable
-class SchoolViewForm(sc.Structure):
-    id = sc.Integer()
-    name = sc.String()
-    established = sc.DateTime()
-    is_school = sc.Boolean()
-
-
 # resources
 @rr.add(School)
 class SchoolResource(webapp.RestResource):
@@ -51,6 +42,16 @@ class SchoolResource(webapp.RestResource):
 @rr.add(Student)
 class StudentResource(webapp.RestResource):
     pass
+
+
+## forms
+#@fr.loadable
+#class SchoolViewForm(sc.Structure):
+    #id = sc.Integer()
+    #name = sc.String()
+    #established = sc.DateTime()
+    #is_school = sc.Boolean()
+
 
 
 class RestRootCollection(webapp.RestCollection):
