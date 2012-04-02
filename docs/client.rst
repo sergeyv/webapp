@@ -300,7 +300,7 @@ So I think this feature, while allowing us to solve some problems short-term, ma
 
 However, there are other alternatives to that:
 
-- Tyrone implemented sorting by a *related object's property*, so <th class="sortable id-client.name">Client</th> will sort by client name - using an efficient JOIN instead of manual sotring.
+- Sorting by a *related object's property* is implemented, so <th class="sortable id-client.name">Client</th> will sort by client name - using an efficient JOIN instead of manual sotring.
 
 - for other things, such as... hmm, I'm even having trouble to give you an example... ok, if say we want to sort by a *reverse name*, so "zebrA" comes before "gorillaZ", a solution would be to add another field to the model and populate it with the calculated value::
 

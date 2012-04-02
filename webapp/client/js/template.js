@@ -10,6 +10,7 @@
         -identifier
         - rest_service_root
         - data_format
+        - template_name
         - after_data_loaded (function)
         - need_load_data
         */
@@ -17,6 +18,7 @@
             need_load_data: true
         }, options);
         webapp.View.apply(this, [opts]);
+        this.options.template_name = this.options.template_name || this.options.identifier;
         this.options.data_format = this.options.data_format || this.options.identifier;
     }
 
@@ -50,7 +52,7 @@
     };
 
     Template.prototype._get_template_load_url = function () {
-        return webapp.templates_prefix + this.options.identifier + ".html";
+        return webapp.templates_prefix + this.options.template_name + ".html";
     };
 
     Template.prototype._get_ajax_calls = function () {
