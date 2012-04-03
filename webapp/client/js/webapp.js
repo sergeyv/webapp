@@ -1,33 +1,16 @@
 
-// Create a closed memory space for the webapp definition and instantiation.
-// This way, we keep the global name space clean.
 (function ($) {
     "use strict";
 
-	// I am the class that controls the Javascript framework.
+	// The class that controls the framework - a global instance is attached to window.webapp.
 	function WebApp() {
 
-        // I am the collection of route mappings that map URL patterns to event
-        // handlers within the cached controllers.
+        // Collection of route mappings that map URL patterns to views
         this.routeMappings = [];
 
         // I am the collection of controllers. All controllers are intended to be
         // singleton instances.
         this.controller = null;
-
-        // I am the collection of models. I can contain either cached singleton
-        // instances or class definitions (to be instantiated at request).
-        this.models = {
-            cache: {},
-            classes: {}
-        };
-
-        // I am the collection of views. I can contain either cached singleton
-        // instances of class definitions (to be instantiated at request).
-        this.views = {
-            cache: {},
-            classes: {}
-        };
 
 		// an application can register some helper methods here to be used in
 		// templates, <%=webapp.helpers.format_date(this.date) %>, for example
@@ -182,53 +165,10 @@
     };
 
 
-	// I add the given view class or instance to the view class library. Any classes
-	// that are passed in AS instances will be cached and act as singletons.
-	WebApp.prototype.addView = function (name, view) {
-        this.views[name] = view;
-	};
 
     WebApp.prototype.registerMenu = function (menu_id, tabs) {
 
     };
-
-	// I return an instance of the class with the given name.
-	WebApp.prototype.getView = function (name, initArguments) {
-        return this.views[name];
-	};
-
-
-	// I initialize the given class instance.
-	WebApp.prototype.initClass = function (instance) {
-		// Check to see if the target instance has an init method.
-		if (instance.init) {
-			// Invoke the init method.
-			instance.init();
-		}
-	};
-
-
-	// I intialize the given collection of class singletons.
-	WebApp.prototype.initClasses = function (classes) {
-		var self = this;
-
-		// Loop over the given class collection - our singletons - and init them.
-		$.each(
-			classes,
-			function (index, instance) {
-				self.initClass(instance);
-			}
-		);
-	};
-
-
-
-	// I intialize the model. Once the webapp starts running and the
-	// DOM can be interacted with, I need to give the model a chance to
-	// get ready.
-	WebApp.prototype.initModels = function () {
-		this.initClasses(this.models.cache);
-	};
 
 
 	// I intialize the views. Once the webapp starts running and the
@@ -488,7 +428,6 @@
 
 	WebApp.prototype.run = function () {
 		// Initialize the model.
-		this.initModels();
 
 		// Initialize the views.
 		this.initViews();
