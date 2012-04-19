@@ -122,8 +122,9 @@ def _default_item_serializer(item, structure, only_fields=None):
             if isinstance(value, DynamicDefault):
                 value = value(item, name)
 
-        # Escape HTML tags!
-        if isinstance(value, basestring):
+        # Escape HTML tags if the name of the attribute not in __no_html_escape__
+        # attribute of the structure
+        if isinstance(value, basestring) and name not in getattr(structure, '__no_html_escape__', set()):
             value = cgi.escape(value)
 
         data[name] = value
@@ -649,6 +650,14 @@ class DataFormatLister(DataFormatBase):
                 'next_batch_start': 123 # the start of the next batch sequence
             }
         """
+
+
+        structure = self.structure
+
+        # Structure can completely override the default logic
+        if hasattr(structure, "listing"):
+            return structure.listing(self, request)
+
         collection = self.__parent__
         #format = request.GET.get('format', 'listing')
 
