@@ -674,11 +674,15 @@ class DataFormatLister(DataFormatBase):
 
         data = {}
 
-        query = collection.get_items_query(order_by=order_by)
+        # a structure can override get_items_query method
+        if hasattr(structure, "get_items_query"):
+            query = structure.get_items_query(self, collection, order_by=order_by)
+        else:
+            query = collection.get_items_query(order_by=order_by)
 
 
         # CUSTOM QUERY MODIFIER
-        ### An initial approach to be able to specify some hooks in the subclass
+        ### An initial approach to be able to specify some hooks in the collection
         ### so the client can invoke a filtering method by querying a special url:
         ### /rest/collection/@aaa&filter=min_clients&filter_params=5
         ### would look for a method named 'filter_min_client' which is supposed
@@ -686,7 +690,7 @@ class DataFormatLister(DataFormatBase):
         filter_meth_name = request.GET.get('meth', None)
         if filter_meth_name:
             # filter_param = request.get('param', None)
-            meth = getattr(self, 'filter_' + filter_meth_name)
+            meth = getattr(collection, 'filter_' + filter_meth_name)
             query = meth(query, request)
 
 
