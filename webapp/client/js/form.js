@@ -83,7 +83,7 @@
     };
 
 
-    Form.prototype.genericAugmentForm = function () {
+    Form.prototype.genericAugmentView = function () {
         /// Do stuff we want on every form
         var self = this,
             title = self.event.parameters.title || self.options.title,
@@ -145,7 +145,7 @@
         //self.view.find("select").chosen();
     };
 
-    Form.prototype.augmentForm = function () {
+    Form.prototype.augmentView = function () {
         /*
         Modify the form appearance after it is loaded
         */
@@ -199,10 +199,10 @@
         self.bindFormControls();
         self.populateLoadables();
 
-        self.genericAugmentForm();
+        self.genericAugmentView();
 
         /// Form is loaded, we can now adjust form's look
-        self.augmentForm();
+        self.augmentView();
 
         // and bind stuff
         //self.bindFormControls();
