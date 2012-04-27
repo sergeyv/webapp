@@ -63,7 +63,9 @@
                     /// }
                     if (self.on_remote_validation &&
                         self.on_remote_validation[field_name]) {
-                            rule.complete = self.on_remote_validation[field_name];
+                            /// it needs to be wrapped in a function() because the callback is being called
+                            /// in the wrong context so "this" points to window
+                            rule.complete = function() { self.on_remote_validation[field_name]; };
                         }
                     rules[field_name][rule_name] = rule;
                 }
