@@ -217,10 +217,6 @@
         item_id = self.event.parameters.item_id || 'new';
         self.fill_form(id_root, self.data);
 
-        if (self.options.after_data_loaded) {
-            self.options.after_data_loaded(self);
-        }
-
         if (self.options.before_view_shown) {
             self.options.before_view_shown.apply(self);
         }

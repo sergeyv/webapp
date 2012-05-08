@@ -11,8 +11,9 @@
         - rest_service_root
         - data_format
         - template_name
-        - after_data_loaded (function)
         - need_load_data
+        - before_view_shown (function)
+        - after_view_shown (function)
         */
         var opts = $.extend({
             need_load_data: true
@@ -211,10 +212,6 @@
         // about jquery.timeago at all.
         $("abbr.timeago").timeago();
         $.timeago.settings.allowFuture = true;
-
-        if (self.options.after_data_loaded) {
-            self.options.after_data_loaded(self);
-        }
 
         if (self.options.before_view_shown) {
             self.options.before_view_shown.apply(self);
