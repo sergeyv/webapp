@@ -216,6 +216,9 @@
             self.options.after_data_loaded(self);
         }
 
+        if (self.options.before_view_shown) {
+            self.options.before_view_shown.apply(self);
+        }
 
         if (self.data.stats && $("#stats-view").length) {
             $("#stats-query-count").text(self.data.stats.query_count);
@@ -422,10 +425,6 @@
             }
             return false;
         });
-
-        if (self.options.before_view_shown) {
-            self.options.before_view_shown.apply(self);
-        }
     };
 
 

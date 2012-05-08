@@ -152,14 +152,6 @@
         Modify the form appearance after it is loaded
         */
 
-        /// invoke hooks defined in the application
-
-        var id = this.options.identifier,
-            afl = webapp.callbacks.afterFormLoaded;
-        if (afl.hasOwnProperty(id)) {
-            afl[id](this);
-        }
-
     };
 
     Form.prototype.setHandlers = function () {
@@ -228,6 +220,11 @@
         if (self.options.after_data_loaded) {
             self.options.after_data_loaded(self);
         }
+
+        if (self.options.before_view_shown) {
+            self.options.before_view_shown.apply(self);
+        }
+
 
     };
 

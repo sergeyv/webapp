@@ -16,13 +16,6 @@
 		// templates, <%=webapp.helpers.format_date(this.date) %>, for example
 		this.helpers = {};
 
-        // an application can register some callbacks which will be called
-        // by the framework
-        this.callbacks = {
-            afterFormLoaded: {},
-            beforeFormShown: {}
-        };
-
         /// validation rules to be used with forms
         this.validation_rules = {
         };
