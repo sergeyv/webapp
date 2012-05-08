@@ -148,9 +148,9 @@
 
         view.view.addClass("activeContentView");
 
-        // a local callback
-        if (view.after_view_fully_loaded) {
-            view.after_view_fully_loaded(view);
+        // a view can define a callback to be called after the view is shown
+        if (view.options.after_view_shown) {
+            view.options.after_view_shown.apply(view);
         }
 
         // a global callback

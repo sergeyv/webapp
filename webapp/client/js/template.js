@@ -422,6 +422,10 @@
             }
             return false;
         });
+
+        if (self.options.before_view_shown) {
+            self.options.before_view_shown.apply(self);
+        }
     };
 
 

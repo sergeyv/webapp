@@ -383,3 +383,25 @@ The current list of helpers is as follows:
 
 Developers are encouraged to re-use the existing helpers and add new ones.
 
+
+Callbacks
+---------
+
+It is possible to define some callbacks to be called before/after a view is shown
+ - to modify view html or to run some scripts etc.:
+
+.. code-block:: javascript
+
+    c.route("/domains/:item_id", new webapp.Template({
+        identifier: "cDomainView",
+        rest_service_root: "/domains/:item_id",
+        before_view_shown: function () {
+            this.view.find('pre').linkify();
+        }
+    }));
+
+The callbacks are:
+
+- `before_view_shown`
+
+- `after_view_shown`
