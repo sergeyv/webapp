@@ -120,6 +120,9 @@
             webapp.controller.setActiveView(self);
         } else {
             self.view.removeClass("loading");
+            if (self.options.after_view_shown) {
+                self.options.after_view_shown.apply(self);
+            }
         }
 
         delete self.current_ajax_calls;
