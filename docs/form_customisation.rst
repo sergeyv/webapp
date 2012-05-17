@@ -30,6 +30,26 @@ If a loadable form (i.e. a ``schemaish.Structure`` subclass marked with ``@webap
             form['base_currency_id'].widget = webapp.widgets.LoadableListbox(
                 load_from="/rest/vocabs/currencies/@vocab")
 
+
+If a Structure has ``get_html(self, form)`` method, it will be called
+instead of the built-in one, which allows to add some bits of html before or after
+the form, or possibly to completely override the HTML output of the form::
+
+    class ClientDetailsSubform(sc.Structure):
+
+        def get_html(self, form):
+            return "<h1>BEFORE</h1>" + form() + "<h2>AFTER</h2>"
+
+or, to override the form completely::
+
+    class ClientDetailsSubform(sc.Structure):
+
+        def get_html(self, form):
+            return "<form method="POST">...</form>"
+
+Of course, using a template would be much better in the second case.
+
+
 Subforms
 ========
 

@@ -48,7 +48,16 @@ class LoadableForm(formish.Form):
         Returns html representation of the form, along with a small JS snippet
         which sets up validation rules
         (template takes care of that now)
+
+        The Structure subclass can override the default logic by defining
+        `get_html()` method, which will be called instead the default method
         """
+
+
+        ## self.structure is a Group, which .attr attribute is
+        ## our Structure subclass
+        if hasattr(self.structure.attr, 'get_html'):
+            return self.structure.attr.get_html(self)
         return self()
 
 

@@ -133,7 +133,9 @@
                 return false;
             });
         } else {
-            self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
+            if (title) {
+                self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
+            }
             /// TODO: Add option/condition "add_cancel_link"?
             /// Cancel link points to the page we came from
             self.cancelLink.attr('href', webapp.previousPageUrl());
@@ -177,7 +179,7 @@
 
 
         try {
-            self.view.html($.jqote(self.template, {data: {}, view: self}));
+            self.view.html($.jqote(self.template, {data: self.data, view: self}));
         } catch (err) {
             //alert(self.template.html());
             alert(err.message);
