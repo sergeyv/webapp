@@ -530,6 +530,8 @@ def _add_filters_to_query(collection, query, filter_fields, request):
     """
     model_class = collection.get_subitems_class()
     filter_values = []
+
+
     # NOTE: this should use filter_fields as a basis
     # to iterate over (and not the data in the request)
     # so it's not possible to filter by fileds not
@@ -541,6 +543,8 @@ def _add_filters_to_query(collection, query, filter_fields, request):
 
     for f in filter_values:
         field = getattr(model_class, f['key'])
+
+
         if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
             # The attribute is a simple column
             query = query.filter(field == f['value'])
@@ -801,7 +805,6 @@ class DataFormatLister(DataFormatBase):
             if field is None:
 
                 raise AttributeError("Class %s has no attribute %s" % (model_class, attribute_name))
-
 
             if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
                 # The attribute is a simple column
