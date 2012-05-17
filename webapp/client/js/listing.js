@@ -6,7 +6,8 @@
         // a nice side-effect of this is that it's doing a deep-copy
         var opts = $.extend({
             batch_size: 50,
-            searchable: true//,
+            searchable: false,
+            need_filters: true, //add a Filters partial
             /*partials: {
                 /// add a default filtering partial - if there's no
                 /// placeholder in the template it's not invoked anyway
@@ -42,9 +43,11 @@
 
 
         ///
-        this.options.partials.filters = new webapp.Filters({
-            rest_service_root: self.getRestUrl()  + "/filters"
-        });
+        if (this.options.need_filters) {
+            this.options.partials.filters = new webapp.Filters({
+                rest_service_root: self.getRestUrl()  + "/filters"
+            });
+        }
 
         // this is how to call a 'super' method in JS
         webapp.Template.prototype.init.call(this);
