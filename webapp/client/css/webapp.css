@@ -18,17 +18,6 @@ div.field {
     display:block;
 }
 
-/* AJAX SPINNER */
-#ajax-spinner {
-    position:fixed;
-    left:8px;
-    top:8px;
-    margin: 0;
-    z-index:1000;
-    width:8px;
-    height:8px;
-    background: transparent url(images/ajax-spinner2.gif) center center no-repeat;
-}
 
 /* FORM VALIDATION */
 
