@@ -360,6 +360,7 @@
                         elem.change();
                     } else {
                         elem.val(value);
+                        elem.data("original_value", value);
                         elem.change();
                     }
                 } else {
@@ -527,10 +528,6 @@
                     $.each(orig, function(idx, obj) {
                         ids[obj.id] = true;
                     });
-                    /*$.each(orig, function (idx, val) {
-                        var option = $select.find("option[value='" + val.id + "']");
-                        $(option).attr("selected", "selected");
-                    });*/
                     $.each(data.items, function (idx, value) {
                         var opt = $("<option/>").val(value[0]).html(value[1]);
                         if (ids[value[0]]) {
