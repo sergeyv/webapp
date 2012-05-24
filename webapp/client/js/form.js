@@ -360,31 +360,36 @@
                         elem.change();
                     } else {
                         elem.val(value);
-                        elem.data("original_value", value);
                         elem.change();
                     }
                 } else {
                     webapp.log("NOT FOUND: " + id);
                 }
             } else if (is_array(value)) {
-                /* Support arrays (aka sc.Sequence) subforms -
-                * need to delete any fields added during the
-                * previous showing of the form
-                */
-                elem = $(id + '--field');
-                link = $(elem.find('a.adderlink'));
 
-                // remove existing fieldsets
-                elem.find('.field').remove();
-                // remove stuff which is not fields (i.e. separators etc.)
-                elem.find('.nonField').remove();
+                elem = $(id);
+                if (elem.length && elem.prop("tagName").toLowerCase() === "select") {
+                    elem.data("original_value", value);
+                } else {
+                    /* Support arrays (aka sc.Sequence) subforms -
+                    * need to delete any fields added during the
+                    * previous showing of the form
+                    */
+                    elem = $(id + '--field');
+                    link = $(elem.find('a.adderlink'));
 
-                // should go before the === "object" section
-                $.each(value, function (idx, subvalue) {
-                    self.view.formish('add_new_items', $(link));
-                    self.fill_form(id + '-' + idx, subvalue, false);
-                });
-                self.view.formish('add_new_items_header_row', $(link));
+                    // remove existing fieldsets
+                    elem.find('.field').remove();
+                    // remove stuff which is not fields (i.e. separators etc.)
+                    elem.find('.nonField').remove();
+
+                    // should go before the === "object" section
+                    $.each(value, function (idx, subvalue) {
+                        self.view.formish('add_new_items', $(link));
+                        self.fill_form(id + '-' + idx, subvalue, false);
+                    });
+                    self.view.formish('add_new_items_header_row', $(link));
+                }
 
             } else if (typeof value === "object") {
                 if (data) {
@@ -495,17 +500,20 @@
 
     Form.prototype.reloadLoadable = function ($select) {
         var self = this,
-            from = self.mangle_url(webapp.rest_service_prefix + $select.attr("href"), $select);
+            from = self.mangle_url(webapp.rest_service_prefix + $select.attr("href"), $select),
+            orig,
+            ids = {},
+            is_array = function (arg) {
+                return (arg && typeof arg === 'object' &&
+                        typeof arg.length === 'number' &&
+                        !(arg.propertyIsEnumerable('length')));
+            };
 
         /// empty 'from' url signals that we shouldn't attempt to load the data
         /// just yet (i.e. a master listbox was not loaded yet)
         if (from) {
             webapp.Read(from, function (data) {
                 $select.children().remove();
-                $('<option value="">- choose -</option>').appendTo($select);
-                $.each(data.items, function (idx, value) {
-                    $("<option/>").val(value[0]).html(value[1]).appendTo($select);
-                });
 
                 /// for dependent listboxes, their options are loaded
                 /// after the content is loaded, so we need somehow to
@@ -513,7 +521,30 @@
                 /// the original value as "original_value" attribute of every
                 /// element. After the listbox has been loaded, we now able
                 /// to select the element we need
-                $select.val($select.data("original_value"));
+                orig = $select.data("original_value");
+
+                if (is_array(orig)) {
+                    $.each(orig, function(idx, obj) {
+                        ids[obj.id] = true;
+                    });
+                    /*$.each(orig, function (idx, val) {
+                        var option = $select.find("option[value='" + val.id + "']");
+                        $(option).attr("selected", "selected");
+                    });*/
+                    $.each(data.items, function (idx, value) {
+                        var opt = $("<option/>").val(value[0]).html(value[1]);
+                        if (ids[value[0]]) {
+                            opt.attr("selected", "selected");
+                        }
+                        opt.appendTo($select);
+                    });
+                } else {
+                    $('<option value="">- choose -</option>').appendTo($select);
+                    $.each(data.items, function (idx, value) {
+                        $("<option/>").val(value[0]).html(value[1]).appendTo($select);
+                    });
+                    $select.val(orig);
+                }
                 $select.removeData("original_value");
                 self.showListbox($select);
                 $select.change();

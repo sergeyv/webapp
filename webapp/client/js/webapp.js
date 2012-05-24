@@ -134,6 +134,20 @@
                     o[this.name] = false;
                 }
             });
+
+            /// make empty multiselects to return [] - otherwise they're ignored
+            /// also, for multiselects we convert single values to arrays with one element
+            $.each(this.find('select'), function () {
+                var s = $(this);
+                if (s.attr("multiple")) {
+                    if (s.val() === null) {
+                        o[this.name] = [];
+                    } else if (typeof s.val() === "string") {
+                        o[this.name] = [o[this.name]];
+                    }
+                }
+            });
+
             return o;
         };
 	}
@@ -365,7 +379,7 @@
             if (self.pageNotFoundView) {
                 self.getController().showView(self.pageNotFoundView, context);
             } else {
-                self.showMessage("NOT FOUND");
+                webapp.showMessage("NOT FOUND");
             }
         }
     };
@@ -399,7 +413,7 @@
         if (context.mapping) {
             context.mapping.controller.popupView(context.mapping.view, context);
         } else {
-            self.showMessage("POPUP VIEW NOT FOUND: " + hash);
+            webapp.showMessage("POPUP VIEW NOT FOUND: " + hash);
         }
         return false;
     }

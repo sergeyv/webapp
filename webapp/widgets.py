@@ -48,6 +48,7 @@ class LoadableListbox(Widget):
         self.load_from = k.pop('load_from', '')
         self.add_popup = k.pop('add_popup', '')
         self.display = k.pop('display', '')
+        self.multiselect = k.pop('multiselect', False)
 
         Widget.__init__(self, **k)
 

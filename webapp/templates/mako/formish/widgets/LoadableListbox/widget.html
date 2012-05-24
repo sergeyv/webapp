@@ -9,6 +9,9 @@ from webapp.forms import get_field_class_with_validators
 ${get_field_class_with_validators(field, classes)|n}
 href="${field.widget.load_from}"
 data-displaytype="${field.widget.display}"
+%if field.widget.multiselect:
+    multiple="multiple"
+%endif
 >
 <option></option>
 </select>

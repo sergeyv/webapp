@@ -46,6 +46,10 @@ def _default_item_serializer(item, structure, only_fields=None):
 
     # print "FLATTENED: %s (%s)" % (flattened, structure)
 
+    try:
+        getattr(structure, 'attrs')
+    except:
+        import pdb; pdb.set_trace();
     for (name, structure_field) in structure.attrs:
 
         # the client is not interested in this field, skip
@@ -80,13 +84,24 @@ def _default_item_serializer(item, structure, only_fields=None):
 
             # Recursively serialize lists of subitems
             if isinstance(structure_field, sc.Sequence):
-                #print "SERIALIZING A SEQUENCE: %s -> %s" % (name, structure_field)
-
                 subitems_schema = structure_field.attr
                 subitems = []
-                for subitem in value:  # take care not to name it "item" or it'll override the function-wide variable
-                    subitems.append(_default_item_serializer(subitem, subitems_schema))
-                value = subitems
+
+                # Here we only support 2 cases we're actually using:
+                # - a sequence of sc.Structure
+                # - a sequence of integers
+                ### TODOXXX: We may need to generalize this whole method
+                if isinstance(subitems_schema, sc.Structure):
+                    for subitem in value:  # take care not to name it "item" or it'll override the function-wide variable
+                        subitems.append(_default_item_serializer(subitem, subitems_schema))
+                    value = subitems
+
+                elif isinstance(structure_field, sc.Integer):
+                    for subitem in value:
+                        subitems.append(int(subitem))
+                    value = subitems
+
+
             elif isinstance(structure_field, sc.Structure):
                 #print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
                 subitems_schema = structure_field
@@ -265,22 +280,37 @@ def _save_structure(resource, schema, data, request):
 
         # Sequences of structures
         elif isinstance(attr, sc.Sequence):
-            #collection = getattr(model, name)
-            #submodels_cls = _get_attribute_class(model, name)
-            # __getmodel__ takes care about inserting a collection
-            # into the traversal context etc.
 
-            ### Sequence saving is meant to operate in the context of
-            ### the Resource - create a collection and use it for saving
-            from webapp.rest import RestCollection
 
-            collection = RestCollection(name, name)  # model[name]
-            collection.__parent__ = resource
+            # if a sequence contains just one element, we receive it as a single
+            # string. We just convert it to a list then
+            if isinstance(value, basestring):
+                value = [value,]
 
-            #collection.__data_formats__ = {
-            #    'edit': DataFormatWriter
-            #}
-            _save_sequence(collection, attr.attr, value, request)
+            # When we use sc.Sequence with a multiselect widget, in only returns us
+            # a list of ids, not whole objects which we need to save. This is kinda
+            # "sequence without modifying the linked objects"
+            if isinstance(value, list) and all([isinstance(s, basestring) for s in value]):
+                submodels_cls = _get_attribute_class(model, name)
+                items = []
+                for id in value:
+                    item = submodels_cls.by_id(id)
+                    items.append(item)
+
+                setattr(model, name, items)
+            else:
+                ###This is a standard Sequence widget which allows to edit the linked items
+                ### Sequence saving is meant to operate in the context of
+                ### the Resource - create a collection and use it for saving
+                from webapp.rest import RestCollection
+
+                collection = RestCollection(name, name)  # model[name]
+                collection.__parent__ = resource
+
+                #collection.__data_formats__ = {
+                #    'edit': DataFormatWriter
+                #}
+                _save_sequence(collection, attr.attr, value, request)
 
 
         # Simple attributes
