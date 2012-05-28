@@ -802,6 +802,10 @@ class DataFormatLister(DataFormatBase):
 
         data = _add_stats(data, request)
 
+        # A hook for Structure to post-process the data
+        if hasattr(structure, "post_process_data"):
+            return structure.post_process_data(self, data, request)
+
         return data
 
 
