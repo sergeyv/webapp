@@ -122,7 +122,13 @@ def _default_item_serializer(item, structure, only_fields=None):
                 pass
             elif isinstance(structure_field, sc.DateTime):
                 if value is not None:
-                    value = value.isoformat() + 'Z'
+                    # Python's datetime.isoformat() is not quite compatible
+                    # with JavaScript implementation:
+                    # - browsers expect UTC dates to have 'Z' at the end
+                    # - Opera is getting confused if the number of decimal places
+                    #   in the milliseconds part is not equal 3, so it's easier
+                    #   not to send milliseconds at all
+                    value = value.strftime("%Y-%m-%dT%H:%M:%SZ")
             elif isinstance(structure_field, Literal):
                 pass
             else:
