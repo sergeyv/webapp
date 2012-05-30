@@ -66,10 +66,16 @@ class WebappBase(object):
         return unicode(self).encode('utf-8')
 
 
+    def __repr__(self):
+        return "<%s '%s'>" % (self.__class__.__name__, str(self))
+
+
     @classmethod
     def by_id(cls, object_id):
         """
         Returns a single object by its ID, may return None
+
+        TODOXXX: Need to use session.query(ClassName).get(id) instead
         """
 
         if object_id is None:
