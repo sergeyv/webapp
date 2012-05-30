@@ -17,7 +17,15 @@ _JS_DATE_REGEXP = re.compile(r'"\*\*(new Date\([0-9,]+\))"')
 class _JSONDateEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
-            return obj.isoformat()
+            # Python's datetime.isoformat() is not quite compatible
+            # with JavaScript implementation:
+            # - browsers expect UTC dates to have 'Z' at the end
+            # - Opera is getting confused if the number of decimal places
+            #   in the milliseconds part is not equal 3, so it's easier
+            #   not to send milliseconds at all
+            return obj.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+            #return obj.isoformat()
 
         if isinstance(obj, datetime.date):
             #return obj.strftime("%d %b %Y")
