@@ -121,7 +121,8 @@ def _default_item_serializer(item, structure, only_fields=None):
             elif isinstance(structure_field, sc.Date):
                 pass
             elif isinstance(structure_field, sc.DateTime):
-                pass
+                if value is not None:
+                    value = value.isoformat() + 'Z'
             elif isinstance(structure_field, Literal):
                 pass
             else:
