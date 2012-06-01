@@ -6,7 +6,7 @@
         // a nice side-effect of this is that it's doing a deep-copy
         var opts = $.extend({
             identifier: "filters-partial",
-            data_format: "NOT USED"
+            data_format: ""
         }, options);
 
         webapp.Template.apply(this, [opts]);
@@ -49,6 +49,24 @@
             params = $.extend({}, self.event.parameters, path_fragments),
             url = webapp.fillInPlaceholders(self.options.rest_service_root, params);
 
+        /*var self = this,
+            url = self.getRestBase(path_fragments),
+            params;
+
+        // Not every view needs to load data
+        if (!url) {
+            return "";
+        }
+
+        if (self.options.data_format) {
+            ///Check if the url ends with a slash and add
+            /// one if it doesn't
+            if (url.indexOf('/', url.length - 1) === -1) {
+                url += '/';
+            }
+            url += "@" + self.options.data_format;
+        }
+        */
 
         /*if (with_params === "with-params" ) {
             params = self.collectRestParams();

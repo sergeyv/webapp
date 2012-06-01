@@ -36,6 +36,7 @@
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
                 partial.options.is_partial = true;
+                partial.parentView = self;
             });
         }
 
