@@ -46,10 +46,12 @@ def _default_item_serializer(item, structure, only_fields=None):
 
     # print "FLATTENED: %s (%s)" % (flattened, structure)
 
-    try:
-        getattr(structure, 'attrs')
-    except:
-        import pdb; pdb.set_trace();
+    #try:
+        #getattr(structure, 'attrs')
+    #except:
+        #import pdb; pdb.set_trace();
+
+
     for (name, structure_field) in structure.attrs:
 
         # the client is not interested in this field, skip
