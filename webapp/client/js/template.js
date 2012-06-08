@@ -198,7 +198,9 @@
 
 
         try {
+            //var started = Date.now()
             self.view.html($.jqote(self.template, {data: self.data, view: self}));
+            //console.log("View " + self.options.identifier + " rendered in " + (Date.now() - started) + " ms.");
         } catch (err) {
             //alert(self.template.html());
             alert(err.message);
