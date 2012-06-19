@@ -193,7 +193,10 @@
 	// to the body of the page (in paragraph tags).
 	WebApp.prototype.log = function () {
 		// Check to see if there is a console to log to.
-		if (console && console.log) {
+		// IE9 has a crippled console.log object which does not have
+		// `apply` method:
+		// http://stackoverflow.com/questions/5472938/does-ie9-support-console-log-and-is-it-a-real-function
+		if (console && console.log && console.log.apply) {
 
 			// Use the built-in logger.
 			console.log.apply(console, arguments);
