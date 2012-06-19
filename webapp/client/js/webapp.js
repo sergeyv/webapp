@@ -1,4 +1,19 @@
 
+/// if window.console is absent, create a dummy object with methods
+/// which do nothing - prevents the errors when the console does not exist
+/// https://github.com/andyet/ConsoleDummy.js
+(function (con) {
+    "use strict";
+    // the dummy function
+    function dummy() {};
+    // console methods that may exist
+    for(var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(','), func; func = methods.pop();) {
+        con[func] = con[func] || dummy;
+    }
+}(window.console = window.console || {}));
+
+
+
 (function ($) {
     "use strict";
 
@@ -189,9 +204,8 @@
 
 
 	// I am the logging method that will work cross-browser, if there is a
-	// console or not. If no console is avilable, output simply gets appended
-	// to the body of the page (in paragraph tags).
-	WebApp.prototype.log = function () {
+	// console or not. If no console is avilable, output is simply ignored
+	/*WebApp.prototype.log = function () {
 		// Check to see if there is a console to log to.
 		// IE9 has a crippled console.log object which does not have
 		// `apply` method:
@@ -202,18 +216,9 @@
 			console.log.apply(console, arguments);
 
 		} else {
-
             return;
-			// Output the page using P tags.
-			/*$.each(
-				arguments,
-				function( index, value ){
-					$( document.body ).append( "<p>" + value.toString() + "</p>" );
-				}
-			);*/
-
 		}
-	};
+	};*/
 
 
 	WebApp.prototype.normalizeHash = function (hash) {

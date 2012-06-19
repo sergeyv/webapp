@@ -239,7 +239,7 @@
         if (validator) {
             validator.resetForm();
         } else {
-            webapp.log("Validator is NULL for " + self.form);
+            console.log("Validator is NULL for " + self.form);
         }
 
     };
@@ -364,7 +364,7 @@
                         elem.change();
                     }
                 } else {
-                    webapp.log("NOT FOUND: " + id);
+                    console.log("NOT FOUND: " + id);
                 }
             } else if (is_array(value)) {
 

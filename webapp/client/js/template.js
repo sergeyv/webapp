@@ -117,7 +117,7 @@
 
         if (!self.options.is_partial) {
             // Show the view.
-            webapp.log("Set active view!");
+            console.log("Set active view!");
             webapp.controller.setActiveView(self);
         } else {
             self.view.removeClass("loading");
@@ -456,7 +456,7 @@
                         elem.change();
                     }
                 } else {
-                    webapp.log("NOT FOUND: " + id);
+                    console.log("NOT FOUND: " + id);
                 }
             } else if (typeof value === "object" && data) {
                 self.fill_form(id, data[name]);
