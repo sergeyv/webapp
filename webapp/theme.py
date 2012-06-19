@@ -42,7 +42,7 @@ class AssetRegistry(object):
 
     # Address plugin which deals with the hash part of the url
     # from http://www.asual.com/jquery/address/
-    "/webapp.client/core_js/jquery.address-1.4.js",
+    "/webapp.client/core_js/jquery.address.js",
 
     # Full JQuery UI from http://jqueryui.com/download
     "/webapp.client/core_js/jquery-ui-1.8.16.custom.min.js",
