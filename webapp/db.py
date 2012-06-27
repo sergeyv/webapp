@@ -59,7 +59,8 @@ class WebappBase(object):
         if hasattr(self, 'id') and self.id:
             return "%s #%s" % (self.__class__.__name__, self.id)
 
-        return repr(self)
+        # do not call repr(self) here
+        return super(WebappBase, self).unicode()
 
 
     def __str__(self):
