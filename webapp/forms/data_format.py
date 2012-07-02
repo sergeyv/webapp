@@ -110,7 +110,13 @@ def _default_item_serializer(item, structure, only_fields=None):
                 value = _default_item_serializer(value, subitems_schema)
             elif isinstance(structure_field, sc.String):
                 if value is not None:
-                    value = str(value)
+                    if isinstance(value, unicode):
+                        value = value.encode('utf-8')
+                    elif isinstance(value, str):
+                        value = value.decode('utf-8').encode('utf-8')
+                    else:
+                        value = unicode(value).encode('utf-8')
+
             elif isinstance(structure_field, sc.Integer):
                 if value is not None:
                     value = int(value)
