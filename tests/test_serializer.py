@@ -7,7 +7,7 @@ import schemaish as sc
 import crud
 import webapp
 
-from webapp.tests import Student, School
+from . import Student, School
 
 session = None
 

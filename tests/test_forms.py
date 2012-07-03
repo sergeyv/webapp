@@ -67,11 +67,11 @@ def test_inheritance():
     if a resource provides no form, webapp USED TO look up the object's parents to see
     if they define the form. So we COULD declare a form in a parent class
     and use it to serialize children.
-    
+
     This feature has since been disabled, so we just make sure the test
     raises ValueError
     """
-    
+
     est = datetime.utcnow()
     s = School(id=123, name="TEST!", established = est)
     r = SchoolResource("123", None, s)

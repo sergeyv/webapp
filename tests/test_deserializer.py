@@ -17,42 +17,6 @@ session = None
 rr = crud.ResourceRegistry("deserialize")
 fr = webapp.FormRegistry("deserialize")
 
-# forms
-
-class StudentForm(sc.Structure):
-    id = sc.Integer()
-    name = sc.String()
-
-@fr.loadable
-class SchoolForm(sc.Structure):
-    id = sc.Integer()
-    name = sc.String()
-    established = sc.DateTime()
-    is_school = sc.Boolean()
-
-@fr.loadable
-class SchoolWithStudentsForm(sc.Structure):
-    id = sc.Integer()
-    name = sc.String()
-    students = sc.Sequence(StudentForm())
-    established = sc.DateTime()
-
-@fr.loadable
-class SchoolDefaultsForm(sc.Structure):
-    id = sc.Integer(default=999)
-    name = sc.String(default="DEFAULT")
-    is_school = sc.Boolean(default=True)
-
-class SchoolDetailsSubform(sc.Structure):
-    name = sc.String()
-    established = sc.DateTime()
-
-@fr.loadable
-class SchoolFlattenForm(sc.Structure):
-    id = sc.Integer()
-    details = SchoolDetailsSubform()
-
-    __flatten_subforms__ = ("details")
 
 @rr.add(School)
 class SchoolResource(webapp.RestResource):
@@ -71,6 +35,50 @@ class SchoolResource(webapp.RestResource):
 @rr.add(Student)
 class StudentResource(webapp.RestResource):
     pass
+
+
+# forms
+
+class StudentForm(sc.Structure):
+    id = sc.Integer()
+    name = sc.String()
+
+
+@SchoolResource.readwrite_format
+class SchoolForm(sc.Structure):
+    id = sc.Integer()
+    name = sc.String()
+    established = sc.DateTime()
+    is_school = sc.Boolean()
+
+
+@SchoolResource.readwrite_format
+class SchoolWithStudentsForm(sc.Structure):
+    id = sc.Integer()
+    name = sc.String()
+    students = sc.Sequence(StudentForm())
+    established = sc.DateTime()
+
+
+@SchoolResource.readwrite_format
+class SchoolDefaultsForm(sc.Structure):
+    id = sc.Integer(default=999)
+    name = sc.String(default="DEFAULT")
+    is_school = sc.Boolean(default=True)
+
+
+class SchoolDetailsSubform(sc.Structure):
+    name = sc.String()
+    established = sc.DateTime()
+
+
+@SchoolResource.readwrite_format
+class SchoolFlattenForm(sc.Structure):
+    id = sc.Integer()
+    details = SchoolDetailsSubform()
+
+    __flatten_subforms__ = ("details")
+
 
 
 def setUp():
@@ -126,7 +134,7 @@ def test_sequences():
 
     session.flush()
     session.commit()
-    
+
     s = session.query(School).filter(School.id==321).one()
     assert len(s.students) == 2
     assert s.students[0].id == 234
@@ -157,7 +165,7 @@ def test_sequences():
 
     session.flush()
     session.commit()
-    
+
     s = session.query(School).filter(School.id==321).one()
 
     assert s.name == 'New School!'
