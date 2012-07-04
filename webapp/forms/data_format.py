@@ -418,13 +418,17 @@ class DataFormatReader(DataFormatBase):
         if hasattr(structure, "read"):
             return structure.read(self, request)
 
-        import webapp
 
-        session = webapp.get_session()
-        session.autoflush = False
-
+        ### TODOXXX: This set_field/set_value stuff is used by
+        # the AutoFillDropdown. I don't like the whole approach
+        # hope we will be able to get rid of it completely
         set_field = request.GET.get('set_field', None)
         if set_field is not None:
+
+            import webapp
+            session = webapp.get_session()
+            session.autoflush = False
+
             set_value = request.GET.get('set_value', None)
             if set_value:
                 # or use the deserialization machinery here?
@@ -436,7 +440,17 @@ class DataFormatReader(DataFormatBase):
             only_fields = [f.strip() for f in only_fields.split(',')]
 
         data = self.serialize(request)
-        transaction.abort()
+
+        ### TODOXXX: We don't really want to rollback it, but we have to
+        # in case of set_field present, because it modifies and flushes the
+        # model. Ugly-ugly-ugly.
+        if set_field is not None:
+            transaction.abort()
+
+        # A hook for Structure to post-process the data
+        if hasattr(structure, "post_process_data"):
+            return structure.post_process_data(self, data, request)
+
         return data
 
 
@@ -539,7 +553,7 @@ class DataFormatCreator(DataFormatReader):
         if hasattr(structure, "create"):
             return structure.create(self, request)
 
-        params = json.loads(request.body)
+        params = request.json_body #json.loads(request.body)
         params = dottedish.api.unflatten(params.items())
 
         if hasattr(self.structure, "before_item_created"):
