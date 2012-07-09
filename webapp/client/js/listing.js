@@ -8,25 +8,13 @@
             batch_size: 50,
             searchable: true,
             need_filters: false, //add a Filters partial
-            /*partials: {
-                /// add a default filtering partial - if there's no
-                /// placeholder in the template it's not invoked anyway
-                filters: new webapp.Filters({
-                    rest_service_root: options.rest_service_root + (options.data_format|options.identifier) + "/filters"
-                })
-            }*/
+            scroll: 'pager' // can be 'pager', 'infinite', 'click for more'
         }, options);
         webapp.Template.apply(this, [opts]);
 
         if (!this.options.partials) {
             this.options.partials = {};
         }
-
-
-        /*TODOXXX: This is broken, make it work in the context of the format:
-        "/rest/servers/123/@ServersListing/filters"
-        (also consider moving filtering setting to formats?)*/
-
     }
 
     Listing.prototype = new webapp.Template();
@@ -41,7 +29,6 @@
             node_id = self.options.identifier + '-view',
             $node;
 
-
         ///
         if (this.options.need_filters) {
             this.options.partials.filters = new webapp.Filters({
@@ -51,19 +38,6 @@
 
         // this is how to call a 'super' method in JS
         webapp.Template.prototype.init.call(this);
-
-
-
-        /// find or create the body template container
-        /*node_id = self.options.identifier + '-row-template';
-        self.row_template = $("#" + node_id);
-        if (!self.row_template.length) {
-            /// Create and append a node if not found
-            $node = ($('<script type="text/x-jquote-template" id="' + node_id + '">'));
-
-            $("body").append($node);
-            self.row_template = $("#" + node_id);
-        }*/
 
     };
 
@@ -177,6 +151,36 @@
             $pager.html(output.join('\n'));
         }
 
+
+        function render_load_more_link() {
+            var total = self.data.total_count,
+                batch_size = self.event.uri_args.batch_size || self.options.batch_size,
+                pages = Math.ceil(total / batch_size),
+                batch_start = self.event.uri_args.batch_start || 0,
+                current = Math.floor(batch_start / batch_size),
+                i = 0,
+                output = [],
+                bs,
+                $pager = self.view.find("div.pager");
+
+            if (pages > 1) { // don't need a pager for just a single page
+
+                /// next link
+                if (current < pages - 1) {
+                    bs = (current + 1) * batch_size;
+                    output.push('<a class="loadMoreLink" href="#' + self.new_filter_url('batch_start', bs) + '"> more </a>');
+                } else {
+                    output.push('<span class="discreet">all items shown</span>');
+                }
+            } else {
+                output.push('<span class="discreet">all ' + total + ' items shown</span>');
+            }
+
+            output.push("</div>");
+
+            $pager.html(output.join('\n'));
+        }
+
         // this is how to call a 'super' method in JS
         webapp.Template.prototype.augmentView.call(this);
 
@@ -187,7 +191,19 @@
             $cell.html('<a href="#' + self.new_sort_url(id) + '" class="' + get_sort_class(id) + '">' + title + '</a>');
         });
 
-        render_pager();
+        if (self.options.scroll==='pager') {
+            render_pager();
+        } else if (self.options.scroll==='click for more') {
+            /*render_pager();*/
+            render_load_more_link();
+            self.view.find("a.loadMoreLink").click(function () {
+                alert("Hi!");
+                return false;
+            });
+
+        } else if (self.options.scroll==='infinite') {
+            /*render_pager();*/
+        }
     };
 
     webapp.Listing = Listing;
