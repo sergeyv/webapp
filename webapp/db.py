@@ -50,6 +50,11 @@ class WebappBase(object):
 
 
     def __unicode__(self):
+        return str(self).decode('utf-8')
+
+
+    def __str__(self):
+
         if hasattr(self, 'name') and self.name:
             return str(self.name() if callable(self.name) else self.name)
 
@@ -59,12 +64,10 @@ class WebappBase(object):
         if hasattr(self, 'id') and self.id:
             return "%s #%s" % (self.__class__.__name__, self.id)
 
-        # do not call repr(self) here
-        return super(WebappBase, self).unicode()
+        #if hasattr(super(WebappBase, self), '__str__'):
+        #    return super(WebappBase, self).__str__()
 
-
-    def __str__(self):
-        return unicode(self).encode('utf-8')
+        return "<%s %s>" % (self.__class__.__name__, id(self))
 
 
     def __repr__(self):
