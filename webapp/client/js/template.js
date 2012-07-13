@@ -381,11 +381,16 @@
         /// Every link marked with webappInvokeOnLoad class will
         /// be 'clicked' programmatically when the view is loaded
         /// (in the same manner webappAsyncAction links are invoked when clicked). You can hide the link using css if it should not be displayed in the UI
-        self.view.find("a.webappInvokeOnLoad").each(function (idx, elem) {
-            var $link = $(elem);
-            invoke_async_action($link);
-            return undefined; // if we return false the iteration stops
-        });
+
+        /// prevent an infinite loop when a view is reloaded
+        /// as a result of an async task succeeding
+        if (!self.event.async_message) {
+            self.view.find("a.webappInvokeOnLoad").each(function (idx, elem) {
+                var $link = $(elem);
+                invoke_async_action($link);
+                return undefined; // if we return false the iteration stops
+            });
+        }
 
         self.view.find("a.webappPopup").click(function () {
 
