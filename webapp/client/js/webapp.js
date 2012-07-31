@@ -522,6 +522,30 @@
         });
     };
 
+    WebApp.prototype.format_date = function (date_str) {
+        /*
+        Converts a date parsable by the Date class (i.e. in ISO-whatever format)
+        to a 27 Mar 2001 format
+        */
+        if (webapp.helpers.date) {
+            // webapp.helpers.date overrides this
+            return webapp.helpers.date(date_str);
+        }
+
+        if (!date_str) { return ""; }
+
+        var d = new Date(date_str),
+            MONTH_NAMES = [
+                'Jan', 'Feb', 'Mar',
+                'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep',
+                'Oct', 'Nov', 'Dec'
+            ],
+            day = d.getDate();
+
+        if (day < 10) { day = "0" + day; }
+        return String(day) + " " + MONTH_NAMES[d.getMonth()] + " " + d.getFullYear();
+    };
 
 
     // ----------------------------------------------------------------------- //

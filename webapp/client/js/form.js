@@ -250,48 +250,23 @@
         * of the form and set their values.
         * Now works with subforms
         */
-        if ( first_lvl == undefined )
+        if (!first_lvl) {
             first_lvl = true;
+        }
 
         var self = this,
             is_array = function (arg) {
                 return (arg && typeof arg === 'object' &&
                         typeof arg.length === 'number' &&
                         !(arg.propertyIsEnumerable('length')));
-            },
-            format_date = function (date_str) {
-                /*
-                Converts a date parsable by the Date class (i.e. in ISO-whatever format)
-                to a 27 Mar 2001 format
-                */
-                if (webapp.helpers.date) {
-                    // webapp.helpers.date overrides this
-                    return webapp.helpers.date(date_str);
-                }
-
-                if (!date_str) { return ""; }
-
-                var d = new Date(date_str),
-                    MONTH_NAMES = [
-                        'Jan', 'Feb', 'Mar',
-                        'Apr', 'May', 'Jun',
-                        'Jul', 'Aug', 'Sep',
-                        'Oct', 'Nov', 'Dec'
-                    ],
-                    day = d.getDate();
-
-                if (day < 10) { day = "0" + day; }
-                return String(day) + " " + MONTH_NAMES[d.getMonth()] + " " + d.getFullYear();
             };
 
         if (!data) { return; }
 
-        if ( first_lvl )
-        {
+        if (first_lvl) {
             // Fill out data provided by server with defaults provided in the URI
 
-            var mergeobjs = function ( obj1, obj2 )
-            {
+            var mergeobjs = function ( obj1, obj2 ) {
                 $.each(obj1, function (name, value) {
                     if (value === null || typeof value === 'undefined') {
                         if ( obj2.hasOwnProperty( name ) )
@@ -299,18 +274,18 @@
                     }
                     else if ( is_array( value ) && obj2.hasOwnProperty( name ) && is_array( obj2[ name ] ) )
                     {
-                        if ( value.length == 0 && obj2[name].length > 0 )
+                        if (!value.length && obj2[name].length > 0) {
                             obj1[ name ] = obj2[ name ];
+                        }
                         //for ( var ai in value )
                         //    mergeobjs( obj1[ name ][ ai ], obj2[ name ][ ai ] );
                     }
-                    else if ( typeof value === 'object' && obj2.hasOwnProperty( name ) )
-                    {
-                        mergeobjs( obj1[ name ], obj2[ name ] );
+                    else if (typeof value === 'object' && obj2.hasOwnProperty( name )) {
+                        mergeobjs(obj1[name], obj2[name]);
                     }
                 } );
             };
-            mergeobjs( data, self.event.uri_args );
+            mergeobjs(data, self.event.uri_args);
         }
 
         $.each(data, function (name, value) {
@@ -343,7 +318,7 @@
                         display_elem = $(id + "-display");
                         elem.val(value);
                         elem.change();
-                        display_elem.val(format_date(value));
+                        display_elem.val(webapp.format_date(value));
                         display_elem.change();
                     } else if (elem[0].tagName.toLowerCase() === 'div') {
                         /// support read-only fields
