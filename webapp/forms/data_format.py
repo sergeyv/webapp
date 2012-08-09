@@ -1,18 +1,19 @@
-from datetime import datetime
-from decimal import Decimal
-import json
-import cgi
+# from datetime import datetime
+# from decimal import Decimal
+# import json
+# import cgi
 import transaction
 from zope.interface import Interface, implements
 
-import schemaish as sc
 import dottedish
 import sqlalchemy as sa
 
-from webapp.forms import Literal
-from webapp import DynamicDefault
-from webapp.exc import WebappError
+# from webapp.forms import Literal
+# from webapp import DynamicDefault
+# from webapp.exc import WebappError
 from webapp.db import get_session
+
+from .data_format_base import DataFormatBase
 
 
 class IDataFormat(Interface):
@@ -37,378 +38,16 @@ class IDataFormatCreator(IDataFormat):
 _marker = []
 
 
-def _default_item_serializer(item, structure, only_fields=None):
-
-    data = {}
-    default = object()
-
-    flattened = getattr(structure, "__flatten_subforms__", [])
-
-    # print "FLATTENED: %s (%s)" % (flattened, structure)
-
-    #try:
-        #getattr(structure, 'attrs')
-    #except:
-        #import pdb; pdb.set_trace();
-
-
-    for (name, structure_field) in structure.attrs:
-
-        # the client is not interested in this field, skip
-        if (only_fields is not None) and (name not in only_fields):
-            #print "SKIPPING FIELD %s" % name
-            continue
-
-        # Allow to specify callbacks defined on schema
-        # to serialize specific attributes
-        if hasattr(structure, 'serialize_' + name):
-            meth = getattr(structure, 'serialize_' + name)
-            value = meth(item)
-        else:
-            value = getattr(item, name, default)
-        #structure_field = getattr(structure, name, default)
-
-
-        if name in flattened:
-            # This is to support __flatten_subforms__ attrubute of a schema
-            # - we may choose to build a form from several sc.Structure blocks to separate the data logically (and visually) but still
-            # be able to save it as it was a sigle flat form
-            #print "FLAT!"
-            value = _default_item_serializer(item, structure_field)
-        elif value is not default:
-
-            # if it's a callable then call it
-            # (using @property to imitate an attribute
-            # is not cool because it swallows any exceptions
-            # and just pretends there's no such property)
-            if callable(value):
-                value = value()
-
-            # Recursively serialize lists of subitems
-            if isinstance(structure_field, sc.Sequence):
-                subitems_schema = structure_field.attr
-                subitems = []
-
-                # Here we only support 2 cases we're actually using:
-                # - a sequence of sc.Structure
-                # - a sequence of integers
-                ### TODOXXX: We may need to generalize this whole method
-                if isinstance(subitems_schema, sc.Structure):
-                    for subitem in value:  # take care not to name it "item" or it'll override the function-wide variable
-                        subitems.append(_default_item_serializer(subitem, subitems_schema))
-                    value = subitems
-
-                elif isinstance(structure_field, sc.Integer):
-                    for subitem in value:
-                        subitems.append(int(subitem))
-                    value = subitems
-
-
-            elif isinstance(structure_field, sc.Structure):
-                #print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
-                subitems_schema = structure_field
-                value = _default_item_serializer(value, subitems_schema)
-            elif isinstance(structure_field, sc.String):
-                if value is not None:
-                    if isinstance(value, unicode):
-                        value = value.encode('utf-8')
-                    elif isinstance(value, str):
-                        value = value.decode('utf-8').encode('utf-8')
-                    else:
-                        value = unicode(value).encode('utf-8')
-
-            elif isinstance(structure_field, sc.Integer):
-                if value is not None:
-                    value = int(value)
-            elif isinstance(structure_field, sc.Decimal):
-                if value is not None:
-                    value = float(value)
-            elif isinstance(structure_field, sc.Boolean):
-                if value is not None:
-                    value = bool(value)
-            elif isinstance(structure_field, sc.Date):
-                pass
-            elif isinstance(structure_field, sc.DateTime):
-                # dates are serialized by the better_json renderer
-                pass
-            elif isinstance(structure_field, Literal):
-                pass
-            else:
-                raise WebappError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
-        else:
-            value = None
-
-        # If the model does not provide a value, use
-        # form's default
-        if value is None:
-            value = getattr(structure_field, 'default', None)
-
-            if isinstance(value, DynamicDefault):
-                value = value(item, name)
-
-        # Escape HTML tags if the name of the attribute not in __no_html_escape__
-        # attribute of the structure
-        if isinstance(value, basestring) and name not in getattr(structure, '__no_html_escape__', set()):
-            value = cgi.escape(value)
-
-        data[name] = value
-
-    #print "EXTRACTED DATA: %s" % data
-    return data
-
-
-def _save_sequence(collection, schema, data, request):
-
-    existing_items = {str(item.model.id): item for item in collection.get_items()}
-
-    #seen_ids = []
-    ids_to_delete = []
-
-    # Manually create a Writer to serialize each individual item
-    fmt = DataFormatWriter(structure=schema)
-    fmt.__name__ = "@edit"
-
-
-    #print "EXISTING ITEMS: %s" % (existing_items,)
-    for (order_idx, value) in data.items():
-        if order_idx == '*':
-            continue
-        # the data must contain 'id' parameter
-        # if the data should be saved into an existing item
-        item_id = value.get('id', None)
-        #print "PROCESSING ITEM %s" % item_id
-
-        if value.get('__delete__', False):
-            # Existing item must be deleted
-            ids_to_delete.append(item_id)
-            #print "WILL_BE_DELETED: %s" % item_id
-
-        else:
-            item = existing_items.get(item_id, None)
-            del value['id']
-            value['__schema__'] = schema
-            if item is not None:
-                # insert the writer into the traversal context
-                fmt.__parent__ = item
-                fmt.deserialize(value, request)
-            else:
-                if value.get('__new__', False):
-                    def _setter(resource):
-                        # a callback is called from create_subitem after
-                        # the item was created but before it was flushed
-                        fmt.__parent__ = resource
-                        fmt.deserialize(value, request)
-                    item = collection.create_subitem(setter_fn=_setter, wrap=True)
-                else:
-                    # Item has not been found and the client does not indicate
-                    # that it's a new item - something is wrong
-                    raise ValueError("Nowhere to save data: %s" % (value,))
-
-    #print "DELETING: %s" % ids_to_delete
-    collection.delete_subitems(ids_to_delete, request)
-
-
-def _all_data_fields_are_empty(value):
-    """
-    Returns True if all fields of a dict are false-y
-    """
-    if not value:
-        return True
-    for v in value.values():
-        if v:
-            return False
-
-    return True
-
-
-def _get_attribute_class(item, name):
-    """
-    nicked from crud - returns an SA relation given an attribute name
-    """
-    relation = getattr(item.__class__, name)
-    arg = relation.property.argument
-    if callable(arg):
-        related_class = arg()
-    else:
-        related_class = arg.class_
-    return related_class
-
-
-def _save_structure(resource, schema, data, request):
-
-    attrs = schema.attrs
-
-    model = resource.model
-
-    #print "SAVING %s INTO %s USING %s" % (data, model, schema)
-    flattened = getattr(schema, "__flatten_subforms__", [])
-
-    for (name, attr) in attrs:
-        value = data.get(name, _marker)
-        if value is _marker:
-            #print "### No data passed for attr %s <%s>" % (name, data)
-            continue
-
-        if hasattr(schema, 'deserialize_' + name):
-            # Support for deserialization hooks for individual attributes
-            meth = getattr(schema, 'deserialize_' + name)
-            meth(model, value)
-        elif isinstance(attr, sc.Structure):
-            # Nested structures
-            #print "STRUCTURE!"
-            subschema = attr
-            if name in flattened:
-                # Flattened subforms are saved directly into the model
-                _save_structure(resource, subschema, value, request)
-            else:
-
-                # AutoFillDropdown requires the serializer
-                # to flush the session session before serializing sequences
-                # to load subobjects which were just linked to our model
-                # Example:
-                #     model.client_id =  123
-                #     ... need to flush the session here so model.client is loaded
-                #     model.client.name = "Client One"
-
-                session = sa.orm.object_session(model)
-                session.flush()
-
-                submodel = getattr(model, name, None)
-                #print "SUBmodel: %s" % (value)
-                if submodel is None:
-                    # Do not create a submodel if all data fields are empty
-                    # - this may not work with defaults
-                    if _all_data_fields_are_empty(value):
-                        continue
-
-                    cls = _get_attribute_class(model, name)
-                    submodel = cls()
-                    setattr(model, name, submodel)
-                subresource = resource.wrap_child(submodel, name=name)
-                _save_structure(subresource, subschema, value, request)
-
-        # Sequences of structures
-        elif isinstance(attr, sc.Sequence):
-
-
-            # if a sequence contains just one element, we receive it as a single
-            # string. We just convert it to a list then
-            if isinstance(value, basestring):
-                value = [value,]
-
-            # When we use sc.Sequence with a multiselect widget, in only returns us
-            # a list of ids, not whole objects which we need to save. This is kinda
-            # "sequence without modifying the linked objects"
-            if isinstance(value, list) and all([isinstance(s, basestring) for s in value]):
-                submodels_cls = _get_attribute_class(model, name)
-                items = []
-                for id in value:
-                    item = submodels_cls.by_id(id)
-                    items.append(item)
-
-                setattr(model, name, items)
-            else:
-                ###This is a standard Sequence widget which allows to edit the linked items
-                ### Sequence saving is meant to operate in the context of
-                ### the Resource - create a collection and use it for saving
-                from webapp.rest import RestCollection
-
-                collection = RestCollection(name, name)  # model[name]
-                collection.__parent__ = resource
-
-                #collection.__data_formats__ = {
-                #    'edit': DataFormatWriter
-                #}
-                _save_sequence(collection, attr.attr, value, request)
-
-
-        # Simple attributes
-        elif isinstance(attr, sc.String):
-            # Convert empty strings to NULLs
-            # - otherwise it fails with empty values
-            # in enums
-            if value == '':
-                value = None
-
-            setattr(model, name, value)
-        elif isinstance(attr, sc.Integer):
-            if value:
-                setattr(model, name, int(value))
-            else:
-                setattr(model, name, None)
-        elif isinstance(attr, sc.Decimal):
-            if value:
-                setattr(model, name, Decimal(value))
-            else:
-                setattr(model, name, None)
-
-        elif isinstance(attr, sc.Date):
-            if value:
-                # TODO: Need to improve this. Use dateutil?
-                value = value.split('T')[0]  # strip off the time part
-                d = datetime.strptime(value, "%Y-%m-%d")
-            else:
-                d = None
-            setattr(model, name, d)
-        elif isinstance(attr, sc.DateTime):
-            if value:
-                # TODO: proper format here
-                dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
-            else:
-                dt = None
-            setattr(model, name, dt)
-        elif isinstance(attr, sc.Boolean):
-            if str(value).lower() in ('true', 'yes', '1'):
-                value = True
-            elif str(value).lower() in ('false', 'no', '0'):
-                value = False
-            else:
-                if value == '':
-                    value = None
-                if value is not None:
-                    raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
-
-            setattr(model, name, value)
-
-        else:
-            raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
-
-
-def _default_item_deserializer(resource, schema, params, request):
-
-    _save_structure(resource, schema, params, request)
-
-
-class DataFormatBase(object):
-
-    __allow_loadable__ = False
-
-    def __init__(self, structure):
-
-        self.structure = structure
-
-    def __call__(self):
-        return self.__class__(structure=self.structure)
-
-    def __repr__(self):
-        if hasattr(self,'structure'):
-            return "<%s wrapping %s>" % (self.__class__.__name__, repr(self.structure))
-        else:
-            return "<%s wrapping >" % self.__class__.__name__
-
-    @property
-    def __acl__(self):
-        return getattr(self.structure, '__acl__', [])
-
-
 class DataFormatReader(DataFormatBase):
     implements(IDataFormatReader)
 
     def serialize(self, request):
+        """
+        Returns a dict which represents the model of our parent Resource
+        """
         # our parent is a Resource
         model = self.__parent__.model
-        structure = self.structure
-        return _default_item_serializer(model, structure)
+        return self.serialize_item(model)
 
     def read(self, request):
 
@@ -417,7 +56,6 @@ class DataFormatReader(DataFormatBase):
         # Structure can completely override the default logic
         if hasattr(structure, "read"):
             return structure.read(self, request)
-
 
         ### TODOXXX: This set_field/set_value stuff is used by
         # the AutoFillDropdown. I don't like the whole approach
@@ -462,8 +100,7 @@ class DataFormatWriter(DataFormatBase):
     def deserialize(self, params, request):
         resource = self.__parent__
         structure = self.structure
-        return _default_item_deserializer(resource, structure, params, request)
-
+        return self._default_item_deserializer(resource, structure, params, request)
 
     def update(self, request):
         """
@@ -516,7 +153,7 @@ class DataFormatCreator(DataFormatReader):
 
     def serialize(self, request):
         """
-        This mathod creates a transient item (because no actual item exists)
+        This method creates a transient item (because no actual item exists)
         and serializes it. It server to load defaults etc. when a create from is
         displayed.
 
@@ -524,8 +161,7 @@ class DataFormatCreator(DataFormatReader):
         """
         collection = self.__parent__
         model = collection.create_transient_subitem()
-        structure = self.structure
-        return _default_item_serializer(model, structure)
+        return self.serialize_item(model)
 
     def create_and_deserialize(self, params, request):
         """
@@ -538,10 +174,9 @@ class DataFormatCreator(DataFormatReader):
         collection = self.__parent__
 
         def _setter(resource):
-            _default_item_deserializer(resource, structure, params, request)
+            self._default_item_deserializer(resource, structure, params, request)
 
         return collection.create_subitem(setter_fn=_setter, wrap=True)
-
 
     def create(self, request):
         """
@@ -553,7 +188,7 @@ class DataFormatCreator(DataFormatReader):
         if hasattr(structure, "create"):
             return structure.create(self, request)
 
-        params = request.json_body #json.loads(request.body)
+        params = request.json_body  # json.loads(request.body)
         params = dottedish.api.unflatten(params.items())
 
         if hasattr(self.structure, "before_item_created"):
@@ -584,7 +219,6 @@ def _add_filters_to_query(collection, query, filter_fields, request):
     model_class = collection.get_subitems_class()
     filter_values = []
 
-
     # NOTE: this should use filter_fields as a basis
     # to iterate over (and not the data in the request)
     # so it's not possible to filter by fileds not
@@ -596,7 +230,6 @@ def _add_filters_to_query(collection, query, filter_fields, request):
 
     for f in filter_values:
         field = getattr(model_class, f['key'])
-
 
         if isinstance(field.impl.parent_token, sa.orm.properties.ColumnProperty):
             # The attribute is a simple column
@@ -613,6 +246,7 @@ def _add_filters_to_query(collection, query, filter_fields, request):
             query = query.join(rel_class).filter(id_attr == f['value'])
 
     return query
+
 
 def _add_search_to_query(collection, query, request):
     """
@@ -633,6 +267,7 @@ def _add_search_to_query(collection, query, request):
                 criteria.append(field_obj.ilike('%' + search_criterion + '%'))
         query = query.filter(sa.sql.expression.or_(*criteria))
     return query
+
 
 def _add_eagerload_to_query(format, query):
     structure = format.structure
@@ -708,7 +343,6 @@ class DataFormatLister(DataFormatBase):
             }
         """
 
-
         structure = self.structure
 
         # Structure can completely override the default logic
@@ -728,7 +362,6 @@ class DataFormatLister(DataFormatBase):
             else:
                 order_by = "+%s" % order_by
 
-
         data = {}
 
         # a structure can override get_items_query method
@@ -736,7 +369,6 @@ class DataFormatLister(DataFormatBase):
             query = structure.get_items_query(self, collection, order_by=order_by)
         else:
             query = collection.get_items_query(order_by=order_by)
-
 
         # CUSTOM QUERY MODIFIER
         ### An initial approach to be able to specify some hooks in the collection
@@ -750,10 +382,8 @@ class DataFormatLister(DataFormatBase):
             meth = getattr(collection, 'filter_' + filter_meth_name)
             query = meth(query, request)
 
-
         # EAGERLOAD
         query = _add_eagerload_to_query(self, query)
-
 
         # FILTERING
         query = _add_filters_to_query(
@@ -765,7 +395,6 @@ class DataFormatLister(DataFormatBase):
         # SEARCH
         query = _add_search_to_query(self.__parent__, query, request)
 
-
         ### VOCABS - if the format is vocab we abort early since
         ### we don't want/need batching
         ### 'vocab' format is a special (simplified) case
@@ -775,7 +404,6 @@ class DataFormatLister(DataFormatBase):
             items = query.all()
             result = [(item.id, str(item)) for item in items]
             return {'items': result}
-
 
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
@@ -796,7 +424,6 @@ class DataFormatLister(DataFormatBase):
         # more records
         query = query.offset(batch_start).limit(batch_size + 1)
 
-
         # query all the items
         items = query.all()
 
@@ -815,7 +442,7 @@ class DataFormatLister(DataFormatBase):
         #     result.append(i)
 
         for model in items:
-            i = _default_item_serializer(model, self.structure)
+            i = self.serialize_item(model)
             result.append(i)
 
         # except AttributeError, e:
@@ -830,8 +457,6 @@ class DataFormatLister(DataFormatBase):
             return structure.post_process_data(self, data, request)
 
         return data
-
-
 
     def get_filters(self, request):
         """
@@ -855,7 +480,6 @@ class DataFormatLister(DataFormatBase):
         session = get_session()
 
         filter_fields = getattr(self.structure, '__filter_fields__', [])
-
 
         for attribute_name in filter_fields:
             field = getattr(model_class, attribute_name, None)
@@ -896,8 +520,8 @@ class DataFormatLister(DataFormatBase):
                     .order_by(rel_class.name)
 
                 if parent_inst is not None:
-                   # limit the query only to items which belong to our parent
-                   q = q.with_parent(parent_inst)
+                    # limit the query only to items which belong to our parent
+                    q = q.with_parent(parent_inst)
 
                 result = q.all()
                 r = []
@@ -943,7 +567,6 @@ class VocabLister(object):
             else:
                 order_by = "+%s" % order_by
 
-        data = {}
         query = collection.get_items_query(order_by=order_by)
         # CUSTOM QUERY MODIFIER
         ### An initial approach to be able to specify some hooks in the subclass
@@ -967,4 +590,3 @@ class VocabLister(object):
         items = query.all()
         result = [(item.id, str(item)) for item in items]
         return {'items': result}
-

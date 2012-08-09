@@ -127,7 +127,11 @@
             $.each(a, function () {
                 // remove formish templates - template's name contains *
                 if (this.name.indexOf('*') === -1) {
-                    if (o[this.name]) {
+                    if (o.hasOwnProperty(this.name)) {
+                        /* If the property already exists then we check
+                        if it's an array already, if not we're converting it
+                        to an array and then we append the value
+                        */
                         if (!o[this.name].push) {
                             o[this.name] = [o[this.name]];
                         }
