@@ -35,8 +35,6 @@ class IDataFormatLister(IDataFormat):
 class IDataFormatCreator(IDataFormat):
     """ """
 
-_marker = []
-
 
 class DataFormatReader(DataFormatBase):
     implements(IDataFormatReader)
@@ -50,6 +48,9 @@ class DataFormatReader(DataFormatBase):
         return self.serialize_item(model)
 
     def read(self, request):
+        """
+        This is what is actually called by the view
+        """
 
         structure = self.structure
 
@@ -70,7 +71,9 @@ class DataFormatReader(DataFormatBase):
             set_value = request.GET.get('set_value', None)
             if set_value:
                 # or use the deserialization machinery here?
-                setattr(context.model, set_field, int(set_value))
+                # setattr(context.model, set_field, int(set_value))
+
+                raise ValueError("AutoFillDropdown does not work")
                 session.flush()
 
         only_fields = request.GET.get('only', None)

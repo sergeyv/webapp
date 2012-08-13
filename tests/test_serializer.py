@@ -7,6 +7,9 @@ import schemaish as sc
 import crud
 import webapp
 
+from pyramid import testing
+from webapp.forms.data_format import DataFormatReader
+
 from . import Student, School
 
 session = None
@@ -16,20 +19,25 @@ fr = webapp.FormRegistry("serializer")
 
 
 # forms
+@rr.add(School)
+class SchoolResource(webapp.RestResource):
+
+    form_registry = "serializer"
+
 
 class StudentForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
 
 
-@fr.loadable
+@SchoolResource.readonly_format('test')
 class SchoolForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
     established = sc.DateTime()
 
 
-@fr.loadable
+@SchoolResource.readonly_format('students')
 class SchoolWithStudentsForm(sc.Structure):
     id = sc.Integer()
     name = sc.String()
@@ -37,7 +45,7 @@ class SchoolWithStudentsForm(sc.Structure):
     established = sc.DateTime()
 
 
-@fr.loadable
+@SchoolResource.readonly_format('defaults')
 class SchoolDefaultsForm(sc.Structure):
     id = sc.Integer(default=999)
     name = sc.String(default="DEFAULT")
@@ -49,25 +57,12 @@ class SchoolDetailsSubform(sc.Structure):
     established = sc.DateTime()
 
 
-@fr.loadable
+@SchoolResource.readonly_format('flatten')
 class SchoolFlattenForm(sc.Structure):
     id = sc.Integer()
     details = SchoolDetailsSubform()
 
     __flatten_subforms__ = ("details")
-
-
-@rr.add(School)
-class SchoolResource(webapp.RestResource):
-
-    data_formats = {
-        'test': 'SchoolForm',
-        'defaults': 'SchoolDefaultsForm',
-        'students': 'SchoolWithStudentsForm',
-        'flat': 'SchoolFlattenForm',
-        }
-
-    form_registry = "serializer"
 
 
 def setUp():
@@ -82,6 +77,15 @@ def tearDown():
     webapp.Base.metadata.drop_all()
 
 
+def _get_reader(resource, structure):
+    reader = DataFormatReader(structure)
+    reader.__parent__ = resource
+    return reader
+
+
+def _make_request():
+    return testing.DummyRequest()
+
 
 def test_serialize():
     """
@@ -91,7 +95,7 @@ def test_serialize():
     s = School(id=123, name="TEST!", established=est)
     r = SchoolResource("123", None, s)
 
-    data = r.serialize(format="test")
+    data = _get_reader(r, SchoolForm).serialize(_make_request())
 
     assert data['id'] == 123
     assert data['name'] == "TEST!"
@@ -106,8 +110,7 @@ def test_defaults():
     m = School()
     r = SchoolResource("123", None, m)
 
-
-    data = r.serialize(format="defaults")
+    data = _get_reader(r, SchoolDefaultsForm).serialize(_make_request())
 
     assert data['id'] == 999
     assert data['name'] == "DEFAULT"
@@ -124,8 +127,7 @@ def test_defaults_value():
 
     # If the model has some data then it should be used instead
 
-
-    data = r.serialize(format="defaults")
+    data = _get_reader(r, SchoolDefaultsForm).serialize(_make_request())
 
     assert data['id'] == 123
     assert data['name'] == "TEST!"
@@ -147,7 +149,7 @@ def test_sequences():
 
     r = SchoolResource("123", None, s)
 
-    data = r.serialize(format="students")
+    data = _get_reader(r, SchoolWithStudentsForm).serialize(_make_request())
 
     assert isinstance(data['students'], list)
     assert len(data['students']) == 2
@@ -163,14 +165,16 @@ def test_html_escape():
     r = SchoolResource("123", None, m)
 
     # check < >
-    data = r.serialize(format="defaults")
+    data = _get_reader(r, SchoolDefaultsForm).serialize(_make_request())
 
     #assert data['id'] == 123
     assert "<" not in data['name']
     assert ">" not in data['name']
 
     m.name = "&laquo;Nice quotes!&raquo;"
-    data = r.serialize(format="defaults")
+
+    data = _get_reader(r, SchoolDefaultsForm).serialize(_make_request())
+
     assert "&laquo;" not in data['name']
     assert "&raquo;" not in data['name']
 
@@ -184,7 +188,7 @@ def test_form_flattening():
     s = School(id=123, name="TEST!", established=est)
     r = SchoolResource("123", None, s)
 
-    data = r.serialize(format="flat")
+    data = _get_reader(r, SchoolFlattenForm).serialize(_make_request())
 
     assert data['id'] == 123
     assert data["details"]['name'] == "TEST!"

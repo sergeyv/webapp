@@ -13,7 +13,7 @@ from pyramid.testing import DummyRequest
 import crud
 import webapp
 
-from . import Student, Organisation, School
+from . import Student, School
 
 from webapp.exc import WebappFormError
 
@@ -30,10 +30,6 @@ SCHOOL_ID = 321
 @rr.add(School)
 class SchoolResource(webapp.RestResource):
 
-    data_formats = {
-        'view': 'SchoolViewForm',
-        }
-
     subsections = {
         'students': webapp.RestCollection("Students", 'students')
         }
@@ -42,16 +38,6 @@ class SchoolResource(webapp.RestResource):
 @rr.add(Student)
 class StudentResource(webapp.RestResource):
     pass
-
-
-## forms
-#@fr.loadable
-#class SchoolViewForm(sc.Structure):
-    #id = sc.Integer()
-    #name = sc.String()
-    #established = sc.DateTime()
-    #is_school = sc.Boolean()
-
 
 
 class RestRootCollection(webapp.RestCollection):
@@ -68,6 +54,10 @@ class RootCollection(crud.Collection):
         'rest': RestRootCollection("Rest", "rest")
         }
 
+
+@SchoolResource.readonly_format("view")
+class SchoolView(sc.Structure):
+    id = sc.Integer()
 
 _root = RootCollection("kitovu Admin")
 
@@ -144,43 +134,43 @@ def test_resource_collection_resource():
     assert(context.model.id == 234)
 
 
-def test_resource_form():
-    result = traverse(_root, "/rest/schools/%s" % SCHOOL_ID)
-    context = result['context']
+# def test_resource_form():
+#     result = traverse(_root, "/rest/schools/%s" % SCHOOL_ID)
+#     context = result['context']
 
-    request = DummyRequest(params={
-        'format': 'view',
-        })
-    request.context = context
+#     request = DummyRequest(params={
+#         'format': 'view',
+#         })
+#     request.context = context
 
-    from webapp.views.rest import json_rest_get
-    result = json_rest_get(context, request)
-    assert(result['id'] == SCHOOL_ID)
+#     from webapp.views.rest import json_rest_get
+#     result = json_rest_get(context, request)
+#     assert(result['id'] == SCHOOL_ID)
 
 
-@raises(WebappFormError)
-def test_resource_form_nonexistent():
-    result = traverse(_root, "/rest/schools/%s" % SCHOOL_ID)
-    context = result['context']
+# @raises(WebappFormError)
+# def test_resource_form_nonexistent():
+#     result = traverse(_root, "/rest/schools/%s" % SCHOOL_ID)
+#     context = result['context']
 
-    request = DummyRequest(params={
-        'format': 'does_not_exist',
-        })
-    request.context = context
+#     request = DummyRequest(params={
+#         'format': 'does_not_exist',
+#         })
+#     request.context = context
 
-    from webapp.views.rest import json_rest_get
-    result = json_rest_get(context, request)
-    # should raise here
+#     from webapp.views.rest import json_rest_get
+#     result = json_rest_get(context, request)
+#     # should raise here
 
 
 # TODO: The code for this is not implemented yet
 def test_resource_form_traversal():
-    result = traverse(_root, "/rest/schools/%s/@@view" % SCHOOL_ID)
+    result = traverse(_root, "/rest/schools/%s/@view" % SCHOOL_ID)
     context = result['context']
 
     request = DummyRequest(params={})
     request.context = context
 
-    from webapp.views.rest import json_rest_get
-    result = json_rest_get(context, request)
+    from webapp.views.rest import json_rest_get_f
+    result = json_rest_get_f(context, request)
     assert(result['id'] == SCHOOL_ID)

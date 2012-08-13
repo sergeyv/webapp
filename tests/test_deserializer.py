@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
-
-import sqlalchemy as sa
 import schemaish as sc
 
 import crud
 import webapp
 
-from nose.tools import raises
+from pyramid import testing
+from webapp.forms.data_format import DataFormatWriter
 
-from . import Student, Organisation, School
+
+from . import Student, School
 
 session = None
 
@@ -21,16 +20,13 @@ fr = webapp.FormRegistry("deserialize")
 @rr.add(School)
 class SchoolResource(webapp.RestResource):
 
-    data_formats = {
-        'test': 'SchoolForm',
-        'defaults': 'SchoolDefaultsForm',
-        'students': 'SchoolWithStudentsForm',
-        'flat': 'SchoolFlattenForm',
-        }
+    form_registry = "deserialize"
+    resource_registry = "deserialize"
 
     subsections = {
         'students': webapp.RestCollection("Students", 'students')
         }
+
 
 @rr.add(Student)
 class StudentResource(webapp.RestResource):
@@ -80,7 +76,6 @@ class SchoolFlattenForm(sc.Structure):
     __flatten_subforms__ = ("details")
 
 
-
 def setUp():
     global session
     session = webapp.get_session()
@@ -93,11 +88,19 @@ def tearDown():
     webapp.Base.metadata.drop_all()
 
 
-class DummyRequest(object):
-    pass
-
 class DummySchool(object):
     pass
+
+
+def _get_writer(resource, structure):
+    reader = DataFormatWriter(structure)
+    reader.__parent__ = resource
+    return reader
+
+
+def _make_request():
+    return testing.DummyRequest()
+
 
 def test_deserialize():
     """
@@ -105,23 +108,21 @@ def test_deserialize():
     """
 
     data = {
-        "id":123,
-        "name":"HELLO",
+        "id": 123,
+        "name": "HELLO",
         "is_school": True,
-        "established": "2011-05-10T17:47:56",
-        "__schema__":SchoolForm
-    }
+        "established": "2011-05-10T17:47:56"
+        }
 
     s = School()
     r = SchoolResource("123", None, s)
 
-    data = r.deserialize(data, DummyRequest())
+    data = _get_writer(r, SchoolForm).deserialize(data, _make_request())
 
     assert s.id == 123
     assert s.name == "HELLO"
     print "IS SCHOOL: %s" % s.is_school
     assert s.is_school == True
-
 
 
 def test_sequences():
@@ -135,7 +136,7 @@ def test_sequences():
     session.flush()
     session.commit()
 
-    s = session.query(School).filter(School.id==321).one()
+    s = session.query(School).filter(School.id == 321).one()
     assert len(s.students) == 2
     assert s.students[0].id == 234
     assert s.students[1].id == 235
@@ -145,15 +146,15 @@ def test_sequences():
         'name': 'New School!',
         '__schema__': SchoolWithStudentsForm,
         'students': {
-            0: { 'id': '234',
+            0: {'id': '234',
               '__delete__': 1,
             },
-            1: { 'id': '235',
+            1: {'id': '235',
               'name': 'Ivan Ivanoff',
               '__delete__': '',
               '__new__': False,
             },
-            2:{ 'id': '999',
+            2: {'id': '999',
               'name': 'Arnie',
               '__delete__': None,
               '__new__': "1",
@@ -161,12 +162,13 @@ def test_sequences():
         },
         }
 
-    data = r.deserialize(data, DummyRequest())
+    #data = r.deserialize(data, DummyRequest())
+    data = _get_writer(r, SchoolWithStudentsForm).deserialize(data, _make_request())
 
     session.flush()
     session.commit()
 
-    s = session.query(School).filter(School.id==321).one()
+    s = session.query(School).filter(School.id == 321).one()
 
     assert s.name == 'New School!'
     print "GOT STUDENTS: %s" % s.students

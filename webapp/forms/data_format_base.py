@@ -1,9 +1,16 @@
 import cgi
+from datetime import datetime
+from decimal import Decimal
 
 import schemaish as sc
+import sqlalchemy as sa
 
 from webapp import DynamicDefault
 from webapp.forms import Literal
+from webapp.exc import WebappError
+
+_marker = []
+
 
 def _all_data_fields_are_empty(value):
     """
@@ -33,10 +40,14 @@ def _get_attribute_class(item, name):
 
 def _save_sequence(collection, schema, data, request):
 
-    existing_items = {str(item.model.id): item for item in collection.get_items()}
+    existing_items = {}
+    for item in collection.get_items():
+        existing_items[str(item.model.id)] = item
 
     #seen_ids = []
     ids_to_delete = []
+
+    from .data_format import DataFormatWriter
 
     # Manually create a Writer to serialize each individual item
     fmt = DataFormatWriter(structure=schema)
@@ -146,7 +157,7 @@ class DataFormatBase(object):
             if value == '':
                 value = None
             if value is not None:
-                raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
+                raise AttributeError("Wrong boolean value: %s" % (value))
         return value
 
     TYPE_SERIALIZERS_MAP = {
@@ -155,6 +166,7 @@ class DataFormatBase(object):
         sc.Decimal: _type_serialize_decimal,
         sc.Date: _type_serialize_date,
         sc.DateTime: _type_serialize_datetime,
+        sc.Boolean: _type_serialize_boolean,
     }
 
     def _save_structure(self, resource, schema, data, request):
@@ -166,7 +178,7 @@ class DataFormatBase(object):
         for (name, attr) in attrs:
             value = data.get(name, _marker)
             if value is _marker:
-                #print "### No data passed for attr %s <%s>" % (name, data)
+                ### No data passed for attr - should we ignore or raise an error?
                 continue
 
             if hasattr(schema, 'deserialize_' + name):
@@ -179,7 +191,7 @@ class DataFormatBase(object):
                 subschema = attr
                 if name in flattened:
                     # Flattened subforms are saved directly into the model
-                    _save_structure(resource, subschema, value, request)
+                    self._save_structure(resource, subschema, value, request)
                 else:
 
                     # AutoFillDropdown requires the serializer
@@ -205,7 +217,7 @@ class DataFormatBase(object):
                         submodel = cls()
                         setattr(model, name, submodel)
                     subresource = resource.wrap_child(submodel, name=name)
-                    _save_structure(subresource, subschema, value, request)
+                    self._save_structure(subresource, subschema, value, request)
 
             # Sequences of structures
             elif isinstance(attr, sc.Sequence):
@@ -238,59 +250,10 @@ class DataFormatBase(object):
                     #    'edit': DataFormatWriter
                     #}
                     _save_sequence(collection, attr.attr, value, request)
-
-            # Simple attributes
-            # elif isinstance(attr, sc.String):
-            #     # Convert empty strings to NULLs
-            #     # - otherwise it fails with empty values
-            #     # in enums
-            #     if value == '':
-            #         value = None
-
-            #     setattr(model, name, value)
-            # elif isinstance(attr, sc.Integer):
-            #     if value:
-            #         setattr(model, name, int(value))
-            #     else:
-            #         setattr(model, name, None)
-            # elif isinstance(attr, sc.Decimal):
-            #     if value:
-            #         setattr(model, name, Decimal(value))
-            #     else:
-            #         setattr(model, name, None)
-
-            # elif isinstance(attr, sc.Date):
-            #     if value:
-            #         # TODO: Need to improve this. Use dateutil?
-            #         value = value.split('T')[0]  # strip off the time part
-            #         d = datetime.strptime(value, "%Y-%m-%d")
-            #     else:
-            #         d = None
-            #     setattr(model, name, d)
-            # elif isinstance(attr, sc.DateTime):
-            #     if value:
-            #         # TODO: proper format here
-            #         dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
-            #     else:
-            #         dt = None
-            #     setattr(model, name, dt)
-            # elif isinstance(attr, sc.Boolean):
-            #     if str(value).lower() in ('true', 'yes', '1'):
-            #         value = True
-            #     elif str(value).lower() in ('false', 'no', '0'):
-            #         value = False
-            #     else:
-            #         if value == '':
-            #             value = None
-            #         if value is not None:
-            #             raise AttributeError("Wrong boolean value for %s: %s" % (name, value))
-
-            #     setattr(model, name, value)
-
             else:
                 try:
                     meth = self.TYPE_SERIALIZERS_MAP[attr.__class__]
-                    setattr(model, name, meth(value))
+                    setattr(model, name, meth(self, value))
                 except KeyError:
                     raise AttributeError("Don't know how to deserialize attribute %s of type %s" % (name, attr))
 
