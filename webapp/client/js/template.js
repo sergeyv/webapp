@@ -381,7 +381,9 @@
         /// invoke an async task (well, it can be used to ping
         /// any URL, but the result is discarded, so it's only
         /// useful for async tasks
-        self.view.find("a.webappAsyncAction").click(function () {
+        // self.view.find("a.webappAsyncAction").click(function () {
+        $("body").on("click", "a.webappAsyncAction", function () {
+
             var $link = $(this);
             /// if the link also has 'webappConfirmDialog' class,
             /// we show a confirmation dialog and only invoke
@@ -423,7 +425,8 @@
             });
         }
 
-        self.view.find("a.webappPopup").click(function () {
+        //self.view.find("a.webappPopup").click(function () {
+        $("body").on("click", "a.webappPopup", function () {
 
             var $link = $(this),
                 href = (function (l) {
