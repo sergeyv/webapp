@@ -124,6 +124,7 @@
             /// See http://stackoverflow.com/questions/1184624/serialize-form-to-json-with-jquery
             var o = {},
                 a = this.serializeArray();
+
             $.each(a, function () {
                 // remove formish templates - template's name contains *
                 if (this.name.indexOf('*') === -1) {
@@ -132,7 +133,7 @@
                         if it's an array already, if not we're converting it
                         to an array and then we append the value
                         */
-                        if (!o[this.name].push) {
+                        if (!o[this.name].push) { /* 'push' is how we tell Array from something else */
                             o[this.name] = [o[this.name]];
                         }
                         o[this.name].push(this.value || '');
@@ -145,11 +146,11 @@
             /// unchecked checkboxes are not serialized by serializeArray
             /// which conforms to HTML standards but is quite annoying
             /// we send 'false' if a checkbox is unchecked
-            /// this actually may be wrong if we use checkboxes for lists etc.
+            /// but only if there's no already a value (a scalar or an array)
+            /// for that name.
 
-            $.each(this.find('input:checkbox'), function () {
-                if (!this.checked) {
-                    console.log("Hi");
+            $.each(this.find('input:checkbox').not(':checked'), function () {
+                if (!o.hasOwnProperty(this.name)) {
                     o[this.name] = false;
                 }
             });

@@ -14,9 +14,11 @@
         - need_load_data
         - before_view_shown (function)
         - after_view_shown (function)
+        - aux_templates - a list of auxillary templates to be loaded along with the main template
         */
         var opts = $.extend({
-            need_load_data: true
+            need_load_data: true,
+            aux_templates: []
         }, options);
         webapp.View.apply(this, [opts]);
         this.options.template_name = this.options.template_name || this.options.identifier;
@@ -88,14 +90,30 @@
             calls.push(null);
         }
 
+        /* load auxillary templates */
+        if (!self.aux_templates && self.options.aux_templates) {
+            $.each(self.options.aux_templates, function (idx, template_name) {
+                calls.push(
+                    $.ajax({
+                        type: "GET",
+                        url: webapp.templates_prefix + template_name + ".html",
+                        cache: false
+                    })
+                );
+            });
+        }
+
         self.current_ajax_calls = calls;
 
         return $.when.apply(null, calls);
     };
 
-    Template.prototype._ajax_finished = function (template_xhr,  data_xhr) {
+    Template.prototype._ajax_finished = function () {
 
-        var self = this;
+        var self = this,
+            args = arguments,
+            template_xhr = args[0],
+            data_xhr = args[1];
         /// template_xhr may be null in case it's not the first time
         /// we're invoking this view (templates are loaded once
         /// and then cached)
@@ -105,13 +123,26 @@
 
         /// data_xhr may be null if need_load_data is false
         self.data = data_xhr?data_xhr[0]:{};
+
+
+        /* attach auxillary templates - only on the first invocation */
+        if (!self.aux_templates && self.options.aux_templates) {
+            self.aux_templates = {};
+            $.each(self.options.aux_templates, function (idx, template_name) {
+                // first two xhrs are view's main template and data; they're guaranteed
+                // to be present - if the view does not load a template or data, the
+                // arguments will be null
+                self.aux_templates[template_name] = args[idx+2][0];
+            });
+        }
+
         self.render();
 
         /// wait for each partial to finish loading and render it
         $.each(self.options.partials || [], function (partial_name, partial) {
-            partial.deferred.done(function (template_xhr,  data_xhr) {
+            partial.deferred.done(function () {
                 partial.view = self.view.find('.partial[data-partial="' + partial_name + '"]');
-                partial._ajax_finished(template_xhr,  data_xhr);
+                partial._ajax_finished.apply(partial, arguments);
             });
         });
 
@@ -127,7 +158,7 @@
         }
 
         delete self.current_ajax_calls;
-    }
+    };
 
     Template.prototype._abort_ajax_calls = function () {
         /*
@@ -179,8 +210,8 @@
             });
         }
 
-        ajax_calls_deferred.done(function (template_xhr,  data_xhr) {
-            self._ajax_finished(template_xhr,  data_xhr);
+        ajax_calls_deferred.done(function () {
+            self._ajax_finished.apply(self, arguments);
         });
     };
 
@@ -202,9 +233,9 @@
         } catch (err) {
             alert(err.message);
             if (!webapp.testmode) {
-                txt = "There was an error on this page.<br />"
-                    + "Error description: <strong>"
-                    + err.message + "</strong>";
+                txt = "There was an error on this page.<br />" +
+                      "Error description: <strong>" +
+                      err.message + "</strong>";
                 webapp.showMessage(txt, "Template error: " + err.name);
             }
         }
