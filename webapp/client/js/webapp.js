@@ -93,6 +93,10 @@
                 var self = this,
                     response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
 
+                if (ajaxOptions.webapp_error_response_processed) {
+                    return;
+                }
+
                 if (!webapp.testmode) {
 
                     $(self).html(response).dialog({

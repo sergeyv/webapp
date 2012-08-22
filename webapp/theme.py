@@ -14,10 +14,6 @@ def get_theme(name):
     return _theme_registry[name]
 
 
-
-from pyramid.security import authenticated_userid
-
-
 class AssetRegistry(object):
     """
     Add custom stuff to the standard theme

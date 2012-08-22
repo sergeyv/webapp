@@ -167,7 +167,7 @@
          */
         if (this.current_ajax_calls) {
             $.each(this.current_ajax_calls || [], function (idx, ajax) {
-                ajax && ajax.abort();
+                if (ajax) { ajax.abort(); }
             });
             delete this.current_ajax_calls;
         }
