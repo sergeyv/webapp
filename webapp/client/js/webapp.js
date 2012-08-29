@@ -557,6 +557,83 @@
     };
 
 
+    WebApp.prototype.invoke_async_action = function (view, $link) {
+        var webapp = this,
+            meth = webapp.Read,
+            need_send_data = false,
+            callback = function () {
+
+                $link.addClass("asyncTaskSent");
+
+                /// find all classes which start with webappOnSuccess
+                /// if found, it expects it to be in a form webappOnSuccess-methodName.
+                /// If the view has such method, it is invoked when the call succeeds
+                $($link.attr('class').split(' ')).each(function (idx, val) {
+                    var parts = val.split('-');
+                    if (parts.length === 2 &&
+                            parts[0] === "webappOnSuccess" &&
+                            view[parts[1]]) {
+                        view[parts[1]].apply(view);
+                    }
+                });
+            },
+            data = {};
+
+        if ($link.hasClass("webappMethodDelete")) {
+            meth = webapp.Delete;
+            need_send_data = false;
+        } else if ($link.hasClass("webappMethodPut")) {
+            meth = webapp.Update;
+            need_send_data = true;
+        } else if ($link.hasClass("webappMethodPost")) {
+            meth = webapp.Create;
+            need_send_data = true;
+        }
+
+
+        if ($link.hasClass('webappSendData')) {
+            data = $link.data('send') || {};
+
+            $.extend(data, (function () {
+                var meth_name = $link.data("collect-method");
+                if (view[meth_name]) {
+                    return view[meth_name].apply(view);
+                }
+                return {};
+            }()));
+
+            /// if there's a class webappCollectDataMethod-methodName
+            /// we will extend `data` with what methodName returns
+            //$.each($link.attr('class').split(' '), function (idx, val) {
+            //    var parts = val.split('-');
+                /*if (parts.length === 2 &&
+                        parts[0] === "webappCollectDataMethod" &&
+                        self[parts[1]]) {
+                    $.extend(data, self[parts[1]]());
+                }*/
+            //});
+
+        }
+
+        /// the signatures of webapp.Read and webapp.Delete
+        /// require 2 parameters - url and callback, while
+        /// webapp.Create and webapp.Update also accept `data`
+        /// parameter which unfortunately is in the middle
+        /// we may need to refactor this because it's kinda ugly
+        if (need_send_data) {
+            meth($link.attr('href'), data, callback);
+        } else {
+            meth($link.attr('href'), callback);
+        }
+
+        if ($link.hasClass("webappGoBack")) {
+            webapp.relocateTo(webapp.previousPageUrl());
+        }
+        return false;
+    };
+
+
+
     // ----------------------------------------------------------------------- //
     // ----------------------------------------------------------------------- //
 

@@ -105,6 +105,9 @@
 
         self.current_ajax_calls = calls;
 
+        console.log("CALLS");
+        console.log(self.current_ajax_calls);
+
         return $.when.apply(null, calls);
     };
 
@@ -302,121 +305,8 @@
     */
     Template.prototype.augmentView = function () {
 
-        var self = this,
-            invoke_async_action = function ($link) {
-                var meth = webapp.Read,
-                    need_send_data = false,
-                    callback = function () {
+        var self = this;
 
-                        $link.addClass("asyncTaskSent");
-
-                        /// find all classes which start with webappOnSuccess
-                        /// if found, it expects it to be in a form webappOnSuccess-methodName.
-                        /// If the view has such method, it is invoked when the call succeeds
-                        $($link.attr('class').split(' ')).each(function (idx, val) {
-                            var parts = val.split('-');
-                            if (parts.length === 2 &&
-                                    parts[0] === "webappOnSuccess" &&
-                                    self[parts[1]]) {
-                                self[parts[1]]();
-                            }
-                        });
-                    },
-                    data = {};
-
-                if ($link.hasClass("webappMethodDelete")) {
-                    meth = webapp.Delete;
-                    need_send_data = false;
-                } else if ($link.hasClass("webappMethodPut")) {
-                    meth = webapp.Update;
-                    need_send_data = true;
-                } else if ($link.hasClass("webappMethodPost")) {
-                    meth = webapp.Create;
-                    need_send_data = true;
-                }
-
-
-                if ($link.hasClass('webappSendData')) {
-                    data = $link.data('send') || {};
-
-                    $.extend(data, (function () {
-                        var meth_name = $link.data("collect-method");
-                        if (self[meth_name]) {
-                            return self[meth_name]();
-                        }
-                        return {};
-                    }()));
-
-                    /// if there's a class webappCollectDataMethod-methodName
-                    /// we will extend `data` with what methodName returns
-                    //$.each($link.attr('class').split(' '), function (idx, val) {
-                    //    var parts = val.split('-');
-                        /*if (parts.length === 2 &&
-                                parts[0] === "webappCollectDataMethod" &&
-                                self[parts[1]]) {
-                            $.extend(data, self[parts[1]]());
-                        }*/
-                    //});
-
-                }
-
-                /// the signatures of webapp.Read and webapp.Delete
-                /// require 2 parameters - url and callback, while
-                /// webapp.Create and webapp.Update also accept `data`
-                /// parameter which unfortunately is in the middle
-                /// we may need to refactor this because it's kinda ugly
-                if (need_send_data) {
-                    meth($link.attr('href'), data, callback);
-                } else {
-                    meth($link.attr('href'), callback);
-                }
-
-                if ($link.hasClass("webappGoBack")) {
-                    webapp.relocateTo(webapp.previousPageUrl());
-                }
-                return false;
-            };
-
-        /// Every link marked with webappAsyncAction class will
-        /// invoke an async task (well, it can be used to ping
-        /// any URL, but the result is discarded, so it's only
-        /// useful for async tasks
-        // self.view.find("a.webappAsyncAction").click(function () {
-
-        // Need to remove and re-attach the handler, otherwise it's
-        // invoked multiple times. TODO: Move it outside of this class
-        // so it's only attached once
-        $("body")
-            .off("click", "a.webappAsyncAction")
-            .on("click", "a.webappAsyncAction", function () {
-
-            var $link = $(this);
-            /// if the link also has 'webappConfirmDialog' class,
-            /// we show a confirmation dialog and only invoke
-            // the action if the user clicks OK
-            if ($link.hasClass("webappConfirmDialog")) {
-                $('<div></div>').text($link.attr('title')).dialog({
-                    modal: true,
-                    title: "Confirm",
-                    buttons: {
-                        Cancel: function () {
-                            $(this).dialog('close');
-                        },
-                        OK: function () {
-                            invoke_async_action($link);
-                            $(this).dialog('close');
-                        }
-                    }
-
-                });
-
-            } else {
-                /// if there's no webappConfirmDialog class then
-                /// we invoke the method directly
-                invoke_async_action($link);
-            }
-            return false;
-        });
         /// Every link marked with webappInvokeOnLoad class will
         /// be 'clicked' programmatically when the view is loaded
         /// (in the same manner webappAsyncAction links are invoked when clicked). You can hide the link using css if it should not be displayed in the UI
@@ -426,52 +316,11 @@
         if (!self.event.async_message) {
             self.view.find("a.webappInvokeOnLoad").each(function (idx, elem) {
                 var $link = $(elem);
-                invoke_async_action($link);
+                webapp.invoke_async_action(self, $link);
                 return undefined; // if we return false the iteration stops
             });
         }
 
-        //self.view.find("a.webappPopup").click(function () {
-        $("body").on("click", "a.webappPopup", function () {
-
-            var $link = $(this),
-                href = (function (l) {
-                    /* remove the part of the url before the hash */
-                    var parts = l.split('#');
-                    if (parts.length === 2) {
-                        return "#" + parts[1];
-                    }
-                    return l;
-                }($link.attr("href"))),
-                hash = webapp.normalizeHash(href),
-                context = webapp.getEventContextForRoute(hash);
-
-
-            context.popup_success_callback = function (added_id) {
-                /// find all classes which start with webappOnSuccess
-                /// if found, it expects it to be in a form
-                /// webappOnSuccess-methodName.
-                /// If the view has such method,
-                /// it is invoked when the call succeeds
-                $($link.attr('class').split(' ')).each(function (idx, val) {
-                    var parts = val.split('-'),
-                        fn;
-                    if (parts.length === 2 &&
-                            parts[0] === "webappOnSuccess" &&
-                            self[parts[1]]) {
-                        fn = self[parts[1]];
-                        fn.apply(self);
-                    }
-                });
-            };
-
-            if (context.mapping) {
-                context.mapping.controller.popupView(context.mapping.view, context);
-            } else {
-                webapp.showMessage("POPUP VIEW NOT FOUND: "  + hash);
-            }
-            return false;
-        });
     };
 
 
@@ -532,5 +381,105 @@
     };
 
     webapp.Template = Template;
+
+}(jQuery, webapp));
+
+
+
+
+
+
+
+/* TODO: move it somewhere else */
+
+(function ($, webapp) {
+    "use strict";
+
+    $(function () { // need to run this agter <body> is loaded
+
+        /// Every link marked with webappAsyncAction class will
+        /// invoke an async task (well, it can be used to ping
+        /// any URL, but the result is discarded, so it's only
+        /// useful for async tasks
+        // self.view.find("a.webappAsyncAction").click(function () {
+
+        $("body")
+            .off("click", "a.webappAsyncAction")
+            .on("click", "a.webappAsyncAction", function () {
+
+            var $link = $(this),
+                view = webapp.controller.currentView;
+
+            /// if the link also has 'webappConfirmDialog' class,
+            /// we show a confirmation dialog and only invoke
+            // the action if the user clicks OK
+            if ($link.hasClass("webappConfirmDialog")) {
+                $('<div></div>').text($link.attr('title')).dialog({
+                    modal: true,
+                    title: "Confirm",
+                    buttons: {
+                        Cancel: function () {
+                            $(this).dialog('close');
+                        },
+                        OK: function () {
+                            webapp.invoke_async_action(view, $link);
+                            $(this).dialog('close');
+                        }
+                    }
+
+                });
+
+            } else {
+                /// if there's no webappConfirmDialog class then
+                /// we invoke the method directly
+                webapp.invoke_async_action(view, $link);
+            }
+            return false;
+        });
+
+        $("body")
+            .off("click", "a.webappPopup")
+            .on("click", "a.webappPopup", function () {
+
+            var $link = $(this),
+                href = (function (l) {
+                    /* remove the part of the url before the hash */
+                    var parts = l.split('#');
+                    if (parts.length === 2) {
+                        return "#" + parts[1];
+                    }
+                    return l;
+                }($link.attr("href"))),
+                hash = webapp.normalizeHash(href),
+                context = webapp.getEventContextForRoute(hash),
+                view = webapp.controller.currentView;
+
+
+            context.popup_success_callback = function (added_id) {
+                /// find all classes which start with webappOnSuccess
+                /// if found, it expects it to be in a form
+                /// webappOnSuccess-methodName.
+                /// If the view has such method,
+                /// it is invoked when the call succeeds
+                $($link.attr('class').split(' ')).each(function (idx, val) {
+                    var parts = val.split('-'),
+                        fn;
+                    if (parts.length === 2 &&
+                            parts[0] === "webappOnSuccess" &&
+                            view[parts[1]]) {
+                        fn = view[parts[1]];
+                        fn.apply(view);
+                    }
+                });
+            };
+
+            if (context.mapping) {
+                context.mapping.controller.popupView(context.mapping.view, context);
+            } else {
+                webapp.showMessage("POPUP VIEW NOT FOUND: "  + hash);
+            }
+            return false;
+        });
+    });
 
 }(jQuery, webapp));
