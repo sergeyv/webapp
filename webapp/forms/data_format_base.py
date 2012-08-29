@@ -114,12 +114,14 @@ class DataFormatBase(object):
 
     def _type_serialize_string(self, value):
         # Convert empty strings to NULLs
+        # and prevent storing None as 'None' string
         # - otherwise it fails with empty values
         # in enums
-        if value == '':
-            value = None
+        if not value:
+            return None
 
-        return str(value)
+        return unicode(value).encode('utf-8')
+        #return str(value)  # strangely, this does not cause the test to fail either
 
     def _type_serialize_int(self, value):
         if value:

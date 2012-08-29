@@ -194,3 +194,27 @@ def test_form_flattening():
     assert data["details"]['name'] == "TEST!"
     assert data["details"]['established'] == est
 
+
+def test_serialize_string():
+
+    s = School()
+    r = SchoolResource("123", None, s)
+    request = _make_request()
+    reader = _get_reader(r, SchoolForm)
+
+    s.name = None
+    assert reader.serialize(request)['name'] is None
+
+    s.name = "some value"
+    assert reader.serialize(request)['name'] == "some value"
+
+    UNICODE_STRING = "Українська"
+
+    #import pdb; pdb.set_trace()
+    s.name = UNICODE_STRING
+    data = reader.serialize(request)
+    print data
+
+    assert reader.serialize(request)['name'] == "Українська"
+
+
