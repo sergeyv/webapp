@@ -382,7 +382,13 @@
         /// any URL, but the result is discarded, so it's only
         /// useful for async tasks
         // self.view.find("a.webappAsyncAction").click(function () {
-        $("body").on("click", "a.webappAsyncAction", function () {
+
+        // Need to remove and re-attach the handler, otherwise it's
+        // invoked multiple times. TODO: Move it outside of this class
+        // so it's only attached once
+        $("body")
+            .off("click", "a.webappAsyncAction")
+            .on("click", "a.webappAsyncAction", function () {
 
             var $link = $(this);
             /// if the link also has 'webappConfirmDialog' class,
@@ -448,11 +454,13 @@
                 /// If the view has such method,
                 /// it is invoked when the call succeeds
                 $($link.attr('class').split(' ')).each(function (idx, val) {
-                    var parts = val.split('-');
+                    var parts = val.split('-'),
+                        fn;
                     if (parts.length === 2 &&
                             parts[0] === "webappOnSuccess" &&
                             self[parts[1]]) {
-                        self[parts[1]]();
+                        fn = self[parts[1]];
+                        fn.apply(self);
                     }
                 });
             };
