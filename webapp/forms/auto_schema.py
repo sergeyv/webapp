@@ -72,7 +72,7 @@ def auto_schema(model_cls):
             else:
                 value = sc.String()
 
-            print "SETTING %s on %s to %s" % (attr.key, schema_cls, value)
+            #print "SETTING %s on %s to %s" % (attr.key, schema_cls, value)
             setattr(schema_cls, attr.key, value)
             # sc.Structure is based on _StructureMeta metaclass
             # which builds a list of all schema attributes when a new subclass
