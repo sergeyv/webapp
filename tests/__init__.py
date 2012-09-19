@@ -59,4 +59,5 @@ def setUp():
 
 def tearDown():
     webapp.Base.metadata.drop_all()
+    webapp.clear_dbsession()
     #raise Exception()

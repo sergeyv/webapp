@@ -5,8 +5,6 @@
 #     License: refer to LICENSE.txt
 ##########################################
 
-import threading
-
 from sqlalchemy import event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
@@ -22,8 +20,10 @@ from .stats import SessionStatsBase, before_cursor_execute
 
 _DBSession = None
 
+
 def get_session():
     return _DBSession()
+
 
 def get_session_class():
     return _DBSession
@@ -32,9 +32,19 @@ def get_session_class():
 def set_dbsession(session):
     global _DBSession
     if _DBSession is not None:
-        raise AttributeError("_DBSession has been already set!")
+        raise AttributeError("_DBSession has been already set to %s!" % _DBSession)
+
+    # raise Exception("GOTCHA: %s!" % session)
 
     _DBSession = session
+
+
+def clear_dbsession():
+    """
+    Clears the dbsession, used in testing teardown
+    """
+    global _DBSession
+    _DBSession = None
 
 
 class WebappBase(object):
@@ -48,10 +58,8 @@ class WebappBase(object):
     attributes to be present on its subclasses
     """
 
-
     def __unicode__(self):
         return str(self).decode('utf-8')
-
 
     def __str__(self):
 
@@ -69,10 +77,8 @@ class WebappBase(object):
 
         return "<%s %s>" % (self.__class__.__name__, id(self))
 
-
     def __repr__(self):
         return "<%s '%s'>" % (self.__class__.__name__, str(self))
-
 
     @classmethod
     def by_id(cls, object_id):
@@ -85,7 +91,7 @@ class WebappBase(object):
         if object_id is None:
             return None
         try:
-            result = get_session().query(cls).filter(cls.id==object_id).one()
+            result = get_session().query(cls).filter(cls.id == object_id).one()
         except InvalidRequestError:
             # If an object doesn't exist for this ID - return None
             #raise
@@ -96,7 +102,6 @@ class WebappBase(object):
             return None
 
         return result
-
 
     @classmethod
     def from_list_of_ids(cls, ids):
@@ -119,6 +124,7 @@ class WebappBase(object):
 
 Base = declarative_base(cls=WebappBase)
 
+
 def initialize_sql(db_string, db_echo, populate_fn=None):
 
     # zope.sqlalchemy is not present in worker processes -
@@ -137,7 +143,6 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
     set_dbsession(session)
 
     Base.metadata.bind = engine
-
 
     if populate_fn is not None:
         try:

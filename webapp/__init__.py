@@ -11,7 +11,7 @@ import webob.multidict
 webob.multidict.UnicodeMultiDict = webob.multidict.MultiDict
 
 
-from db import Base, initialize_sql, get_session, set_dbsession, get_session_class
+from db import Base, initialize_sql, get_session, set_dbsession, get_session_class, clear_dbsession
 
 from app_root import IRootCollection, RootCollection
 
