@@ -256,8 +256,9 @@
 
         if (self.data.stats && $("#stats-view").length) {
             $("#stats-query-count").text(self.data.stats.query_count);
-            $("#stats-time-elapsed").text(self.data.stats.time_elapsed * 1000);
-            $("#stats-total-time").text(self.data.stats.total_time * 1000);
+            $("#stats-total-time").text((self.data.stats.total_time||0 * 1000).toFixed(3));
+            $("#stats-query-time").text((self.data.stats.main_query_time||0 * 1000).toFixed(3));
+            $("#stats-serialize-time").text((self.data.stats.serialize_time||0 * 1000).toFixed(3));
             $.each(self.data.stats.queries || [], function (idx, val) {
                 q.push('<li>' + val[0] + '<strong> &mdash; ' + val[1] + '</strong></li>');
             });

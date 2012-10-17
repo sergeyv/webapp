@@ -2,6 +2,7 @@
 # from decimal import Decimal
 # import json
 # import cgi
+import time
 import transaction
 from zope.interface import Interface, implements
 
@@ -345,7 +346,6 @@ class DataFormatLister(DataFormatBase):
                 'next_batch_start': 123 # the start of the next batch sequence
             }
         """
-
         structure = self.structure
 
         # Structure can completely override the default logic
@@ -428,7 +428,9 @@ class DataFormatLister(DataFormatBase):
         query = query.offset(batch_start).limit(batch_size + 1)
 
         # query all the items
+        sa_start = time.time()
         items = query.all()
+        sa_end = time.time()
 
         if len(items) > batch_size:
             data['has_more'] = True
@@ -444,9 +446,11 @@ class DataFormatLister(DataFormatBase):
         #     i = item.serialize(format=format)
         #     result.append(i)
 
+        serialize_start = time.time()
         for model in items:
             i = self.serialize_item(model)
             result.append(i)
+        serialize_end = time.time()
 
         # except AttributeError, e:
         #     raise
@@ -454,6 +458,9 @@ class DataFormatLister(DataFormatBase):
         data['items'] = result
 
         data = _add_stats(data, request)
+
+        data['stats']['main_query_time'] = sa_end - sa_start
+        data['stats']['serialize_time'] = serialize_end - serialize_start
 
         # A hook for Structure to post-process the data
         if hasattr(structure, "post_process_data"):

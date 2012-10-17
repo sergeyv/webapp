@@ -16,18 +16,20 @@ import webapp
 # Query statistics tracking in Session and Sessions setup
 
 class QueryStats(object):
-    def __init__(self, query_count=0, time_elapsed=0):
-        self.query_count = query_count
-        self.time_elapsed = time_elapsed
-        self.queries = []
+    def __init__(self):
+        self.begin()
 
-    def add_query(self, statement, elapsed):
-        self.queries += [(statement, elapsed)]
-        #self.time_elapsed += elapsed
+    def add_query(self, statement, parameters):
+        self.queries += [(statement, parameters)]
+        # self.time_elapsed += elapsed
         self.query_count += 1
 
+    def begin(self):
+        self.query_count = 0
+        self.queries = []
+
     def __repr__(self):
-        return "%s(query_count=%d, time_elapsed=%0.4f)" % (self.__class__.__name__, self.query_count, self.time_elapsed)
+        return "%s(query_count=%d)" % (self.__class__.__name__, self.query_count)
 
 
 def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
@@ -43,4 +45,8 @@ class SessionStatsBase(SessionBase):
     def __init__(self, *args, **kw):
         SessionBase.__init__(self, *args, **kw)
         self.stats = QueryStats()
+
+        print "*"*80
+        print "SESSION CREATED"
+        print "*"*80
 
