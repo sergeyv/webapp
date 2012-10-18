@@ -366,7 +366,12 @@ class DataFormatBase(object):
             if isinstance(value, basestring) and name not in getattr(structure, '__no_html_escape__', set()):
                 value = cgi.escape(value)
 
-            data[name] = value
+            #if not getattr(structure.__do_not_serialize_nulls__, False) or value is not None:
+
+            # skip None values from the output to make the output more compact
+            # this potentially mak break the forms, need to check
+            if value is not None:
+                data[name] = value
 
         #print "EXTRACTED DATA: %s" % data
         return data
