@@ -74,7 +74,7 @@
         if (!self.template) {
             calls.push($.ajax({
                     url: self._get_template_load_url(),
-                    cache: false
+                    cache: true
                 }));
         } else {
             calls.push(null);
@@ -84,7 +84,7 @@
             calls.push($.ajax({
                     type: "GET",
                     url: self.getRestUrl("with-params"),
-                    cache: false
+                    cache: true
                 }));
         } else {
             calls.push(null);
@@ -97,7 +97,7 @@
                     $.ajax({
                         type: "GET",
                         url: webapp.templates_prefix + template_name + ".html",
-                        cache: false
+                        cache: true
                     })
                 );
             });
