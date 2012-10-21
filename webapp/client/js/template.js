@@ -59,7 +59,7 @@
         return webapp.templates_prefix + this.options.template_name + ".html";
     };
 
-    Template.prototype._get_ajax_calls = function () {
+    Template.prototype._initiate_ajax_calls = function () {
         /*
          * Returns a Deferred object which tracks the progress of zero or
          * more AJAX calls to load resources needed to render the view
@@ -71,6 +71,17 @@
         var self = this,
             calls = [];
 
+        /// abort all pending AJAX calls - in case the view is reloaded
+        /// before the previous request finished we're not interested in the
+        /// previous calls results anyway
+        /// NOTE: Commented out because it works kinda unpredictably
+        self._abort_ajax_calls();
+
+        if (self.current_ajax_calls) {
+            alert("The current calls haven't been aborted!");
+        }
+
+
         if (!self.template) {
             calls.push($.ajax({
                     url: self._get_template_load_url(),
@@ -81,7 +92,8 @@
         }
 
         if (self.options.need_load_data) {
-            calls.push($.ajax({
+            calls.push(
+                $.ajax({
                     type: "GET",
                     url: self.getRestUrl("with-params"),
                     cache: true
@@ -105,8 +117,8 @@
 
         self.current_ajax_calls = calls;
 
-        console.log("CALLS");
-        console.log(self.current_ajax_calls);
+        // console.log("CALLS");
+        // console.log(self.current_ajax_calls);
 
         return $.when.apply(null, calls);
     };
@@ -117,6 +129,11 @@
             args = arguments,
             template_xhr = args[0],
             data_xhr = args[1];
+
+        self._abort_ajax_calls();
+
+        console.log("in _ajax_finished of " + self.options.identifier);
+
         /// template_xhr may be null in case it's not the first time
         /// we're invoking this view (templates are loaded once
         /// and then cached)
@@ -126,7 +143,6 @@
 
         /// data_xhr may be null if need_load_data is false
         self.data = data_xhr?data_xhr[0]:{};
-
 
         /* attach auxillary templates - only on the first invocation */
         if (!self.aux_templates && self.options.aux_templates) {
@@ -151,7 +167,6 @@
 
         if (!self.options.is_partial) {
             // Show the view.
-            console.log("Set active view!");
             webapp.controller.setActiveView(self);
         } else {
             self.view.removeClass("loading");
@@ -168,16 +183,25 @@
          * Abort any pending AJAX calls - used before reloading the view
          * because we're not interested in the results of the previous calls
          */
-        if (this.current_ajax_calls) {
-            $.each(this.current_ajax_calls || [], function (idx, ajax) {
-                if (ajax) { ajax.abort(); }
+        var self = this;
+
+        console.log("in _abort_ajax_calls of " + self.options.identifier);
+
+        if (self.current_ajax_calls) {
+            console.log(" - calls to abort: " +  self.current_ajax_calls.length);
+            $.each(self.current_ajax_calls || [], function (idx, ajax) {
+                if (ajax) {
+                    ajax.abort();
+                }
             });
-            delete this.current_ajax_calls;
+            delete self.current_ajax_calls;
+        } else {
+            console.log(" - no calls to abort!");
         }
 
-        $.each(this.options.partials || [], function (idx, partial) {
+        /*$.each(this.options.partials || [], function (idx, partial) {
             partial._abort_ajax_calls();
-        });
+        });*/
 
     };
 
@@ -196,24 +220,28 @@
         var self = this,
             ajax_calls_deferred;
 
-        /// abort all pending AJAX calls - in case the view is reloaded
-        /// before the previous request finished we're not interested in the
-        /// previous calls results anyway
-        /// NOTE: Commented out because it works kinda unpredictably
-        ///self._abort_ajax_calls();
+        console.log("in reload of " + self.options.identifier);
 
         /// make sure we initiate template/json loading before we
         /// start loading the partials
-        ajax_calls_deferred = self._get_ajax_calls();
+        ajax_calls_deferred = self._initiate_ajax_calls();
+
+        console.log("0");
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
                 partial.event = self.event;
-                partial.deferred = partial._get_ajax_calls();
+                /// create a deferred but do not attach .done() to it -
+                /// we only want to deal with partials after
+                /// the main template is loaded. We do that in
+                /// ._ajax_finished() method
+                partial.deferred = partial._initiate_ajax_calls();
             });
         }
 
+        console.log("1");
         ajax_calls_deferred.done(function () {
+            console.log("2");
             self._ajax_finished.apply(self, arguments);
         });
     };
@@ -226,15 +254,18 @@
             txt,
             q = [];
 
+        console.log("in render of " + self.options.identifier);
+
+
         if (!self.template) {
-            alert("Template not found!");
+            window.alert("Template not found!");
         }
 
 
         try {
             self.view.html($.jqote(self.template, {data: self.data, view: self}));
         } catch (err) {
-            alert(err.message);
+            window.alert(err.message);
             if (!webapp.testmode) {
                 txt = "There was an error on this page.<br />" +
                       "Error description: <strong>" +

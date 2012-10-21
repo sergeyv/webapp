@@ -49,42 +49,6 @@
             params = $.extend({}, self.event.parameters, path_fragments),
             url = webapp.fillInPlaceholders(self.options.rest_service_root, params);
 
-        /*var self = this,
-            url = self.getRestBase(path_fragments),
-            params;
-
-        // Not every view needs to load data
-        if (!url) {
-            return "";
-        }
-
-        if (self.options.data_format) {
-            ///Check if the url ends with a slash and add
-            /// one if it doesn't
-            if (url.indexOf('/', url.length - 1) === -1) {
-                url += '/';
-            }
-            url += "@" + self.options.data_format;
-        }
-        */
-
-        /*if (with_params === "with-params" ) {
-            params = self.collectRestParams();
-        } else {
-            params = [];
-        }
-
-        if (extra_params) {
-            $.each(extra_params, function (key, value) {
-                params.push(key + "=" + value);
-            });
-        }
-
-        params = params.join("&");
-        if (params) {
-            url = url + "?" + params;
-        }*/
-
         return url;
     };
 
