@@ -76,6 +76,18 @@
             this.currentView.aboutToBeHidden();
         }
 
+        /*
+        if the view has no uri_args speicified (as when we're going to
+        the URL by clicking on a tab - we preserve the previous uri_args
+        which shows the page as it was when we left it the last time.
+
+        TODOXXX: need also to modify the actual address string!
+        */
+        var old_event = view.event||{uri_args:{}};
+        if ($.isEmptyObject(event.uri_args)) {
+            event.uri_args = old_event.uri_args;
+        };
+
         view.event = event;
         view.show();
 
