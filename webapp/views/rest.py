@@ -60,6 +60,9 @@ def json_rest_filters(context, request):
     Returns a list of possible filters for the current DataFormat:
     /rest/servers/@listing/filters
     """
+
+    time.sleep(10);
+
     return context.get_filters(request)
 
 
@@ -207,6 +210,9 @@ def json_rest_list_f(context, request, permission=""):
     """
     """
     start = time.time()
+
+    time.sleep(10);
+
     data = context.get_items_listing(request)
 
     data.setdefault('stats', {})['total_time'] = time.time() - start

@@ -71,16 +71,6 @@
         var self = this,
             calls = [];
 
-        /// abort all pending AJAX calls - in case the view is reloaded
-        /// before the previous request finished we're not interested in the
-        /// previous calls results anyway
-        /// NOTE: Commented out because it works kinda unpredictably
-        self._abort_ajax_calls();
-
-        if (self.current_ajax_calls) {
-            alert("The current calls haven't been aborted!");
-        }
-
 
         if (!self.template) {
             calls.push($.ajax({
@@ -115,11 +105,6 @@
             });
         }
 
-        self.current_ajax_calls = calls;
-
-        // console.log("CALLS");
-        // console.log(self.current_ajax_calls);
-
         return $.when.apply(null, calls);
     };
 
@@ -129,10 +114,6 @@
             args = arguments,
             template_xhr = args[0],
             data_xhr = args[1];
-
-        self._abort_ajax_calls();
-
-        console.log("in _ajax_finished of " + self.options.identifier);
 
         /// template_xhr may be null in case it's not the first time
         /// we're invoking this view (templates are loaded once
@@ -174,36 +155,8 @@
                 self.options.after_view_shown.apply(self);
             }
         }
-
-        delete self.current_ajax_calls;
     };
 
-    Template.prototype._abort_ajax_calls = function () {
-        /*
-         * Abort any pending AJAX calls - used before reloading the view
-         * because we're not interested in the results of the previous calls
-         */
-        var self = this;
-
-        console.log("in _abort_ajax_calls of " + self.options.identifier);
-
-        if (self.current_ajax_calls) {
-            console.log(" - calls to abort: " +  self.current_ajax_calls.length);
-            $.each(self.current_ajax_calls || [], function (idx, ajax) {
-                if (ajax) {
-                    ajax.abort();
-                }
-            });
-            delete self.current_ajax_calls;
-        } else {
-            console.log(" - no calls to abort!");
-        }
-
-        /*$.each(this.options.partials || [], function (idx, partial) {
-            partial._abort_ajax_calls();
-        });*/
-
-    };
 
     Template.prototype.show = function (container) {
         this.init();
@@ -217,14 +170,15 @@
          * and re-renders the view when they're loaded
          */
 
-        var self = this,
-            ajax_calls_deferred;
+        var self = this;
 
         console.log("in reload of " + self.options.identifier);
 
         /// make sure we initiate template/json loading before we
         /// start loading the partials
-        ajax_calls_deferred = self._initiate_ajax_calls();
+        self._initiate_ajax_calls().done(function () {
+            self._ajax_finished.apply(self, arguments);
+        });;
 
         console.log("0");
 
@@ -238,12 +192,6 @@
                 partial.deferred = partial._initiate_ajax_calls();
             });
         }
-
-        console.log("1");
-        ajax_calls_deferred.done(function () {
-            console.log("2");
-            self._ajax_finished.apply(self, arguments);
-        });
     };
 
     Template.prototype.render = function () {

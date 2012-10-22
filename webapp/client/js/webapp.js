@@ -52,6 +52,9 @@
 
         this.after_view_fully_loaded = null;
 
+        this.xhr_id = 0;
+        this.currently_active_xhrs = {};
+
         this.showMessage = function (msg, title) {
             /*
             Displays a message - a nicer replacement for
@@ -75,6 +78,20 @@
         $(function () {
             /// Ajax spinner
             $("body").append($('<div id="ajax-spinner">&nbsp;</div>'));
+
+            $(document).ajaxSend(function (e, jqx) {
+                /* add an unique ID to an XHR so we can tell them apart later */
+                webapp._rememberXHR(jqx);
+            });
+
+            $(document).ajaxComplete(function (e, jqx) {
+                webapp._forgetXHR(jqx);
+            });
+
+            $(document).ajaxError(function (e, jqx) {
+                webapp._forgetXHR(jqx);
+            });
+
             $('#ajax-spinner').ajaxStart(function () {
                 $(this).show();
             });
@@ -91,7 +108,18 @@
             $("#ajax-error").ajaxError(function (event, xhr, ajaxOptions, thrownError) {
 
                 var self = this,
-                    response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
+                    response;
+
+                /* aborted calls trigger ajaxError too - we don't want to
+                display any messages obviously. Also, responseText is null for
+                such responses and status = 0.
+                */
+                if (xhr.statusText == 'abort') {
+                    return;
+                }
+
+                response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
+
 
                 if (ajaxOptions.webapp_error_response_processed) {
                     return;
@@ -211,25 +239,6 @@
         this.serverErrorView = new webapp.View({identifier: "500"});
 	};
 
-
-	// I am the logging method that will work cross-browser, if there is a
-	// console or not. If no console is avilable, output is simply ignored
-	/*WebApp.prototype.log = function () {
-		// Check to see if there is a console to log to.
-		// IE9 has a crippled console.log object which does not have
-		// `apply` method:
-		// http://stackoverflow.com/questions/5472938/does-ie9-support-console-log-and-is-it-a-real-function
-		if (console && console.log && console.log.apply) {
-
-			// Use the built-in logger.
-			console.log.apply(console, arguments);
-
-		} else {
-            return;
-		}
-	};*/
-
-
 	WebApp.prototype.normalizeHash = function (hash) {
 		// Strip off front hash and trailing slash. This will
 		// convert hash values like "#/section/" into "#/section".
@@ -255,7 +264,6 @@
         );
 
     };
-
 
 
     WebApp.prototype.getEventContextForRoute = function (hash) {
@@ -380,6 +388,8 @@
         var self = webapp,
             context = self.getEventContextForRoute(address_change_event.value);
 
+        webapp.abortAllRequests();
+
         if (context.mapping) {
             // remember the url
             webapp.visitedUrlsLog.push(context.hash);
@@ -418,6 +428,31 @@
         window.location.hash = loc;
 
 	};
+
+    WebApp.prototype._rememberXHR = function (xhr) {
+        xhr._id = ++webapp.xhr_id;
+        webapp.currently_active_xhrs[xhr._id] = xhr;
+        console.log("Remembered id " + xhr._id);
+        console.log(webapp.currently_active_xhrs);
+    };
+
+    WebApp.prototype._forgetXHR = function (xhr) {
+        console.log("Forgetting id " + xhr._id);
+        delete webapp.currently_active_xhrs[xhr._id];
+        console.log(webapp.currently_active_xhrs);
+    };
+
+    WebApp.prototype.abortAllRequests = function () {
+        var r = [];
+        $.each(webapp.currently_active_xhrs, function (i, xhr) {
+            if (!xhr._webapp_unabortable) {
+                r.push(xhr._id);
+                xhr.abort();
+            }
+        });
+        webapp.currently_active_xhrs = {};
+        return r;
+    };
 
 
     WebApp.prototype.popupView = function (url, success_callback) {
