@@ -266,22 +266,23 @@
         if (first_lvl) {
             // Fill out data provided by server with defaults provided in the URI
 
-            var mergeobjs = function ( obj1, obj2 ) {
-                $.each(obj1, function (name, value) {
-                    if (value === null || typeof value === 'undefined') {
-                        if ( obj2.hasOwnProperty( name ) )
-                            obj1[ name ] = obj2[ name ];
+            var mergeobjs = function (obj1, obj2) {
+                /*
+                Recursively add values from obj2 which are missing in obj1
+                into obj1 in-place
+                */
+                $.each(obj2, function (name, value2) {
+                    var value1 = obj1[name];
+                    if (value1 === null || typeof value1 === 'undefined') {
+                        obj1[name] = value2;
                     }
-                    else if ( is_array( value ) && obj2.hasOwnProperty( name ) && is_array( obj2[ name ] ) )
-                    {
-                        if (!value.length && obj2[name].length > 0) {
-                            obj1[ name ] = obj2[ name ];
+                    else if (is_array(value1) && is_array(value2) ) {
+                        if (!value1.length && value2.length > 0) {
+                            obj1[name] = value2;
                         }
-                        //for ( var ai in value )
-                        //    mergeobjs( obj1[ name ][ ai ], obj2[ name ][ ai ] );
                     }
-                    else if (typeof value === 'object' && obj2.hasOwnProperty( name )) {
-                        mergeobjs(obj1[name], obj2[name]);
+                    else if (typeof value1 === 'object') {
+                        mergeobjs(value1, value2);
                     }
                 } );
             };
