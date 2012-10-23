@@ -76,6 +76,16 @@
            postpone registering the error handlers until later
         */
         $(function () {
+
+            $.ajaxSetup({
+                beforeSend: function (jqXHR, settings) {
+                    jqXHR._url = settings.url;
+                    jqXHR._start = new Date();
+                },
+                success: function (data, textStatus, jqXHR) {
+                    webapp._addRequestStats(data, textStatus, jqXHR);
+                }
+            });
             /// Ajax spinner
             $("body").append($('<div id="ajax-spinner">&nbsp;</div>'));
 
@@ -85,12 +95,18 @@
             });
 
             $(document).ajaxComplete(function (e, jqx) {
+                /* Called both on success and error */
                 webapp._forgetXHR(jqx);
             });
 
-            $(document).ajaxError(function (e, jqx) {
+            /*$(document).ajaxSuccess(function (e, jqx) {
+                webapp._addRequestStats(e, jqx);
+            });*/
+
+
+            /*$(document).ajaxError(function (e, jqx) {
                 webapp._forgetXHR(jqx);
-            });
+            });*/
 
             $('#ajax-spinner').ajaxStart(function () {
                 $(this).show();
@@ -221,12 +237,6 @@
 
     WebApp.prototype.getValidationRules = function (name) {
         return this.validation_rules[name];
-    };
-
-
-
-    WebApp.prototype.registerMenu = function (menu_id, tabs) {
-
     };
 
 
@@ -389,6 +399,7 @@
             context = self.getEventContextForRoute(address_change_event.value);
 
         webapp.abortAllRequests();
+        webapp.clearStats()
 
         if (context.mapping) {
             // remember the url
@@ -429,6 +440,9 @@
 
 	};
 
+
+    /* Request aborting stuff */
+
     WebApp.prototype._rememberXHR = function (xhr) {
         xhr._id = ++webapp.xhr_id;
         webapp.currently_active_xhrs[xhr._id] = xhr;
@@ -453,6 +467,59 @@
         webapp.currently_active_xhrs = {};
         return r;
     };
+
+    /* End request aborting stuff */
+
+
+    /* stats stuff */
+    WebApp.prototype._addRequestStats = function (data, textStatus, jqx) {
+        var $stats = $("#stats-view"),
+            $cont = $('<dl class="statsContainer"></dl>'),
+            millis = new Date() - jqx._start,
+            out = [];
+
+        /* TODOXXX: this is a dependency on helpers.js which is not included in webapp */
+        out.push('<dt><strong>' + jqx._url + '</strong> - '
+            + webapp.helpers.readable_bytes(jqx.responseText.length)
+            + ' in ' + millis + 'ms.</dt>');
+
+        if (data.stats) {
+            // this is how to concatenate two arrays in JS
+            out.push.apply(out, [
+                '<dd><strong>',
+                data.stats.query_count,
+                ' queries</strong>, main query in ',
+                (data.stats.main_query_time||0 * 1000).toFixed(3),
+                's</dd>',
+                '<dd><strong>',
+                (data.stats.total_time||0 * 1000).toFixed(3),
+                's Python time</strong>',
+                ' - ',
+                (data.stats.serialize_time||0 * 1000).toFixed(3),
+                ' spent in serializer</dd>'
+                ]);
+
+            if (data.stats.queries) {
+                out.push('<dd><strong>Queries:</strong><ol>');
+                $.each(data.stats.queries, function (idx, val) {
+                    out.push('<li>' + val + '</li>');
+                });
+                out.push('</ol></dd>');
+            }
+
+            // out.push('</ul></dd>');
+        }
+
+        $cont.append(out.join(''));
+        $cont.appendTo($stats);
+    };
+
+
+    WebApp.prototype.clearStats = function () {
+        $("#stats-view").html('');
+    };
+
+    /* end stats stuff */
 
 
     WebApp.prototype.popupView = function (url, success_callback) {

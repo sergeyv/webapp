@@ -183,7 +183,11 @@ def json_rest_get_f(context, request):
     Returns a json dict representing the given object's data serialized using
     the current data format
     """
-    return context.read(request)
+    start = time.time()
+    data = context.read(request)
+
+    data.setdefault('stats', {})['total_time'] = time.time() - start
+    return data
 
 
 @view_config(context=IDataFormat,
