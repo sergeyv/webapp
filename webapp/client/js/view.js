@@ -43,12 +43,13 @@
 
 
     View.prototype.modified_url = function (args) {
-        var url = this.event.location,
+        var url = this.event.location; /*,
             slack = '';
         $.each(args, function (key, value) {
             slack += '|' + key + ':' + value;
         });
-        return url + slack;
+        return url + slack;*/
+        return url + '(json):' + encodeURIComponent(JSON.stringify(args));
     };
 
     View.prototype.new_filter_url = function (attr, value) {

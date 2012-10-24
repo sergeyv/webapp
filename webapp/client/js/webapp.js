@@ -282,10 +282,22 @@
         Returns an eventContext object - if a mapping matched, it'll have
         'mapping' attribute set to that mapping, otherwise the 'mapping'
         attribute will be null.
+
+        The slack hash can contain parameters which are either passed as
+
+        #/path/to/view|param1:value|param2:value|compound.key1:value|compound.key2:value
+
+        or as
+
+        #/path/to/view(json):{"name":"John"}
+
+        the latter is preferable as it uses built-in jquery method to parse the data
+        and avoids issues with using | and : in data values.
         */
         var self = this,
             normalized_hash = self.normalizeHash(hash),
-            parts = normalized_hash.split('|'),
+            json_separated_parts = normalized_hash.split('(json):'),
+            parts = json_separated_parts[0].split('|'),
             uri_args = {},
             i,
             pair,
@@ -296,6 +308,18 @@
                 eventContext.parameters[mapping.parameters[index]] = value;
             };
 
+
+        if (json_separated_parts[1]) {
+            uri_args = $.parseJSON(decodeURIComponent(json_separated_parts[1]));
+        }
+
+        /* TODOXXX: passing parameters as |param1:value1|param2:value2
+            is deprecated, leaving it here for backwards compat with any
+            manually-constructed URLS that might be out there.
+            Use json parameters instead
+
+            DEPRECATED CODE
+         */
         // note that we're starting with the 1st element, skipping
         /// the 0th, which goes into event's 'location' attribute
         for (i = 1; i < parts.length; i += 1) {
@@ -337,6 +361,7 @@
             else
                 uri_args[pair[0]] = pair[1];
         }
+        /* END OF DEPRECATED CODE */
 
         // Define the default event context.
         eventContext = {
