@@ -91,10 +91,11 @@
             title = self.event.parameters.title || self.options.title,
             button_title = self.event.parameters.button_title || self.options.button_title;
 
+        /*<button type="button" class="btn btn-link">Link</button>*/
         if (self.options.need_save_data) {
-            self.view.find(".actions").append("&nbsp; or &nbsp;<a class=\"formCancelLink\" href=\"#/\">Cancel</a>");
+            self.view.find(".actions").append('&nbsp; or<button type="button" class="btn btn-link formCancelLink">Cancel</button>');
         } else {
-            self.view.find(".actions").html("<a class=\"formCancelLink\" href=\"#/\">Close</a>");
+            self.view.find(".actions").html('<button type="button" class="btn btn-link formCancelLink">Close</button>');
         }
         self.cancelLink = self.view.find("a.formCancelLink");
 
@@ -141,7 +142,7 @@
             self.cancelLink.attr('href', webapp.previousPageUrl());
             self.cancelLink.click(function () {});
         }
-        self.view.find("#" + self.options.identifier + "-action").val(button_title);
+        self.view.find("#" + self.options.identifier + "-action").val(button_title).addClass('btn btn-primary');
 
         // Init formish form
         self.view.formish();
