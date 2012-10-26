@@ -184,14 +184,22 @@ class DataFormatCreator(DataFormatReader):
 
     def create(self, request):
         """
+        Creates an item and returns item's id
+
+        Checks if the structure has a create method and calls the structuye's
+        method if exists, otherwise calls do_create
         """
-
-        structure = self.structure
-
         # Structure can completely override the default logic
-        if hasattr(structure, "create"):
-            return structure.create(self, request)
+        if hasattr(self.structure, "create"):
+            return self.structure.create(self, request)
 
+        resource = self.do_create(request)
+        return {'item_id': resource.model.id}
+
+    def do_create(self, request):
+        """
+        Creates an item and returns item's id
+        """
         params = request.json_body  # json.loads(request.body)
         params = dottedish.api.unflatten(params.items())
 
@@ -206,7 +214,7 @@ class DataFormatCreator(DataFormatReader):
         if hasattr(resource, "after_item_created"):
             resource.after_item_created(self, request)
 
-        return {'item_id': resource.model.id}
+        return resource
 
 
 class DataFormatReadWrite(DataFormatReader, DataFormatWriter):

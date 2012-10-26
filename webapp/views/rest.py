@@ -49,7 +49,6 @@ def json_rest_empty(context, request):
     return context.get_empty(request)
 
 
-
 @view_config(name="filters",
     context=IDataFormatLister,
     permission="rest.list",
@@ -91,7 +90,6 @@ def json_rest_incremental(context, request):
     return {'result': "HELLO! Nothing found!"}
 
 
-
 @view_config(context=crud.ICollection,
     permission="rest.delete",
     request_method="DELETE",
@@ -119,7 +117,6 @@ def json_rest_delete_subitems(context, request):
 
     # TODO: Do something meaningful
     return {'result': "OK"}
-
 
 
 @view_config(context=crud.IResource,
@@ -167,8 +164,12 @@ def context_implements(*types):
     custom_predicates=(context_implements(IDataFormatCreator),)
     )
 def json_rest_create_f(context, request):
-    return context.create(request)
 
+    # for i in range(10):
+    #     print "z..."
+    #     time.sleep(1)
+
+    return context.create(request)
 
 
 @view_config(context=IDataFormat,
@@ -219,7 +220,9 @@ def json_rest_list_f(context, request, permission=""):
 
     data = context.get_items_listing(request)
 
-    data.setdefault('stats', {})['total_time'] = time.time() - start
+    if isinstance(data, dict):
+        data.setdefault('stats', {})['total_time'] = time.time() - start
+
     return data
 
 
@@ -242,7 +245,6 @@ def _do_validate(context, request):
     format = context
     res_or_coll = format.__parent__
     structure = format.structure
-
 
     if hasattr(structure, validator_name):
         return getattr(structure, validator_name)(format, request)

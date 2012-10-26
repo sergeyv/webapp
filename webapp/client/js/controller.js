@@ -61,6 +61,7 @@
 
         event.is_popup = true;
         view.event = event;
+
         view.show();
 
     };

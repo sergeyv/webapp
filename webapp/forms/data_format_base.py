@@ -112,7 +112,7 @@ class DataFormatBase(object):
     def __acl__(self):
         return getattr(self.structure, '__acl__', [])
 
-    def _type_serialize_string(self, value):
+    def _type_deserialize_string(self, value):
         # Convert empty strings to NULLs
         # and prevent storing None as 'None' string
         # - otherwise it fails with empty values
@@ -123,17 +123,17 @@ class DataFormatBase(object):
         return unicode(value).encode('utf-8')
         #return str(value)  # strangely, this does not cause the test to fail either
 
-    def _type_serialize_int(self, value):
+    def _type_deserialize_int(self, value):
         if value:
             return int(value)
         return None
 
-    def _type_serialize_decimal(self, value):
+    def _type_deserialize_decimal(self, value):
         if value:
             return Decimal(value)
         return None
 
-    def _type_serialize_date(self, value):
+    def _type_deserialize_date(self, value):
         if value:
             # TODO: Need to improve this. Use dateutil?
             value = value.split('T')[0]  # strip off the time part
@@ -142,15 +142,16 @@ class DataFormatBase(object):
             d = None
         return d
 
-    def _type_serialize_datetime(self, value):
+    def _type_deserialize_datetime(self, value):
         if value:
-            # TODO: proper format here
-            dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+            # Make sure the format is in sync with
+            # webapp.renderers._JSONDateEncoder
+            dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
         else:
             dt = None
         return dt
 
-    def _type_serialize_boolean(self, value):
+    def _type_deserialize_boolean(self, value):
         if str(value).lower() in ('true', 'yes', '1'):
             value = True
         elif str(value).lower() in ('false', 'no', '0'):
@@ -163,12 +164,12 @@ class DataFormatBase(object):
         return value
 
     TYPE_SERIALIZERS_MAP = {
-        sc.String: _type_serialize_string,
-        sc.Integer: _type_serialize_int,
-        sc.Decimal: _type_serialize_decimal,
-        sc.Date: _type_serialize_date,
-        sc.DateTime: _type_serialize_datetime,
-        sc.Boolean: _type_serialize_boolean,
+        sc.String: _type_deserialize_string,
+        sc.Integer: _type_deserialize_int,
+        sc.Decimal: _type_deserialize_decimal,
+        sc.Date: _type_deserialize_date,
+        sc.DateTime: _type_deserialize_datetime,
+        sc.Boolean: _type_deserialize_boolean,
     }
 
     def _save_structure(self, resource, schema, data, request):

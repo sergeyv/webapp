@@ -46,7 +46,7 @@ class SessionStatsBase(SessionBase):
         SessionBase.__init__(self, *args, **kw)
         self.stats = QueryStats()
 
-        print "*"*80
-        print "SESSION CREATED"
-        print "*"*80
+        #print "*"*80
+        #print "SESSION CREATED"
+        #print "*"*80
 
