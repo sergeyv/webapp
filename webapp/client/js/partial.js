@@ -15,7 +15,7 @@
      * Ultimately this need to be fixed by not sharing the event object between
      * views - can we use some kind of "multi-hash-slack" which would combine
      * the states of the main view and all the partials and popups? That may result
-     * in a huge URLs...
+     * in huge URLs...
      *
      * Something like
      *
@@ -23,6 +23,9 @@
      *
      * (in the above example, we have a listing of Clients sorted by name with a portlet which shows
      * Projects sorted by num_tasks, and a popup form displayed over it)
+     *
+     * (NOTE, however, that we're switching to using JSON to store parameters on the hash slack,
+     * so the url should use JSON dicts)
      *
      * Alternatively, if we make the views to store their state between displays
      * (i.e. if a listing has been sorted by name, it stays sorted when we re-visit it),
@@ -54,7 +57,7 @@
     Partial.prototype.getRestUrl = function (with_params, path_fragments, extra_params) {
         var self = this,
             url = self.getRestBase(path_fragments),
-            params;
+            params = [];
 
         // Not every view needs to load data
         if (!url) {
@@ -69,6 +72,21 @@
             }
             url += "@" + self.options.data_format;
         }
+
+        /* a view can define an function to provide additional rest parameters */
+        /* TODOXXX: this has been copied from View.collectRestParams */
+        if (self.options.rest_params_method) {
+            $.each(self.options.rest_params_method.apply(self), function (key, value) {
+                params.push(key + "=" + value);
+            });
+        }
+        params = params.join("&");
+        if (params) {
+            url = url + "?" + params;
+        }
+        /* === */
+
+
         return url;
     };
 

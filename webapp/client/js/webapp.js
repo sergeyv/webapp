@@ -508,7 +508,7 @@
             + webapp.helpers.readable_bytes(jqx.responseText.length)
             + ' in ' + millis + 'ms.</dt>');
 
-        if (data.stats) {
+        if (data && data.stats) {
             // this is how to concatenate two arrays in JS
             out.push.apply(out, [
                 '<dd><strong>',
@@ -531,7 +531,6 @@
                 });
                 out.push('</ol></dd>');
             }
-
             // out.push('</ul></dd>');
         }
 

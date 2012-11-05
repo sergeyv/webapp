@@ -15,6 +15,8 @@
         - before_view_shown (function)
         - after_view_shown (function)
         - aux_templates - a list of auxillary templates to be loaded along with the main template
+        - rest_params_method - a method which should return an object, key=value pairs from which
+                               will be appended to the REST url
         */
         var opts = $.extend({
             need_load_data: true,

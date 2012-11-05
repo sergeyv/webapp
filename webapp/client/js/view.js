@@ -98,6 +98,15 @@
         $.each(self.event.uri_args, function (key, value) {
             params.push(key + "=" + value);
         });
+
+
+        /* a view can define an function to provide additional rest parameters */
+        if (self.options.rest_params_method) {
+            $.each(self.options.rest_params_method.apply(self), function (key, value) {
+                params.push(key + "=" + value);
+            });
+        }
+
         return params;
     };
 

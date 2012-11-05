@@ -210,7 +210,6 @@ def test_serialize_string():
 
     UNICODE_STRING = "Українська"
 
-    #import pdb; pdb.set_trace()
     s.name = UNICODE_STRING
     data = reader.serialize(request)
     print data
