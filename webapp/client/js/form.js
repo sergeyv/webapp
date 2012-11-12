@@ -408,7 +408,6 @@
                     if (!$elem.hasClass('dependent')) {
                         $master_elem.change(function () {
                             if ($(this).val()) {
-                                console.log("reloading");
                                 self.reloadLoadable($elem);
                             } else {
                                 self.hideListbox($elem);
@@ -551,8 +550,6 @@
 
         /// need to clear the listbox so any dependent listboxes
         /// are getting hidden too
-        console.log("Hiding...");
-        console.log($select);
 
         if ($select.data('displaytype') === 'disable') {
             $select.attr('disabled', 'disabled');
@@ -568,9 +565,6 @@
     Form.prototype.showListbox = function ($select) {
         /// shows a loadable listbox after it's loaded
         /// or if it's parent is selected
-
-        console.log("Showing...");
-        console.log($select);
 
         if ($select.data('displaytype') === 'disable') {
             $select.removeAttr('disabled');
