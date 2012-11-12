@@ -408,6 +408,7 @@
                     if (!$elem.hasClass('dependent')) {
                         $master_elem.change(function () {
                             if ($(this).val()) {
+                                console.log("reloading");
                                 self.reloadLoadable($elem);
                             } else {
                                 self.hideListbox($elem);
@@ -506,13 +507,19 @@
                     $.each(orig, function(idx, obj) {
                         ids[obj.id] = true;
                     });
-                    $.each(data.items, function (idx, value) {
+                } else {
+                    ids[orig] = true;
+                }
+                    /*$.each(data.items, function (idx, value) {
                         var opt = $("<option/>").val(value[0]).html(value[1]);
                         if (ids[value[0]]) {
                             opt.attr("selected", "selected");
                         }
                         opt.appendTo($select);
-                    });
+                    });*/
+                //} else {
+                if (data.items.length == 0) {
+                    self.hideListbox($select);
                 } else {
                     /* add an empty option for Chosen default text support
                     - only add the option only if there are more than 1 results,
@@ -521,13 +528,17 @@
                     if (data.items.length > 1) {
                         $('<option value=""></option>').appendTo($select);
                     }
+
                     $.each(data.items, function (idx, value) {
-                        $("<option/>").val(value[0]).html(value[1]).appendTo($select);
+                        var opt = $("<option/>").val(value[0]).html(value[1]).appendTo($select);
+                        if (ids[value[0]]) {
+                            opt.attr("selected", "selected");
+                        }
                     });
-                    $select.val(orig);
+                    self.showListbox($select);
                 }
+
                 $select.removeData("original_value");
-                self.showListbox($select);
                 $select.change();
             });
         }
@@ -540,7 +551,9 @@
 
         /// need to clear the listbox so any dependent listboxes
         /// are getting hidden too
-        $select.val('').change();
+        console.log("Hiding...");
+        console.log($select);
+
         if ($select.data('displaytype') === 'disable') {
             $select.attr('disabled', 'disabled');
             $select.parent().find('.iconAdd').hide(); // hide the add button
@@ -548,11 +561,17 @@
             $select.parents("div.field").hide();
         }
 
+        $select.val('').change().trigger("liszt:updated");
+
     };
 
     Form.prototype.showListbox = function ($select) {
         /// shows a loadable listbox after it's loaded
         /// or if it's parent is selected
+
+        console.log("Showing...");
+        console.log($select);
+
         if ($select.data('displaytype') === 'disable') {
             $select.removeAttr('disabled');
             $select.parent().find('.iconAdd').show(); // show the add button
@@ -561,11 +580,11 @@
         }
 
         /* Turn dropdown into a chosen select */
-        if (!$select.hasClass("chosenInitialized")) {
+        /*if (!$select.hasClass("chosenInitialized")) {
             $select.addClass("chosenInitialized").chosen();
-        } else {
-            $select.trigger("liszt:updated");
-        }
+        } else {*/
+        $select.trigger("liszt:updated");
+        //}
 
         //$('.chzn-drop .chzn-search input[type="text"]').focus();
         $select.next().find('input[type="text"]').focus();
