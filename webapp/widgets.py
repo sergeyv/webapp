@@ -21,7 +21,9 @@ class LoadableListbox(Widget):
             form['controller_id'].widget = \\
                 webapp.LoadableListbox(load_from="/rest/controllers/@vocab")
 
-    the only parameter is ``load_from``, which is the URL from which
+    *Parameters:*
+
+    - ``load_from`` is the URL from which
     the widget will load its data.
 
     It's also possible to load data from a dynamic URL and to have dependent
@@ -30,7 +32,7 @@ class LoadableListbox(Widget):
         form['image_id'].widget = \\
             webapp.LoadableListbox(load_from="/rest/controllers/:%s/images/@vocab" % form['controller_id'].cssname)
 
-    if ``add_popup`` parameter is specified, a small + icon will be displayed
+    - if ``add_popup`` parameter is specified, a small + icon will be displayed
     next to the dropdown. Clicking on the icon will display a form which
     allows to add a new item to the list (the form needs to be configured separately)::
 
@@ -38,6 +40,12 @@ class LoadableListbox(Widget):
             load_from="/rest/retailers/@vocab",
             add_popup="#/retailers/add",
         )
+
+    - 'disabled_display' - if set to "disabled", any dependent loadables which are
+    not yet loaded will be rendered as disabled Chosen selects. If omitted or set to
+    "hidden", the dependent loadables will be hidden.
+
+    - 'default_text' - placeholder displayed when nothing is selected. Defaults to "(please select)"
 
     """
 
@@ -47,11 +55,11 @@ class LoadableListbox(Widget):
     def __init__(self, **k):
         self.load_from = k.pop('load_from', '')
         self.add_popup = k.pop('add_popup', '')
-        self.display = k.pop('display', '')
+        self.disabled_display = k.pop('disabled_display', '')
         self.multiselect = k.pop('multiselect', False)
+        self.default_text = k.pop('default_text', '(please select)')
 
         Widget.__init__(self, **k)
-
 
 
 class FieldsetSwitcher(SelectChoice):
@@ -117,7 +125,6 @@ class Tabular(SequenceDefault):
         output.append('</tr>')
 
         return "".join(output)
-
 
     def column_visibility(self, field):
         """

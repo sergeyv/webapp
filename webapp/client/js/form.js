@@ -146,8 +146,6 @@
 
         // Init formish form
         self.view.formish();
-
-        //self.view.find("select").chosen();
     };
 
     Form.prototype.augmentView = function () {
@@ -445,6 +443,9 @@
 
         self.form.find('div.loadableListbox').each(function () {
             var $select = $(this).find('select');
+            $select.addClass("chosenInitialized").chosen({
+                disable_search_threshold: 3
+            });
             self.hideListbox($select);
             self.reloadLoadable($select);
         });
@@ -513,7 +514,13 @@
                         opt.appendTo($select);
                     });
                 } else {
-                    $('<option value="">- choose -</option>').appendTo($select);
+                    /* add an empty option for Chosen default text support
+                    - only add the option only if there are more than 1 results,
+                    otherwise just select the first result automatically
+                    */
+                    if (data.items.length > 1) {
+                        $('<option value=""></option>').appendTo($select);
+                    }
                     $.each(data.items, function (idx, value) {
                         $("<option/>").val(value[0]).html(value[1]).appendTo($select);
                     });
@@ -549,10 +556,19 @@
         if ($select.data('displaytype') === 'disable') {
             $select.removeAttr('disabled');
             $select.parent().find('.iconAdd').show(); // show the add button
-
         } else {
             $select.parents("div.field").show();
         }
+
+        /* Turn dropdown into a chosen select */
+        if (!$select.hasClass("chosenInitialized")) {
+            $select.addClass("chosenInitialized").chosen();
+        } else {
+            $select.trigger("liszt:updated");
+        }
+
+        //$('.chzn-drop .chzn-search input[type="text"]').focus();
+        $select.next().find('input[type="text"]').focus();
 
     };
 
