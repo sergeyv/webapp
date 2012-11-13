@@ -299,17 +299,18 @@ def _add_stats(data, request):
         import webapp
         sess = webapp.get_session()
 
-        if settings.get('debug_templates', False):
-            stats = {
-                'query_count': sess.stats.query_count,
-                'queries': sess.stats.queries,
-            }
-        else:
-            stats = {
-                'query_count': sess.stats.query_count,
-            }
+        if hasattr(sess, "stats"):
+            if settings.get('debug_templates', False):
+                stats = {
+                    'query_count': sess.stats.query_count,
+                    'queries': sess.stats.queries,
+                }
+            else:
+                stats = {
+                    'query_count': sess.stats.query_count,
+                }
 
-        data['stats'] = stats
+            data['stats'] = stats
     return data
 
 
@@ -467,8 +468,9 @@ class DataFormatLister(DataFormatBase):
 
         data = _add_stats(data, request)
 
-        data['stats']['main_query_time'] = sa_end - sa_start
-        data['stats']['serialize_time'] = serialize_end - serialize_start
+        if 'stats' in data:
+            data['stats']['main_query_time'] = sa_end - sa_start
+            data['stats']['serialize_time'] = serialize_end - serialize_start
 
         # A hook for Structure to post-process the data
         if hasattr(structure, "post_process_data"):
