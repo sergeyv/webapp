@@ -121,6 +121,15 @@ class WebappBase(object):
 
         return result
 
+    def __setattr__(self, name, value):
+        """
+        Raise an exception if attempting to assign to an atribute which does not exist in the model.
+        We're not checking if the attribute is an SQLAlchemy-mapped column because we also want it to work with properties etc.
+        See http://stackoverflow.com/questions/12032260/ for more details.
+        """
+        if name != "_sa_instance_state" and not hasattr(self, name):
+            raise ValueError("Attribute %s is not a mapped column of object %s" % (name, self))
+        super(WebappBase, self).__setattr__(name, value)
 
 Base = declarative_base(cls=WebappBase)
 
