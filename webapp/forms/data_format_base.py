@@ -178,10 +178,15 @@ class DataFormatBase(object):
         model = resource.model
         flattened = getattr(schema, "__flatten_subforms__", [])
 
+        transient_attrs = getattr(schema, '__transient_attributes__', [])
+
         for (name, attr) in attrs:
             value = data.get(name, _marker)
             if value is _marker:
                 ### No data passed for attr - should we ignore or raise an error?
+                continue
+
+            if name in transient_attrs:
                 continue
 
             if hasattr(schema, 'deserialize_' + name):

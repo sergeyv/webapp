@@ -362,17 +362,19 @@ class DataFormatLister(DataFormatBase):
             return structure.listing(self, request)
 
         collection = self.__parent__
-        #format = request.GET.get('format', 'listing')
 
         order_by = request.GET.get('sort_on', None)
-        sort_order = request.GET.get('sort_order', None)
 
         # Proceed with the standard processing
         if order_by is not None:
+            sort_order = request.GET.get('sort_order', None)
             if sort_order == 'desc':
                 order_by = "-%s" % order_by
             else:
                 order_by = "+%s" % order_by
+        else:
+            if hasattr(structure, '__order_by__'):
+                order_by = structure.__order_by__
 
         data = {}
 
@@ -447,22 +449,11 @@ class DataFormatLister(DataFormatBase):
 
         result = []
 
-        # # wrap SA objects
-        # items = [collection.wrap_child(model=model, name=str(model.id)) for model in items]
-
-        # # serialize the results
-        # for item in items:
-        #     i = item.serialize(format=format)
-        #     result.append(i)
-
         serialize_start = time.time()
         for model in items:
             i = self.serialize_item(model)
             result.append(i)
         serialize_end = time.time()
-
-        # except AttributeError, e:
-        #     raise
 
         data['items'] = result
 
