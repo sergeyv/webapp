@@ -174,15 +174,11 @@
 
         var self = this;
 
-        console.log("in reload of " + self.options.identifier);
-
         /// make sure we initiate template/json loading before we
         /// start loading the partials
         self._initiate_ajax_calls().done(function () {
             self._ajax_finished.apply(self, arguments);
         });;
-
-        console.log("0");
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -196,6 +192,16 @@
         }
     };
 
+
+    Template.prototype.update_data = function (data) {
+        /*
+        updates the data and re-renders the view - useful when some ajax
+        call returns (partial) data and we want to refresh the view
+        */
+        $.extend(this.data, data);
+        this.render();
+    };
+
     Template.prototype.render = function () {
         /*
          * Renders the already-loaded template and data
@@ -203,8 +209,6 @@
         var self = this,
             txt,
             q = [];
-
-        console.log("in render of " + self.options.identifier);
 
 
         if (!self.template) {
