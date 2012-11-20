@@ -178,15 +178,3 @@ class CombinationField(Widget):
         super(CombinationField, self).__init__(**k)
 
 
-class PhoneNumber(StructureDefault):
-    """
-    Widget in a similar fashion to a combination of fields
-    i.e it'll retrieve the information from field of some sort and do shit with it yaaaay
-    """
-    type = 'PhoneNumber'
-    template = 'phonenumber.-'
-
-    def __init__(self, **k):
-        self.show_extension = k.pop('show_extension', '')
-        super(PhoneNumber, self).__init__(**k)
-
