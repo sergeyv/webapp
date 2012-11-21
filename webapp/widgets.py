@@ -36,9 +36,9 @@ class LoadableListbox(Widget):
     next to the dropdown. Clicking on the icon will display a form which
     allows to add a new item to the list (the form needs to be configured separately)::
 
-        form ['retailer_id'].widget = webapp.widgets.LoadableListbox(
-            load_from="/rest/retailers/@vocab",
-            add_popup="#/retailers/add",
+        form ['company_id'].widget = webapp.widgets.LoadableListbox(
+            load_from="/rest/companies/@vocab",
+            add_popup="#/companies/add",
         )
 
     - 'disabled_display' - if set to "disabled", any dependent loadables which are
