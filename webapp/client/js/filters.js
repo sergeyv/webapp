@@ -35,8 +35,8 @@
         /*
         * Finds and replaces placeholders in the rest_service_root
         * options parameters with the actual values from the 'event.parameters' dict
-        * so if we have a view registered at /companies/:company_id/staff/:person_id, and its rest_service_root is
-        * /rest/companies/:company_id/:person_id, the view will load its data from /rest/companies/123/456
+        * so if we have a view registered at /companies/:company_id/staff/:staff_id, and its rest_service_root is
+        * /rest/companies/:company_id/:staff_id, the view will load its data from /rest/companies/123/456
         *
         * The resulting URL includes format name and any resp parameters, so it looks like
         * /rest/companies/123/contacts/@listing?sort_on=name&batch_start=50
