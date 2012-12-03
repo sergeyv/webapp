@@ -177,7 +177,7 @@ class DataFormatBase(object):
         attrs = schema.attrs
         model = resource.model
 
-        session = webapp.get_session()  # sa.orm.object_session(model)
+        session = sa.orm.object_session(model)
 
         flattened = getattr(schema, "__flatten_subforms__", [])
 
@@ -245,7 +245,7 @@ class DataFormatBase(object):
                     items = []
                     for id in value:
                         # item = submodels_cls.by_id(id)
-                        item = session.query(submodels_cls).get(submodels_cls.id==id)
+                        item = session.query(submodels_cls).get(submodels_cls.id == id)
                         items.append(item)
 
                     setattr(model, name, items)
