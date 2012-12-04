@@ -180,18 +180,6 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
     # conn.execute("CREATE EXTENSION pgcrypto")
     conn.execute("COMMIT")
 
-    print "Creating acme schema"
-    conn.execute("BEGIN")
-    conn.execute("DROP SCHEMA IF EXISTS acme CASCADE")
-    conn.execute("CREATE SCHEMA acme")
-    conn.execute("COMMIT")
-    conn.execute("SET search_path TO acme")
-    print conn.execute("SELECT current_schema()").scalar()
-    Base.metadata.create_all(bind=conn)
-    # conn.execute("CREATE EXTENSION pgcrypto")
-    conn.execute("COMMIT")
-
-
     if populate_fn is not None:
         try:
             populate_fn()
