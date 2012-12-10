@@ -164,21 +164,21 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
     conn = engine.connect()
     conn = conn.execution_options(autocommit=False)
 
-    conn.execute("BEGIN")
-    conn.execute("DROP SCHEMA IF EXISTS mooball CASCADE")
-    conn.execute("CREATE SCHEMA mooball")
-    conn.execute("COMMIT")
-    conn.execute("SET search_path TO mooball")
-    print conn.execute("SELECT current_schema()").scalar()
+    # conn.execute("BEGIN")
+    # conn.execute("DROP SCHEMA IF EXISTS mooball CASCADE")
+    # conn.execute("CREATE SCHEMA mooball")
+    # conn.execute("COMMIT")
+    # conn.execute("SET search_path TO mooball")
+    # print conn.execute("SELECT current_schema()").scalar()
     # without an explicit bind, create_all may check out a random
     # connection from the pool, which may be different from the one we called
     # search_path on
-    Base.metadata.create_all(bind=conn)
+    # Base.metadata.create_all(bind=conn)
     # TODOXXX: Can we create the extension in a separate schema once
     # so we don't have to create it in every "workspace" schema individually?
     # IN addition, one needs to be a super-user to be able to create extensions
     # conn.execute("CREATE EXTENSION pgcrypto")
-    conn.execute("COMMIT")
+    # conn.execute("COMMIT")
 
     if populate_fn is not None:
         try:
