@@ -81,47 +81,6 @@ class WebappBase(object):
     def __repr__(self):
         return "<%s '%s'>" % (self.__class__.__name__, str(self))
 
-    @classmethod
-    def by_id(cls, object_id):
-        """
-        Returns a single object by its ID, may return None
-
-        TODOXXX: Need to use session.query(ClassName).get(id) instead
-        """
-
-        if object_id is None:
-            return None
-        try:
-            result = get_session().query(cls).filter(cls.id == object_id).one()
-        except InvalidRequestError:
-            # If an object doesn't exist for this ID - return None
-            #raise
-            return None
-        except NoResultFound:
-            ## Hmm... now SA raises NoResultFound...
-            ##raise
-            return None
-
-        return result
-
-    @classmethod
-    def from_list_of_ids(cls, ids):
-        """
-        Returns a list of objects which IDs match the list
-        passed to the function
-
-        NOTE: Doesn't preserve order!
-        """
-
-        try:
-            result = get_session().query(cls).filter(cls.id.in_(ids)).all()
-        except InvalidRequestError:
-            # If nothing found - return an empty list
-            # (though I'm not sure we need this here)
-            return []
-
-        return result
-
     def __setattr__(self, name, value):
         """
         Raise an exception if attempting to assign to an atribute which does not exist in the model.

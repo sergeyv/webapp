@@ -244,7 +244,6 @@ class DataFormatBase(object):
                     submodels_cls = _get_attribute_class(model, name)
                     items = []
                     for id in value:
-                        # item = submodels_cls.by_id(id)
                         item = session.query(submodels_cls).get(submodels_cls.id == id)
                         items.append(item)
 
