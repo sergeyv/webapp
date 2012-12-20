@@ -1,6 +1,6 @@
 <%page args="field" />
 
-<select id='date_select' name='date_select' class='chzn'>
+<select id='date_select' name='date_select'>
 	<option value='today'>Today</option>
 	<option value='tomorrow'>Tomorrow</option>
 	<option value='this week'>This week</option>
@@ -8,10 +8,13 @@
 	<option value='later'>Later</option>
 	<option value='datepicker'>Specific date</option>
 </select>
-<div id="${field.cssname}-display"></div>
+<div id="${field.cssname}-display" style="margin-left: 150px"></div>
 <input id="${field.cssname}" type="hidden"  class="calendar" name="${field.name}" value="" />
 
 <script type="text/javascript">
+	$("#date_select").chosen({
+		disable_search_threshold: 10
+	});
 
     $("#${field.cssname}-display").datepicker({
         changeYear:true,
