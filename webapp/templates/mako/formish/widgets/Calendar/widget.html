@@ -1,15 +1,39 @@
 <%page args="field" />
 
-<input id="${field.cssname}-display" type="text" name="" value="" />
+<select id='date_select' name='date_select'>
+	<option value='today'>Today</option>
+	<option value='tomorrow'>Tomorrow</option>
+	<option value='this week'>This week</option>
+	<option value='next week'>Next week</option>
+	<option value='later'>Later</option>
+	<option value='datepicker'>Specific date</option>
+</select>
+<div id="${field.cssname}-display" style="margin-left: 150px"></div>
 <input id="${field.cssname}" type="hidden"  class="calendar" name="${field.name}" value="" />
 
 <script type="text/javascript">
+	$("#date_select").chosen({
+		disable_search_threshold: 10
+	});
+
     $("#${field.cssname}-display").datepicker({
         changeYear:true,
         changeMonth:true,
-        dateFormat: "dd M yy",
-        altField: "#${field.cssname}",
-        altFormat: $.datepicker.ISO_8601,
+        dateFormat: "yy-mm-dd",
+        onSelect: function (dateText, inst) {
+    		$("#${field.cssname}").attr("value", dateText);
+    		console.log($("#${field.cssname}").val());
+    	},
+    });
+    
+    $("#${field.cssname}-display").hide();
+    
+    $("#date_select").change(function() {
+    	if ($(this).val() == "datepicker") {
+			$("#${field.cssname}-display").show();
+    	} else {
+			$("#${field.cssname}-display").hide();
+    	}
     });
 </script>
 
