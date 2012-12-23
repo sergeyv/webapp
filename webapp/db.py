@@ -95,6 +95,14 @@ class WebappBase(object):
             raise ValueError("Attribute %s is not a mapped column of object %s" % (name, self))
         super(WebappBase, self).__setattr__(name, value)
 
+    @classmethod
+    def get_all(cls):
+        """
+        Returns all items of the class
+
+        We may add some check to filter out "deleted" or "hidden" items if certain column present
+        """
+        return get_session().query(cls).all()
 
 Base = declarative_base(cls=WebappBase)
 

@@ -198,7 +198,7 @@ class DataFormatCreator(DataFormatReader):
 
     def do_create(self, request):
         """
-        Creates an item and returns item's id
+        Creates an item and returns the item
         """
         params = request.json_body  # json.loads(request.body)
         params = dottedish.api.unflatten(params.items())
