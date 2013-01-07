@@ -126,7 +126,7 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
 
     Base.metadata.bind = engine
 
-    print "Creating mooball schema"
+    # print "Creating mooball schema"
 
     conn = engine.connect()
     conn = conn.execution_options(autocommit=False)
