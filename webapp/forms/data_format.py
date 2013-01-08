@@ -120,16 +120,18 @@ class DataFormatWriter(DataFormatBase):
         if hasattr(structure, "update"):
             return structure.update(self, request)
 
-        if hasattr(structure, "before_item_updated"):
-            structure.before_item_updated(self, request)
-
-        if hasattr(resource, "before_item_updated"):
-            resource.before_item_updated(self, request)
-
         # Formish uses dotted syntax to deal with nested structures
         # we need to unflatten it
         params = request.json_body
         params = dottedish.api.unflatten(params.items())
+
+        if hasattr(structure, "before_item_updated"):
+            structure.before_item_updated(self, params, request)
+
+        if hasattr(resource, "before_item_updated"):
+            resource.before_item_updated(self, params, request)
+
+
         self.deserialize(params, request)
 
         #Flush session so changes have been applied
@@ -204,7 +206,7 @@ class DataFormatCreator(DataFormatReader):
         params = dottedish.api.unflatten(params.items())
 
         if hasattr(self.structure, "before_item_created"):
-            self.structure.before_item_created(params, request)
+            self.structure.before_item_created(self, params, request)
 
         resource = self.create_and_deserialize(params, request)
 
