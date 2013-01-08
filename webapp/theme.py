@@ -50,9 +50,10 @@ class AssetRegistry(object):
     "/webapp.client/core_js/additional-methods.js",
 
     # Jquery.cookie plugin - not directly used by the webapp
-    # but we need this for doing the auth with orbited
+    # but we need this for doing the auth with o-rbited
     # from http://plugins.jquery.com/node/1386/release
-    "/webapp.client/core_js/jquery.cookie.js",
+    # TODOXXX: remove?
+    # "/webapp.client/core_js/jquery.cookie.js",
 
 
     # Formish
