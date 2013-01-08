@@ -22,17 +22,48 @@
         dateFormat: "yy-mm-dd",
         onSelect: function (dateText, inst) {
     		$("#${field.cssname}").attr("value", dateText);
-    		console.log($("#${field.cssname}").val());
     	},
     });
     
     $("#${field.cssname}-display").hide();
     
+    var now = new Date();
+	now.setDate(now.getDate() + 1);
+	$("#${field.cssname}").attr("value", now.toISOString());
+    
     $("#date_select").change(function() {
     	if ($(this).val() == "datepicker") {
 			$("#${field.cssname}-display").show();
     	} else {
+    		var dateText;
+    		
 			$("#${field.cssname}-display").hide();
+			
+			var today = new Date();
+			today.setDate(today.getDate() + 1);
+			var tomorrow = new Date();
+			tomorrow.setDate(tomorrow.getDate() + 2);
+			var this_week = new Date();
+			this_week.setDate(this_week.getDate() - this_week.getDay());
+			this_week.setDate(this_week.getDate() + 6);
+			var next_week = new Date();
+			next_week.setDate(this_week.getDate() + 7);
+			var later = new Date();
+			later.setDate(next_week.getDate() + 7);
+			
+			if ($(this).val() == "today") {
+				dateText = today.toISOString();
+			} else if ($(this).val() == "tomorrow") {
+				dateText = tomorrow.toISOString();
+			} else if ($(this).val() == "this week") {
+				dateText = this_week.toISOString();
+			} else if ($(this).val() == "next week") {
+				dateText = next_week.toISOString();
+			} else if ($(this).val() == "later") {
+				dateText = later.toISOString();
+			} 
+			
+    		$("#${field.cssname}").attr("value", dateText);
     	}
     });
 </script>
