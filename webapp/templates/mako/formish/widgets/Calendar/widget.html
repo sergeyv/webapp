@@ -9,19 +9,46 @@
 	<option value='datepicker'>Specific date</option>
 </select>
 <div id="${field.cssname}-display" style="margin-left: 150px"></div>
-<input id="${field.cssname}" type="hidden"  class="calendar" name="${field.name}" value="" />
+<input id="${field.cssname}" type="hidden" name="${field.name}" value="" />
 
 <script type="text/javascript">
+	function convertDateTime(date) {
+		var datetime;
+		var month = (date.getMonth()+1);
+		if (month < 10)
+			month = "0" + month;
+		datetime = date.getFullYear() + "-" + month + "-" + date.getDate() + " ";
+		
+		var suffix = "am";
+		var hours = date.getHours();
+		var minutes = date.getMinutes();
+		if (minutes < 10)
+			minutes = "0" + minutes;
+		if (hours >= 12) {
+			suffix = "pm";
+			hours -= 12;
+		}
+		if (hours == 0) {
+			hours = 12;
+		}
+		
+		return datetime + hours + ":" + minutes + " " + suffix;
+	};
+
+
 	$("#date_select").chosen({
 		disable_search_threshold: 10
 	});
 
-    $("#${field.cssname}-display").datepicker({
+    $("#${field.cssname}-display").datetimepicker({
         changeYear:true,
         changeMonth:true,
         dateFormat: "yy-mm-dd",
+        timeFormat: "hh:mm tt",
+        controlType: "select",
         onSelect: function (dateText, inst) {
     		$("#${field.cssname}").attr("value", dateText);
+    		console.log($("#${field.cssname}").val());
     	},
     });
     
@@ -52,18 +79,19 @@
 			later.setDate(next_week.getDate() + 7);
 			
 			if ($(this).val() == "today") {
-				dateText = today.toISOString();
+				dateText = convertDateTime(today);
 			} else if ($(this).val() == "tomorrow") {
-				dateText = tomorrow.toISOString();
+				dateText = convertDateTime(tomorrow);
 			} else if ($(this).val() == "this week") {
-				dateText = this_week.toISOString();
+				dateText = convertDateTime(this_week);
 			} else if ($(this).val() == "next week") {
-				dateText = next_week.toISOString();
+				dateText = convertDateTime(next_week);
 			} else if ($(this).val() == "later") {
-				dateText = later.toISOString();
+				dateText = convertDateTime(later);
 			} 
 			
     		$("#${field.cssname}").attr("value", dateText);
+    		console.log($("#${field.cssname}").val());
     	}
     });
 </script>

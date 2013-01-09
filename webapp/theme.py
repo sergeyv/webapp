@@ -49,6 +49,9 @@ class AssetRegistry(object):
     "/webapp.client/core_js/jquery.validate.js",
     "/webapp.client/core_js/additional-methods.js",
 
+    # Time picker addon for datepicker http://trentrichardson.com/examples/timepicker/
+    "/webapp.client/core_js/jquery-ui-timepicker-addon.js",
+    
     # Jquery.cookie plugin - not directly used by the webapp
     # but we need this for doing the auth with o-rbited
     # from http://plugins.jquery.com/node/1386/release
