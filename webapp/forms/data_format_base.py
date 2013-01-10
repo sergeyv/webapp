@@ -146,7 +146,7 @@ class DataFormatBase(object):
         if value:
             # Make sure the format is in sync with
             # webapp.renderers._JSONDateEncoder
-            dt = datetime.strptime(value, "%Y-%m-%d %H:%M %p")
+            dt = datetime.strptime(value, "%Y-%m-%d %H:%M")
         else:
             dt = None
         return dt

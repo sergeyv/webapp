@@ -12,28 +12,6 @@
 <input id="${field.cssname}" type="hidden" name="${field.name}" value="" />
 
 <script type="text/javascript">
-	function convertDateTime(date) {
-		var datetime;
-		var month = (date.getMonth()+1);
-		if (month < 10)
-			month = "0" + month;
-		datetime = date.getFullYear() + "-" + month + "-" + date.getDate() + " ";
-		
-		var suffix = "am";
-		var hours = date.getHours();
-		var minutes = date.getMinutes();
-		if (minutes < 10)
-			minutes = "0" + minutes;
-		if (hours >= 12) {
-			suffix = "pm";
-			hours -= 12;
-		}
-		if (hours == 0) {
-			hours = 12;
-		}
-		
-		return datetime + hours + ":" + minutes + " " + suffix;
-	};
 
 
 	$("#date_select").chosen({
@@ -46,17 +24,24 @@
         dateFormat: "yy-mm-dd",
         timeFormat: "hh:mm tt",
         controlType: "select",
+        showButtonPanel: false,
+        hour: 23,
+        minute: 59,
+        altField: "#${field.cssname}",
+        altFieldTimeOnly: false,
+        altFormat: "yy-mm-dd",
+        altTimeFormat: "HH:mm",
         onSelect: function (dateText, inst) {
-    		$("#${field.cssname}").attr("value", dateText);
-    		console.log($("#${field.cssname}").val());
-    	},
+	        console.log($("#${field.cssname}").val());
+		}
     });
     
     $("#${field.cssname}-display").hide();
     
     var now = new Date();
-	now.setDate(now.getDate() + 1);
-	$("#${field.cssname}").attr("value", now.toISOString());
+	now.setHours(23);
+	now.setMinutes(59);
+	$("#${field.cssname}").attr("value", webapp.helpers.date_to_format_string(now));
     
     $("#date_select").change(function() {
     	if ($(this).val() == "datepicker") {
@@ -67,27 +52,36 @@
 			$("#${field.cssname}-display").hide();
 			
 			var today = new Date();
-			today.setDate(today.getDate() + 1);
+			today.setHours(23);
+			today.setMinutes(59);
 			var tomorrow = new Date();
-			tomorrow.setDate(tomorrow.getDate() + 2);
+			tomorrow.setDate(tomorrow.getDate() + 1);
+			tomorrow.setHours(23);
+			tomorrow.setMinutes(59);
 			var this_week = new Date();
 			this_week.setDate(this_week.getDate() - this_week.getDay());
 			this_week.setDate(this_week.getDate() + 6);
+			this_week.setHours(23);
+			this_week.setMinutes(59);
 			var next_week = new Date();
 			next_week.setDate(this_week.getDate() + 7);
+			next_week.setHours(23);
+			next_week.setMinutes(59);
 			var later = new Date();
 			later.setDate(next_week.getDate() + 7);
+			later.setHours(23);
+			later.setMinutes(59);
 			
 			if ($(this).val() == "today") {
-				dateText = convertDateTime(today);
+				dateText = webapp.helpers.date_to_format_string(today);
 			} else if ($(this).val() == "tomorrow") {
-				dateText = convertDateTime(tomorrow);
+				dateText = webapp.helpers.date_to_format_string(tomorrow);
 			} else if ($(this).val() == "this week") {
-				dateText = convertDateTime(this_week);
+				dateText = webapp.helpers.date_to_format_string(this_week);
 			} else if ($(this).val() == "next week") {
-				dateText = convertDateTime(next_week);
+				dateText = webapp.helpers.date_to_format_string(next_week);
 			} else if ($(this).val() == "later") {
-				dateText = convertDateTime(later);
+				dateText = webapp.helpers.date_to_format_string(later);
 			} 
 			
     		$("#${field.cssname}").attr("value", dateText);
