@@ -146,7 +146,7 @@ class DataFormatBase(object):
         if value:
             # Make sure the format is in sync with
             # webapp.renderers._JSONDateEncoder
-            dt = datetime.strptime(value, "%Y-%m-%d %H:%M")
+            dt = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
         else:
             dt = None
         return dt
@@ -244,7 +244,7 @@ class DataFormatBase(object):
                     submodels_cls = _get_attribute_class(model, name)
                     items = []
                     for id in value:
-                        item = session.query(submodels_cls).get(submodels_cls.id == id)
+                        item = session.query(submodels_cls).get(id)
                         items.append(item)
 
                     setattr(model, name, items)
