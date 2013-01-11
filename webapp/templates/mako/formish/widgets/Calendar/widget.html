@@ -30,7 +30,8 @@
         altField: "#${field.cssname}",
         altFieldTimeOnly: false,
         altFormat: "yy-mm-dd",
-        altTimeFormat: "HH:mm:ss",
+        altTimeFormat: "HH:mm:ssZ",
+        altSeparator: "T",
         onSelect: function (dateText, inst) {
 	        console.log($("#${field.cssname}").val());
 		}

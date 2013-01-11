@@ -114,7 +114,7 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
     # or move db stuff somewhere out of webapp
     from zope.sqlalchemy import ZopeTransactionExtension
 
-    engine = sa.create_engine(db_string, echo=True) #db_echo)
+    engine = sa.create_engine(db_string, echo=False) #db_echo)
     event.listen(engine, "before_cursor_execute", before_cursor_execute)
 
     # TODOXXX: We probably don't want SessionStatsBase to be used in
