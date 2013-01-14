@@ -176,5 +176,22 @@ class CombinationField(Widget):
     def __init__(self, **k):
         self.combination_fields = k.pop('combination_fields', '')
         super(CombinationField, self).__init__(**k)
+        
+class Colorpicker(Widget):
+    """
+    An input field with jPicker widget linked to it::
+
+        form['renewal_date'].widget = webapp.widgets.Calendar()
+
+    The widget is designed to work with schemaish.String field
+    """
+
+    type = 'Colorpicker'
+    template = 'field.Colorpicker'
+
+    def __init__(self, **k):
+        #self.load_from = k.pop('load_from', '')
+
+        Widget.__init__(self, **k)
 
 

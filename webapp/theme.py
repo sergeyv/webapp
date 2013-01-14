@@ -52,6 +52,9 @@ class AssetRegistry(object):
     # Time picker addon for datepicker http://trentrichardson.com/examples/timepicker/
     "/webapp.client/core_js/jquery-ui-timepicker-addon.js",
     
+    # Simple jquery color picker https://github.com/tkrotoff/jquery-simplecolorpicker
+    "/webapp.client/core_js/jquery.simplecolorpicker.js",
+    
     # Jquery.cookie plugin - not directly used by the webapp
     # but we need this for doing the auth with o-rbited
     # from http://plugins.jquery.com/node/1386/release
@@ -78,6 +81,7 @@ class AssetRegistry(object):
     core_css_assets = (
     "/crud_static/default.css",
     "/webapp.client/css/jquery-ui-1.8.16.custom.css",
+    "/webapp.client/css/jquery.simplecolorpicker.css",
     #"/formish.css/formish.css",
     "/webapp.client/css/webapp.css",
     )
