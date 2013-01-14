@@ -89,6 +89,18 @@
             /// Ajax spinner
             $("body").append($('<div id="ajax-spinner">&nbsp;</div>'));
 
+            $("body").append($('<div id="ajax-error"> </div>'));
+
+            /// Experiment with using Bootstrap's modal dialog
+            /*$("body").append($('<div id="ajax-error" class="modal hide fade"><div class="modal-header">' +
+                '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
+                '<h3>Server Error</h3></div>' +
+                '<div class="modal-body"></div>' +
+                '<div class="modal-footer">' +
+                '<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>' +
+                '</div></div>'
+            ));*/
+
             $(document).ajaxSend(function (e, jqx) {
                 /* add an unique ID to an XHR so we can tell them apart later */
                 webapp._rememberXHR(jqx);
@@ -154,6 +166,11 @@
                             }
                         }
                     });
+
+                    /// Experiment with using Bootstrap's modal dialog
+                    /*$(self).find('div.modal-body').html(response);
+                    $(self).modal('show');*/
+
                 } else {
                     //alert(response);
                     webapp.getController().showView(webapp.serverErrorView, webapp.getController().currentView.event);
