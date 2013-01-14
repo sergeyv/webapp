@@ -96,6 +96,27 @@ class WebappBase(object):
         super(WebappBase, self).__setattr__(name, value)
 
     @classmethod
+    def by_id(cls, object_id):
+        """
+        Returns a single object by its ID, may return None
+        """
+
+        # if object_id is None:
+        #     return None
+        # try:
+        result = get_session().query(cls).get(object_id)
+        # except InvalidRequestError:
+        #     # If an object doesn't exist for this ID - return None
+        #     #raise
+        #     return None
+        # except NoResultFound:
+        #     ## Hmm... now SA raises NoResultFound...
+        #     ##raise
+        #     return None
+
+        return result
+
+    @classmethod
     def get_all(cls):
         """
         Returns all items of the class
@@ -103,6 +124,8 @@ class WebappBase(object):
         We may add some check to filter out "deleted" or "hidden" items if certain column present
         """
         return get_session().query(cls).all()
+
+
 
 Base = declarative_base(cls=WebappBase)
 
