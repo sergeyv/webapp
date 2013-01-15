@@ -6,14 +6,12 @@
 	<option value='this week'>This week</option>
 	<option value='next week'>Next week</option>
 	<option value='later'>Later</option>
-	<option value='datepicker'>Specific date</option>
+	<option value='datepicker'>Specific date and time</option>
 </select>
 <div id="${field.cssname}-display" style="margin-left: 150px"></div>
 <input id="${field.cssname}" type="hidden" name="${field.name}" value="" />
 
 <script type="text/javascript">
-
-
 	$("#date_select").chosen({
 		disable_search_threshold: 10
 	});
@@ -25,8 +23,9 @@
         timeFormat: "hh:mm tt",
         controlType: "select",
         showButtonPanel: false,
-        hour: 23,
-        minute: 59,
+        hour: 9,
+        minute: 0,
+        stepMinute: 15,
         altField: "#${field.cssname}",
         altFieldTimeOnly: false,
         altFormat: "yy-mm-dd",
@@ -40,9 +39,61 @@
     $("#${field.cssname}-display").hide();
     
     var now = new Date();
-	now.setHours(23);
-	now.setMinutes(59);
-	$("#${field.cssname}").attr("value", webapp.helpers.date_to_format_string(now));
+    var today = new Date();
+	today.setHours(23);
+	today.setMinutes(59);
+	today.setSeconds(58);
+	var tomorrow = new Date();
+	tomorrow.setDate(tomorrow.getDate() + 1);
+	tomorrow.setHours(23);
+	tomorrow.setMinutes(59);
+	tomorrow.setSeconds(58);
+	var this_week = new Date();
+	this_week.setDate(this_week.getDate() - this_week.getDay());
+	this_week.setDate(this_week.getDate() + 6);
+	this_week.setHours(23);
+	this_week.setMinutes(59);
+	this_week.setSeconds(58);
+	var next_week = new Date();
+	next_week.setDate(this_week.getDate() + 7);
+	next_week.setHours(23);
+	next_week.setMinutes(59);
+	next_week.setSeconds(58);
+	var later = new Date();
+	later.setDate(next_week.getDate() + 7);
+	later.setHours(23);
+	later.setMinutes(59);
+	later.setSeconds(58);
+	
+	var data = webapp.getController().currentView.data;
+    if (data.due_date) {
+		$("#${field.cssname}").attr("value", data.due_date);
+		var current = new Date();
+		current.setTime(Date.parse(data.due_date));
+		if (current <= today) {
+			$("#date_select :nth-child(1)").attr('selected', 'selected');
+			$("#date_select").trigger("liszt:updated");
+		} else if (current <= tomorrow) {
+			$("#date_select :nth-child(2)").attr('selected', 'selected');
+			$("#date_select").trigger("liszt:updated");
+		} else if (current <= this_week) {
+			$("#date_select :nth-child(3)").attr('selected', 'selected');
+			$("#date_select").trigger("liszt:updated");
+		} else if (current <= next_week) {
+			$("#date_select :nth-child(4)").attr('selected', 'selected');
+			$("#date_select").trigger("liszt:updated");
+		} else if (current <= later) {
+			$("#date_select :nth-child(5)").attr('selected', 'selected');
+			$("#date_select").trigger("liszt:updated");
+		} else {
+			$("#${field.cssname}-display").datetimepicker('setDate', current);
+			$("#date_select :nth-child(6)").attr('selected', 'selected');
+			$("#date_select").trigger("liszt:updated");
+			$("#${field.cssname}-display").show();
+		}
+    } else {
+		$("#${field.cssname}").attr("value", webapp.helpers.date_to_format_string(today));
+    }
     
     $("#date_select").change(function() {
     	if ($(this).val() == "datepicker") {
@@ -51,32 +102,6 @@
     		var dateText;
     		
 			$("#${field.cssname}-display").hide();
-			
-			var today = new Date();
-			today.setHours(23);
-			today.setMinutes(59);
-			today.setSeconds(59);
-			var tomorrow = new Date();
-			tomorrow.setDate(tomorrow.getDate() + 1);
-			tomorrow.setHours(23);
-			tomorrow.setMinutes(59);
-			tomorrow.setSeconds(59);
-			var this_week = new Date();
-			this_week.setDate(this_week.getDate() - this_week.getDay());
-			this_week.setDate(this_week.getDate() + 6);
-			this_week.setHours(23);
-			this_week.setMinutes(59);
-			this_week.setSeconds(59);
-			var next_week = new Date();
-			next_week.setDate(this_week.getDate() + 7);
-			next_week.setHours(23);
-			next_week.setMinutes(59);
-			next_week.setSeconds(59);
-			var later = new Date();
-			later.setDate(next_week.getDate() + 7);
-			later.setHours(23);
-			later.setMinutes(59);
-			later.setSeconds(59);
 			
 			if ($(this).val() == "today") {
 				dateText = webapp.helpers.date_to_format_string(today);
