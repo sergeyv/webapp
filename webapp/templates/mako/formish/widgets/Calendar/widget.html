@@ -9,34 +9,90 @@
 	<option value='datepicker'>Specific date and time</option>
 </select>
 <div id="${field.cssname}-display" style="margin-left: 150px"></div>
+
+<div id="timepicker" class="field" style="margin-top: 8px;">
+	<label>Time</label>
+	<div class="inputs">
+		<select id='hour_select' style="width: 50px;">
+			<option value='1'>01</option>
+			<option value='2'>02</option>
+			<option value='3'>03</option>
+			<option value='4'>04</option>
+			<option value='5'>05</option>
+			<option value='6'>06</option>
+			<option value='7'>07</option>
+			<option value='8'>08</option>
+			<option value='9' selected='selected'>09</option>
+			<option value='10'>10</option>
+			<option value='11'>11</option>
+			<option value='12'>12</option>
+		</select>&nbsp;
+		<select id='minute_select' style="width: 50px;">
+			<option value='00' selected='selected'>00</option>
+			<option value='15'>15</option>
+			<option value='30'>30</option>
+			<option value='45'>45</option>
+		</select>&nbsp;
+		<select id='ampm_select' style="width: 50px;">
+			<option value='AM' selected='selected'>AM</option>
+			<option value='PM'>PM</option>
+		</select>
+	</div>
+</div>
+
 <input id="${field.cssname}" type="hidden" name="${field.name}" value="" />
 
 <script type="text/javascript">
 	$("#date_select").chosen({
 		disable_search_threshold: 10
+	});$("#hour_select").chosen({
+		disable_search_threshold: 15
+	});$("#minute_select").chosen({
+		disable_search_threshold: 10
+	});$("#ampm_select").chosen({
+		disable_search_threshold: 10
 	});
-
-    $("#${field.cssname}-display").datetimepicker({
+	
+    var toSet = new Date();
+    
+	function setNewTime() {
+    	var ampm = $("#ampm_select").val();
+    	var hour = parseInt($("#hour_select").val());
+    	var min = parseInt($("#minute_select").val());
+    	if(ampm == "AM") {
+    		if (hour == 12)
+    			toSet.setHours(0);
+    		else
+    			toSet.setHours(hour);
+    	} else {
+    		if (hour == 12)
+    			toSet.setHours(12);
+    		else
+    			toSet.setHours(hour + 12);
+    	}
+    	toSet.setMinutes(min);
+    	toSet.setSeconds(0);
+    	
+		$("#${field.cssname}").attr("value", webapp.helpers.date_to_format_string(toSet));
+    }
+    
+    $("#${field.cssname}-display").datepicker({
         changeYear:true,
         changeMonth:true,
         dateFormat: "yy-mm-dd",
-        timeFormat: "hh:mm tt",
-        controlType: "select",
-        showButtonPanel: false,
-        hour: 9,
-        minute: 0,
-        stepMinute: 15,
         altField: "#${field.cssname}",
-        altFieldTimeOnly: false,
-        altFormat: "yy-mm-dd",
-        altTimeFormat: "HH:mm:ssZ",
-        altSeparator: "T",
+        showButtonPanel: false,
         onSelect: function (dateText, inst) {
+        	toSet.setDate(inst.selectedDay);
+        	toSet.setFullYear(inst.selectedYear);
+        	toSet.setMonth(inst.selectedMonth);
+    		setNewTime();
 	        console.log($("#${field.cssname}").val());
 		}
     });
     
     $("#${field.cssname}-display").hide();
+    $("#timepicker").hide();
     
     var now = new Date();
     var today = new Date();
@@ -86,10 +142,32 @@
 			$("#date_select :nth-child(5)").attr('selected', 'selected');
 			$("#date_select").trigger("liszt:updated");
 		} else {
-			$("#${field.cssname}-display").datetimepicker('setDate', current);
+			$("#${field.cssname}-display").datepicker('setDate', current);
+			
 			$("#date_select :nth-child(6)").attr('selected', 'selected');
 			$("#date_select").trigger("liszt:updated");
+			
+			$("#hour_select :nth-child(" + (current.getUTCHours() - 12) + ")").attr('selected', 'selected');
+			$("#hour_select").trigger("liszt:updated");
+			
+			if (current.getUTCMinutes() == 0) {
+				$("#minute_select :nth-child(1)").attr('selected', 'selected');
+			} else if (current.getUTCMinutes() == 15) {
+				$("#minute_select :nth-child(2)").attr('selected', 'selected');
+			} else if (current.getUTCMinutes() == 30) {
+				$("#minute_select :nth-child(3)").attr('selected', 'selected');
+			} else {
+				$("#minute_select :nth-child(4)").attr('selected', 'selected');
+			}
+			$("#minute_select").trigger("liszt:updated");
+			
+			if(current.getUTCHours() > 11) {
+				$("#ampm_select :nth-child(2)").attr('selected', 'selected');
+				$("#ampm_select").trigger("liszt:updated");
+			}
+			
 			$("#${field.cssname}-display").show();
+    		$("#timepicker").show();
 		}
     } else {
 		$("#${field.cssname}").attr("value", webapp.helpers.date_to_format_string(today));
@@ -98,10 +176,12 @@
     $("#date_select").change(function() {
     	if ($(this).val() == "datepicker") {
 			$("#${field.cssname}-display").show();
+			$("#timepicker").show();
     	} else {
     		var dateText;
     		
 			$("#${field.cssname}-display").hide();
+			$("#timepicker").hide();
 			
 			if ($(this).val() == "today") {
 				dateText = webapp.helpers.date_to_format_string(today);
@@ -113,11 +193,21 @@
 				dateText = webapp.helpers.date_to_format_string(next_week);
 			} else if ($(this).val() == "later") {
 				dateText = webapp.helpers.date_to_format_string(later);
-			} 
+			}
 			
     		$("#${field.cssname}").attr("value", dateText);
     		console.log($("#${field.cssname}").val());
     	}
+    });
+    
+    
+    
+    $("#hour_select").change(function() {
+    	setNewTime();
+    });$("#minute_select").change(function() {
+    	setNewTime();
+    });$("#ampm_select").change(function() {
+    	setNewTime();
     });
 </script>
 

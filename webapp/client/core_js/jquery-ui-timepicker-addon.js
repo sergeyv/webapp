@@ -885,7 +885,7 @@
 					for(var i=min; i<=max; i+=step){						
 						sel += '<option value="'+ i +'"'+ (i==val? ' selected':'') +'>';
 						if(unit == 'hour' && useAmpm(tp_inst._defaults.pickerTimeFormat || tp_inst._defaults.timeFormat))
-							sel += $.datepicker.formatTime("hh TT", {hour:i}, tp_inst._defaults);
+							sel += $.datepicker.formatTime("hh:00 TT", {hour:i}, tp_inst._defaults);
 						else if(unit == 'millisec' || i >= 10) sel += i;
 						else sel += '0'+ i.toString();
 						sel += '</option>';
