@@ -126,21 +126,23 @@
 		$("#${field.cssname}").attr("value", data.due_date);
 		var current = new Date();
 		current.setTime(Date.parse(data.due_date));
-		if (current <= today) {
-			$("#date_select :nth-child(1)").attr('selected', 'selected');
-			$("#date_select").trigger("liszt:updated");
-		} else if (current <= tomorrow) {
-			$("#date_select :nth-child(2)").attr('selected', 'selected');
-			$("#date_select").trigger("liszt:updated");
-		} else if (current <= this_week) {
-			$("#date_select :nth-child(3)").attr('selected', 'selected');
-			$("#date_select").trigger("liszt:updated");
-		} else if (current <= next_week) {
-			$("#date_select :nth-child(4)").attr('selected', 'selected');
-			$("#date_select").trigger("liszt:updated");
-		} else if (current <= later) {
-			$("#date_select :nth-child(5)").attr('selected', 'selected');
-			$("#date_select").trigger("liszt:updated");
+		if(current.getUTCHours() == 23 && current.getUTCMinutes() == 59 && current.getUTCSeconds() == 58) {
+			if (current <= today) {
+				$("#date_select :nth-child(1)").attr('selected', 'selected');
+				$("#date_select").trigger("liszt:updated");
+			} else if (current <= tomorrow) {
+				$("#date_select :nth-child(2)").attr('selected', 'selected');
+				$("#date_select").trigger("liszt:updated");
+			} else if (current <= this_week) {
+				$("#date_select :nth-child(3)").attr('selected', 'selected');
+				$("#date_select").trigger("liszt:updated");
+			} else if (current <= next_week) {
+				$("#date_select :nth-child(4)").attr('selected', 'selected');
+				$("#date_select").trigger("liszt:updated");
+			} else if (current <= later) {
+				$("#date_select :nth-child(5)").attr('selected', 'selected');
+				$("#date_select").trigger("liszt:updated");
+			} 
 		} else {
 			$("#${field.cssname}-display").datepicker('setDate', current);
 			
