@@ -517,9 +517,9 @@
                         opt.appendTo($select);
                     });*/
                 //} else {
-                if (data.items.length == 0) {
-                    self.hideListbox($select);
-                } else {
+                /*if (data.items.length === 0) {
+                    self.hideListboxOnly($select);
+                } else {*/
                     /* add an empty option for Chosen default text support
                     - only add the option only if there are more than 1 results,
                     otherwise just select the first result automatically
@@ -535,7 +535,7 @@
                         }
                     });
                     self.showListbox($select);
-                }
+                /*}*/
 
                 $select.removeData("original_value");
                 $select.change();
@@ -562,6 +562,7 @@
 
     };
 
+
     Form.prototype.showListbox = function ($select) {
         /// shows a loadable listbox after it's loaded
         /// or if it's parent is selected
@@ -570,7 +571,9 @@
             $select.removeAttr('disabled');
             $select.parent().find('.iconAdd').show(); // show the add button
         } else {
+            $select.parents("div.listboxContainer").show();
             $select.parents("div.field").show();
+
         }
 
         /* Turn dropdown into a chosen select */
