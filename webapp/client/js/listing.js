@@ -107,25 +107,28 @@
                 i = 0,
                 output = [],
                 bs,
-                $pager = self.view.find("div.pager");
+                $pager = self.view.find("div.pagination");
+
 
             if (pages > 1) { // don't need a pager for just a single page
+                output.push('<ul>');
                 for (i = 0; i < pages; i += 1) {
                     if (i === current) {
-                        output.push('<span class="current">' + (i + 1) + '</span>');
+                        output.push('<li><span class="current">' + (i + 1) + '</span></li>');
                     } else {
                         bs = i * batch_size;
-                        output.push('<a href="#' + self.new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a>');
+                        output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a></li>');
                     }
                 }
 
                 /// next link
                 if (current < pages - 1) {
                     bs = (current + 1) * batch_size;
-                    output.push('<a href="#' + self.new_filter_url('batch_start', bs) + '"> next </a>');
+                    output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '"> next </a></li>');
                 } else {
-                    output.push('<span class="discreet">(last)</span>');
+                    //output.push('<ul><span class="discreet">(last)</span></ul>');
                 }
+                output.push('</ul>');
             } else {
                 output.push('<span class="discreet">all ' + total + ' items shown</span>');
             }
@@ -161,7 +164,7 @@
                 i = 0,
                 output = [],
                 bs,
-                $pager = self.view.find("div.pager");
+                $pager = self.view.find("div.pagination");
 
             if (pages > 1) { // don't need a pager for just a single page
 
