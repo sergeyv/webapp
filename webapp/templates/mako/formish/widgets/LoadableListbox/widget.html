@@ -5,17 +5,17 @@ from webapp.forms import get_field_class_with_validators
 
 <div class="loadableListbox">
 
-<select id="${field.cssname}" type="text" name="${field.name}"
-${get_field_class_with_validators(field, classes)|n}
-href="${field.widget.load_from}"
-data-displaytype="${field.widget.disabled_display}"
-data-placeholder="${field.widget.default_text}"
-%if field.widget.multiselect:
-    multiple="multiple"
-%endif
->
-<option></option>
-</select>
+    <select id="${field.cssname}" type="text" name="${field.name}"
+        ${get_field_class_with_validators(field, classes)|n}
+        href="${field.widget.load_from}"
+        data-displaytype="${field.widget.disabled_display}"
+        data-placeholder="${field.widget.default_text}"
+        %if field.widget.multiselect:
+            multiple="multiple"
+        %endif
+    >
+        <option></option>
+    </select>
 
 % if field.widget.add_popup:
     <a class="webappPopup iconAdd" href="${field.widget.add_popup}"> </a>
