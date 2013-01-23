@@ -187,7 +187,7 @@ def json_rest_get_f(context, request):
     start = time.time()
     data = context.read(request)
 
-    data.setdefault('stats', {})['total_time'] = time.time() - start
+    #data.setdefault('stats', {})['total_time'] = time.time() - start
     return data
 
 
