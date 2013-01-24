@@ -130,8 +130,11 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
-    result = context.delete_item(request, context.__soft_delete__)  # returns task_id
-    
+    if hasattr(context, '__soft_delete__'):
+        result = context.delete_item(request, context.__soft_delete__)  # returns task_id
+    else:
+        result = context.delete_item(request)
+        
     if result is True:
         return {'result': "OK"}
 
