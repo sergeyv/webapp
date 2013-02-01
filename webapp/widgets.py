@@ -58,6 +58,7 @@ class LoadableListbox(Widget):
         self.disabled_display = k.pop('disabled_display', '')
         self.multiselect = k.pop('multiselect', False)
         self.default_text = k.pop('default_text', '(please select)')
+        self.default_index = k.pop('default_index', 0)
 
         Widget.__init__(self, **k)
 

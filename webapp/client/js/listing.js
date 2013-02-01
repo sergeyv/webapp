@@ -136,13 +136,13 @@
             /// more link
             if (pages > 1 && batch_size < 200) {
                 bs = Math.min(Math.floor(batch_size * 2), 200);
-                output.push('<a href="#' + self.new_filter_url('batch_start', bs) + '" title="' + bs + ' per page">more</a>');
+                output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">more</a>');
             }
 
             /// less link is shown even if there's just one page
             if (batch_size > 10) {
                 bs = Math.max(Math.floor(batch_size / 2), 10);
-                output.push('<a href="#' + self.new_filter_url('batch_start', bs) + '" title="' + bs + ' per page">less</a>');
+                output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">less</a>');
             }
 
             output.push("</div>");
