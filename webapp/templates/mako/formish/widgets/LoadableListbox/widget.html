@@ -23,12 +23,3 @@ from webapp.forms import get_field_class_with_validators
 
 </div>
 
-% if field.widget.default_index:
-<script type="text/javascript">
-	$(document).ready(function() {
-		$("#${field.cssname} :nth-child(${field.widget.default_index})").attr('selected', 'selected');
-		$("#${field.cssname}").trigger("liszt:updated");
-		console.log($("#${field.cssname} :nth-child(${field.widget.default_index})").val());
-	});
-</script>
-% endif
