@@ -359,6 +359,8 @@ class DataFormatLister(DataFormatBase):
         """
         structure = self.structure
 
+        import pdb; pdb.set_trace()
+
         # Structure can completely override the default logic
         if hasattr(structure, "listing"):
             return structure.listing(self, request)
@@ -415,11 +417,12 @@ class DataFormatLister(DataFormatBase):
         ### we don't want/need batching
         ### 'vocab' format is a special (simplified) case
         ### - returns {'items': [(id, name), (id, name), ...]}
-        if format == 'vocab':
-            # items = self.get_items(order_by=order_by, wrap=False)
-            items = query.all()
-            result = [(item.id, str(item)) for item in items]
-            return {'items': result}
+        # if format == 'vocab':
+        #     # items = self.get_items(order_by=order_by, wrap=False)
+        #     items = query.all()
+        #     result = [(item.id, str(item)) for item in items]
+        #     data = {'items': result}
+        # else:
 
         ## Now we have a full query which would retrieve all the objects
         ## We are using it to get count of objects available using the current
@@ -602,4 +605,11 @@ class VocabLister(object):
         ### - returns {'items': [(id, name), (id, name), ...]}
         items = query.all()
         result = [(item.id, str(item)) for item in items]
-        return {'items': result}
+        data = {'items': result}
+
+        # A hook for Collection to post-process the data
+        if hasattr(collection, "post_process_vocab_data"):
+            return collection.post_process_vocab_data(self, data, request)
+
+        return data
+
