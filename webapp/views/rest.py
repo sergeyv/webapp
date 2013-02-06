@@ -15,6 +15,7 @@ import time
 import dottedish
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
+from pprint import pprint
 
 import crud
 
@@ -129,12 +130,13 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
-    result = context.delete_item(request)  # returns task_id
-
-    if result is None:
-        result = {'result': "OK"}
-
-    return result
+    if hasattr(context, '__soft_delete__'):
+        result = context.delete_item(request, context.__soft_delete__)  # returns task_id
+    else:
+        result = context.delete_item(request)
+        
+    if result is True:
+        return {'result': "OK"}
 
 
 def context_implements(*types):
@@ -187,7 +189,7 @@ def json_rest_get_f(context, request):
     start = time.time()
     data = context.read(request)
 
-    data.setdefault('stats', {})['total_time'] = time.time() - start
+    #data.setdefault('stats', {})['total_time'] = time.time() - start
     return data
 
 
