@@ -359,8 +359,6 @@ class DataFormatLister(DataFormatBase):
         """
         structure = self.structure
 
-        import pdb; pdb.set_trace()
-
         # Structure can completely override the default logic
         if hasattr(structure, "listing"):
             return structure.listing(self, request)
