@@ -192,10 +192,10 @@ class DataFormatBase(object):
             if name in ignore_attrs:
                 continue
 
-            if hasattr(schema, 'deserialize_' + name):
+            if hasattr(schema, 'attr_deserialize_' + name):
                 # Support for deserialization hooks for individual attributes
-                meth = getattr(schema, 'deserialize_' + name)
-                meth(model, value)
+                meth = getattr(schema, 'attr_deserialize_' + name)
+                meth(self, model, value, request)
             elif isinstance(attr, sc.Structure):
                 # Nested structures
                 #print "STRUCTURE!"
@@ -271,7 +271,7 @@ class DataFormatBase(object):
     def _default_item_deserializer(self, resource, schema, params, request):
         self._save_structure(resource, schema, params, request)
 
-    def _default_item_serializer(self, item, structure, only_fields=None):
+    def _default_item_serializer(self, item, structure, request, only_fields=None):
 
         data = {}
         default = object()
@@ -287,80 +287,79 @@ class DataFormatBase(object):
 
             # Allow to specify callbacks defined on schema
             # to serialize specific attributes
-            if hasattr(structure, 'serialize_' + name):
-                meth = getattr(structure, 'serialize_' + name)
-                value = meth(item)
+            if hasattr(structure, 'attr_serialize_' + name):
+                meth = getattr(structure, 'attr_serialize_' + name)
+                value = meth(self, item, request)
             else:
                 value = getattr(item, name, default)
-            #structure_field = getattr(structure, name, default)
 
-            if name in flattened:
-                # This is to support __flatten_subforms__ attrubute of a schema
-                # - we may choose to build a form from several sc.Structure blocks to separate the data logically (and visually) but still
-                # be able to save it as it was a sigle flat form
-                #print "FLAT!"
-                value = self._default_item_serializer(item, structure_field)
-            elif value is not default:
+                if name in flattened:
+                    # This is to support __flatten_subforms__ attrubute of a schema
+                    # - we may choose to build a form from several sc.Structure blocks to separate the data logically (and visually) but still
+                    # be able to save it as it was a sigle flat form
+                    #print "FLAT!"
+                    value = self._default_item_serializer(item, structure_field, request)
+                elif value is not default:
 
-                # if it's a callable then call it
-                # (using @property to imitate an attribute
-                # is not cool because it swallows any exceptions
-                # and just pretends there's no such property)
-                if callable(value):
-                    value = value()
+                    # if it's a callable then call it
+                    # (using @property to imitate an attribute
+                    # is not cool because it swallows any exceptions
+                    # and just pretends there's no such property)
+                    if callable(value):
+                        value = value()
 
-                # Recursively serialize lists of subitems
-                if isinstance(structure_field, sc.Sequence):
-                    subitems_schema = structure_field.attr
-                    subitems = []
+                    # Recursively serialize lists of subitems
+                    if isinstance(structure_field, sc.Sequence):
+                        subitems_schema = structure_field.attr
+                        subitems = []
 
-                    # Here we only support 2 cases we're actually using:
-                    # - a sequence of sc.Structure
-                    # - a sequence of integers
-                    ### TODOXXX: We may need to generalize this whole method
-                    if isinstance(subitems_schema, sc.Structure):
-                        for subitem in value:  # take care not to name it "item" or it'll override the function-wide variable
-                            subitems.append(self._default_item_serializer(subitem, subitems_schema))
-                        value = subitems
+                        # Here we only support 2 cases we're actually using:
+                        # - a sequence of sc.Structure
+                        # - a sequence of integers
+                        ### TODOXXX: We may need to generalize this whole method
+                        if isinstance(subitems_schema, sc.Structure):
+                            for subitem in value:  # take care not to name it "item" or it'll override the function-wide variable
+                                subitems.append(self._default_item_serializer(subitem, subitems_schema, request))
+                            value = subitems
+
+                        elif isinstance(structure_field, sc.Integer):
+                            for subitem in value:
+                                subitems.append(int(subitem))
+                            value = subitems
+
+                    elif isinstance(structure_field, sc.Structure):
+                        #print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
+                        subitems_schema = structure_field
+                        value = self._default_item_serializer(value, subitems_schema, request)
+                    elif isinstance(structure_field, sc.String):
+                        if value is not None:
+                            if isinstance(value, unicode):
+                                value = value.encode('utf-8')
+                            elif isinstance(value, str):
+                                value = value.decode('utf-8').encode('utf-8')
+                            else:
+                                value = unicode(value).encode('utf-8')
 
                     elif isinstance(structure_field, sc.Integer):
-                        for subitem in value:
-                            subitems.append(int(subitem))
-                        value = subitems
-
-                elif isinstance(structure_field, sc.Structure):
-                    #print "SERIALIZING A STRUCTURE: %s -> %s" % (name, structure_field)
-                    subitems_schema = structure_field
-                    value = self._default_item_serializer(value, subitems_schema)
-                elif isinstance(structure_field, sc.String):
-                    if value is not None:
-                        if isinstance(value, unicode):
-                            value = value.encode('utf-8')
-                        elif isinstance(value, str):
-                            value = value.decode('utf-8').encode('utf-8')
-                        else:
-                            value = unicode(value).encode('utf-8')
-
-                elif isinstance(structure_field, sc.Integer):
-                    if value is not None:
-                        value = int(value)
-                elif isinstance(structure_field, sc.Decimal):
-                    if value is not None:
-                        value = float(value)
-                elif isinstance(structure_field, sc.Boolean):
-                    if value is not None:
-                        value = bool(value)
-                elif isinstance(structure_field, sc.Date):
-                    pass
-                elif isinstance(structure_field, sc.DateTime):
-                    # dates are serialized by the better_json renderer
-                    pass
-                elif isinstance(structure_field, Literal):
-                    pass
+                        if value is not None:
+                            value = int(value)
+                    elif isinstance(structure_field, sc.Decimal):
+                        if value is not None:
+                            value = float(value)
+                    elif isinstance(structure_field, sc.Boolean):
+                        if value is not None:
+                            value = bool(value)
+                    elif isinstance(structure_field, sc.Date):
+                        pass
+                    elif isinstance(structure_field, sc.DateTime):
+                        # dates are serialized by the better_json renderer
+                        pass
+                    elif isinstance(structure_field, Literal):
+                        pass
+                    else:
+                        raise WebappError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
                 else:
-                    raise WebappError("Don't know how to serialize attribute '%s' of type '%s' with value '%s'" % (name, structure_field, value))
-            else:
-                value = None
+                    value = None
 
             # If the model does not provide a value, use
             # form's default
@@ -375,20 +374,17 @@ class DataFormatBase(object):
             if isinstance(value, basestring) and name not in getattr(structure, '__no_html_escape__', set()):
                 value = cgi.escape(value)
 
-            #if not getattr(structure.__do_not_serialize_nulls__, False) or value is not None:
-
             # skip None values from the output to make the output more compact
-            # this potentially mak break the forms, need to check
+            # this potentially may break the forms, need to check
             if value is not None:
                 data[name] = value
 
-        #print "EXTRACTED DATA: %s" % data
         return data
 
-    def serialize_item(self, item):
+    def serialize_item(self, item, request):
         """
         Serializes the `item` using the format's structure
         and returns the resulting dict, basically, it's a public
         interface to _default_item_serializer
         """
-        return self._default_item_serializer(item, self.structure)
+        return self._default_item_serializer(item, self.structure, request)

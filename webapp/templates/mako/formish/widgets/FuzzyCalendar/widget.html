@@ -1,0 +1,68 @@
+<%page args="field" />
+
+    <input id="${field.cssname}" type="text" name="${field.name}" value="" />
+
+    <!--
+    <select id='${field.cssname}-select' name='${field.name}'>
+        <option value='today'>Today</option>
+        <option value='tomorrow'>Tomorrow</option>
+        <option value='this week'>This week</option>
+        <option value='next week'>Next week</option>
+        <option value='later'>Later</option>
+        <option value='datepicker'>Specific date</option>
+    </select>
+
+
+    <input id="${field.cssname}-display" type="text" name="" value="" />
+    <input id="${field.cssname}-hidden-date" type="text" name="${field.name}" value="" />
+
+    <div id="timepicker" class="field" style="margin-top: 8px;">
+        <label>Time</label>
+        <div class="inputs">
+            <select id='hour_select' style="width: 50px;">
+                <option value='1'>01</option>
+                <option value='2'>02</option>
+                <option value='3'>03</option>
+                <option value='4'>04</option>
+                <option value='5'>05</option>
+                <option value='6'>06</option>
+                <option value='7'>07</option>
+                <option value='8'>08</option>
+                <option value='9' selected='selected'>09</option>
+                <option value='10'>10</option>
+                <option value='11'>11</option>
+                <option value='12'>12</option>
+            </select>&nbsp;
+            <select id='minute_select' style="width: 50px;">
+                <option value='00' selected='selected'>00</option>
+                <option value='15'>15</option>
+                <option value='30'>30</option>
+                <option value='45'>45</option>
+            </select>&nbsp;
+            <select id='ampm_select' style="width: 50px;">
+                <option value='AM' selected='selected'>AM</option>
+                <option value='PM'>PM</option>
+            </select>
+        </div>
+    </div>
+    -->
+
+<script type="text/javascript">
+
+    $("#${field.cssname}").fuzzy_calendar();
+
+    /*$("#${field.cssname}-display").datepicker({
+        changeYear:true,
+        changeMonth:true,
+        dateFormat: "dd M yy",
+        altField: "#${field.cssname}-hidden-date",
+        altFormat: $.datepicker.ISO_8601,
+    });
+
+    $("#${field.cssname}-select").change(function () {
+        var $select = $(this),
+            val =
+
+    });*/
+</script>
+
