@@ -50,11 +50,12 @@ class AssetRegistry(object):
     "/webapp.client/core_js/additional-methods.js",
 
     # Time picker addon for datepicker http://trentrichardson.com/examples/timepicker/
-    "/webapp.client/core_js/jquery-ui-timepicker-addon.js",
-    
+    # NOT USED
+    #"/webapp.client/core_js/jquery-ui-timepicker-addon.js",
+
     # Simple jquery color picker https://github.com/tkrotoff/jquery-simplecolorpicker
     "/webapp.client/core_js/jquery.simplecolorpicker.js",
-    
+
     # Jquery.cookie plugin - not directly used by the webapp
     # but we need this for doing the auth with o-rbited
     # from http://plugins.jquery.com/node/1386/release
@@ -75,6 +76,7 @@ class AssetRegistry(object):
     "/webapp.client/js/listing.js",
     "/webapp.client/js/filters.js",
     "/webapp.client/js/partial.js",
+
     )
 
 

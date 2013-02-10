@@ -46,7 +46,7 @@ class DataFormatReader(DataFormatBase):
         """
         # our parent is a Resource
         model = self.__parent__.model
-        return self.serialize_item(model)
+        return self.serialize_item(model, request)
 
     def read(self, request):
         """
@@ -167,7 +167,7 @@ class DataFormatCreator(DataFormatReader):
         """
         collection = self.__parent__
         model = collection.create_transient_subitem()
-        return self.serialize_item(model)
+        return self.serialize_item(model, request)
 
     def create_and_deserialize(self, params, request):
         """
@@ -359,8 +359,6 @@ class DataFormatLister(DataFormatBase):
         """
         structure = self.structure
 
-        import pdb; pdb.set_trace()
-
         # Structure can completely override the default logic
         if hasattr(structure, "listing"):
             return structure.listing(self, request)
@@ -456,7 +454,7 @@ class DataFormatLister(DataFormatBase):
 
         serialize_start = time.time()
         for model in items:
-            i = self.serialize_item(model)
+            i = self.serialize_item(model, request)
             result.append(i)
         serialize_end = time.time()
 
