@@ -78,6 +78,7 @@
 
 
             self.$datepicker_btn = self.$widget.find('button.datepickerBtn').require_one();
+            /* selecting a date from the calendar */
             self.$datepicker_btn.datepicker()
                 .on('changeDate', function (ev) {
                     self.$datepicker_btn.find('span').require_one().html(self.$datepicker_btn.data('date'));
@@ -86,6 +87,8 @@
                     // depress the button
                     self.$widget.find("button").removeClass('active');
                     self.$datepicker_btn.addClass('active');
+                    self._show_time();
+
                 });
 
             $.each(self.button_names, function(idx, obj) {
@@ -103,6 +106,8 @@
             self.$minutes_select = $('#' + this.base_id + '-minutes').require_one();
             self.$ampm_select = $('#' + this.base_id + '-ampm').require_one();
 
+
+            /* timepicker button click */
             self.$set_time_btn = self.$widget.find('button.setTime')
                 .require_one()
                 .click(function () {
@@ -114,7 +119,6 @@
 
                     self.$timepicker_btn.find('span').require_one().html(label);
                     self.$datepicker_btn.datepicker('hide');
-
                 });
 
             // Fix input element click problem
