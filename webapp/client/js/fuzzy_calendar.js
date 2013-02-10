@@ -33,6 +33,17 @@
         this._defaults = defaults;
         this._name = pluginName;
 
+
+        this.button_names = [
+            {id: 'later', name: '&mdash;'},
+            {id: 'today', name: 'Today'},
+            {id: 'tomorrow', name: 'Tomorrow'},
+            {id: 'this_week', name: 'This week'},
+            {id: 'next_week', name: 'Next week'}
+        ];
+
+
+
         this.init();
     }
 
@@ -58,76 +69,105 @@
 
             self.$element.hide();
 
-            self.$select = $(this._make_select()).insertAfter(this.$element);
+            self.$widget = $(this._make_widget()).insertAfter(this.$element);
 
-            self.$datepicker = $(this._make_datepicker())
-                .insertAfter(this.$select);
+            /*self.$datepicker = $(this._make_datepicker())
+                .insertAfter(this.$select);*/
                 /*.hide();*/
 
 
-            self.$datepicker.datepicker()
+
+            self.$datepicker_btn = self.$widget.find('button.datepickerBtn').require_one();
+            self.$datepicker_btn.datepicker()
                 .on('changeDate', function (ev) {
-                    self.$datepicker.find('span').require_one().html(self.$datepicker.data('date'));
-                    self.$datepicker.datepicker('hide');
+                    self.$datepicker_btn.find('span').require_one().html(self.$datepicker_btn.data('date'));
+                    self.$datepicker_btn.datepicker('hide');
+
+                    // depress the button
+                    self.$widget.find("button").removeClass('active');
+                    self.$datepicker_btn.addClass('active');
                 });
 
+            $.each(self.button_names, function(idx, obj) {
+                self['$' + obj.id + '_btn'] = $('#' + self.base_id + '-' + obj.id).require_one();
+            });
 
-            /*this.$datepicker.find('a.hideWidget').require_one().click(function () {
-                self._hide_datepicker();
-                return false;
-            });*/
+            self.$timepicker_btn = self.$widget.find('button.timepickerBtn').require_one();
+            self.$timepicker_btn.dropdown();
+            self.$timepicker_btn.click(function () {
+                self.$timepicker_btn.dropdown('toggle');
 
-            self.$add_time_link = $('<button class="btn btn-small"><i class="icon-time"></i></button>')
-                .insertAfter(this.$datepicker)
+            });
+
+            self.$hours_select = $('#' + this.base_id + '-hours').require_one();
+            self.$minutes_select = $('#' + this.base_id + '-minutes').require_one();
+            self.$ampm_select = $('#' + this.base_id + '-ampm').require_one();
+
+            self.$set_time_btn = self.$widget.find('button.setTime')
+                .require_one()
                 .click(function () {
-                    self._show_time();
-                    return false;
+                    var label = self.$hours_select.val() +
+                        ':' +
+                        self.$minutes_select.val() +
+                        ' ' +
+                        self.$ampm_select.val();
+
+                    self.$timepicker_btn.find('span').require_one().html(label);
+                    self.$datepicker_btn.datepicker('hide');
+
                 });
 
-            self.$time_widget = $(this._make_time_widget())
-                .insertAfter(this.$add_time_link)
-                .hide();
-
-            self.$time_widget.find('a.hideWidget').require_one().click(function () {
-                self._hide_time();
-                return false;
+            // Fix input element click problem
+            $('.dropdown-menu select').click(function(e) {
+                e.stopPropagation();
             });
 
-            self.$select.change(function () {
-                self._select_changed();
-                return false;
-            });
+
+            /* today - tomorrow - this week etc. buttons */
+            self.$widget.find("button.fuzzyDateBtn")
+                .require_exactly(5)
+                .click(function () {
+                    var $btn = $(this),
+                        val = $btn.data('value');
+                    console.log(val);
+                    if (val == 'later' || val == 'this_week' || val == 'next_week') {
+                        self._hide_time();
+                    } else {
+                        self._show_time();
+                    }
+                    self._clear_datepicker();
+                });
+
+
         },
 
         yourOtherFunction: function(el, options) {
             // some logic
         },
 
-        _make_select: function() {
+        _make_widget: function() {
             var out = [],
-                select_values = [
-                    {val: '', name: '&mdash;'},
-                    {val: 'today', name: 'Today'},
-                    {val: 'tomorrow', name: 'Tomorrow'},
-                    {val: 'this_week', name: 'This week'},
-                    {val: 'next_week', name: 'Next week'} /*,
-                    {val: 'specific', name: 'Specific date'}*/
-                ];
+                self = this;
 
-            /*out.push('<select id="' + this.base_id + '-select">');
-            $.each(select_values, function(idx, obj) {
-                out.push('<option value="' + obj.val + '">' + obj.name + '</option>');
-            });
-            out.push("</select>");*/
-
+            out.push('<div class="btn-toolbar">');
             out.push('<div class="btn-group" data-toggle="buttons-radio">');
-            $.each(select_values, function(idx, obj) {
-                out.push('<button type="button" class="btn btn-small">' + obj.name + '</button>');
+            $.each(self.button_names, function(idx, obj) {
+                out.push('<button id="' + self.base_id + '-' + obj.id + '" data-value="' + obj.id + '" type="button" class="btn btn-small fuzzyDateBtn">' + obj.name + '</button>');
             });
 
-            out.push('<button type="button" class="btn btn-small" data-date-format="yyyy-mm-dd" data-date="2012-02-20"><i class="icon-calendar"></i> <span></span></button>');
+            out.push('<button type="button" class="btn btn-small datepickerBtn" data-date-format="yyyy-mm-dd" data-date="2012-02-20"><i class="icon-calendar"></i> <span></span></button>');
+            out.push('</div>');
 
-            out.push('<button type="button" class="btn btn-small"><i class="icon-time"></i></button>');
+            out.push('<div class="btn-group">');
+            out.push('<button type="button" class="btn btn-small timepickerBtn" data-toggle="dropdown"><i class="icon-time"></i> <span></span></button>');
+
+            /* time dropdown */
+            out.push('<div class="dropdown-menu">');
+            out.push(this._make_time_widget());
+            out.push('</div>');
+            /* end time dropdown */
+
+            out.push('</div>');
             out.push("</div>");
 
             return out.join("");
@@ -135,28 +175,31 @@
 
         _make_time_widget: function() {
             var out = [
-                '<div class="timeSelects">'
+                '<div class="timeSelects" style="padding:1em">'
             ], i;
 
-            out.push('<select id="' + this.base_id + '-hours" style="width: 50px;">');
+            out.push('<select id="' + this.base_id + '-hours" style="width: 4em">');
             for (i = 1; i <=12; i++) {
                 out.push('<option value="' + i + '">' + i + '</option>');
             }
             out.push('</select>');
 
-            out.push('<select id="' + this.base_id + '-minutes" style="width: 50px;">');
+            out.push(':');
+
+            out.push('<select id="' + this.base_id + '-minutes" style="width: 4em">');
             out.push('<option value="00">00</option>');
             out.push('<option value="15">15</option>');
             out.push('<option value="30">30</option>');
             out.push('<option value="45">45</option>');
             out.push('</select>');
 
-            out.push('<select id="' + this.base_id + '-ampm" style="width: 50px;">');
-            out.push('<option value="am" style="color:red">am</option>');
+            out.push('<select id="' + this.base_id + '-ampm" style="width: 4em">');
+            out.push('<option value="am">am</option>');
             out.push('<option value="pm">pm</option>');
             out.push('</select>');
 
-            out.push('<a class="btn btn-mini hideWidget" href="#" title="remove time"><i class="icon-remove"></i></a>');
+            out.push('<br><button type="button" class="btn removeTime"><i class="icon-remove"></i></button>');
+            out.push('<button type="button" class="btn btn-primary setTime">Set time</button>');
 
             out.push('</div>');
             return out.join("");
@@ -175,7 +218,7 @@
             return out.join("");*/
         },
 
-        _select_changed: function () {
+        /*_select_changed: function () {
             var val = this.$select.val();
             this.$element.val(val);
             if (val === 'specific') {
@@ -187,27 +230,21 @@
                 this.$time_widget.hide();
                 this.$add_time_link.hide();
             }
-        },
+        },*/
 
-        _show_datepicker: function () {
-            /*this.$datepicker.show();
-            this.$select.hide();*/
-        },
 
-        _hide_datepicker: function () {
-            /*this.$datepicker.hide();
-            this.$select.show();
-            this.$select.val('').change(); */// switch back to "no date set"
+        _clear_datepicker: function () {
+            var self = this;
+
+            self.$datepicker_btn.find('span').require_one().text('');
         },
 
         _show_time: function () {
-            this.$time_widget.show();
-            this.$add_time_link.hide();
+            this.$timepicker_btn.show();
         },
 
         _hide_time: function () {
-            this.$time_widget.hide();
-            this.$add_time_link.show();
+            this.$timepicker_btn.hide();
         }
 
     };
