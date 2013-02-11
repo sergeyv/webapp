@@ -97,21 +97,6 @@ class Calendar(Widget):
         Widget.__init__(self, **k)
 
 
-class FuzzyCalendar(Widget):
-    """
-    An input field which allows entering either a precise date/time or a "fuzzy" value
-    such as "today", "tomorrow" or "next week"
-
-        form['due_date'].widget = webapp.widgets.FuzzyCalendar()
-
-    """
-
-    type = 'FuzzyCalendar'
-    template = 'field.FuzzyCalendar'
-
-    def __init__(self, **k):
-        Widget.__init__(self, **k)
-
 
 #class Input(Widget):
     #"""
