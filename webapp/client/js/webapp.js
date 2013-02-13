@@ -55,6 +55,8 @@
         this.xhr_id = 0;
         this.currently_active_xhrs = {};
 
+        this.flash_messages = [];
+
         this.showMessage = function (msg, title) {
             /*
             Displays a message - a nicer replacement for
@@ -116,8 +118,8 @@
                 // second time - it's inefficient but I wasn't
                 // able to find how to get json data from ajaxSuccess
                 var data = $.parseJSON(jqx.responseText);
-                if (data && data.__webapp_message__) {
-                    alert(data.__webapp_message__);
+                if (data && data.__flash_messages__) {
+                    webapp.flash_messages = data.__flash_messages__;
                 }
 
             });

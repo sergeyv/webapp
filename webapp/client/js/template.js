@@ -20,7 +20,8 @@
         */
         var opts = $.extend({
             need_load_data: true,
-            aux_templates: []
+            aux_templates: [],
+            flash_messages_container_id: "#flash_messages"
         }, options);
         webapp.View.apply(this, [opts]);
         this.options.template_name = this.options.template_name || this.options.identifier;
@@ -241,42 +242,6 @@
     };
 
 
-    /*
-    * Template allows links to have some special classes
-    * which modify their behaviour:
-    *
-    * - webappAsyncAction - clicking on the link pings the target URL
-    *   without the page being reloaded. The server response is discarded
-    *
-    * - webappInvokeOnLoad - the URL will be pinged when the view is shown
-    *
-    * - webappConfirmDialog - shows a confirmation dialog, only pings the URL
-    *   if the user chooses OK. The link's title tag is used for
-    *   the dialog's message text
-    *
-    * - webappMethodDelete - uses DELETE instead of POST (otherwise it's GET)
-    *   We can add more methods when needed though it's not yet
-    *   clear how to send any data in a POST or PUT request.
-    *
-    * - webappSendData - sends the data from the link's data-send attribute
-    *
-    * - webappCollectDataMethod-<methodName> - invokes a method of the view
-    *   and extends the data to be sent to the server with whatever the method returns
-    *
-    *
-    * - webappGoBack - after the async action has been invoked,
-    *   redirect to the previous page
-    *
-    * - webappOnSuccess-<method_name> - invoke a specified method
-    *   of the view object after the call succeeds,
-    *   i.e. webappOnSuccess-reload will reload
-    *   the data from the server and re-render the template with that data.
-    *
-    * - webappPopup - display the target link in the popup. It is possible to
-    *   invoke an async action and show the view in a popup at the same time
-    *   by specifying both urls separated by a hash: /rest/some/url#/some/view
-    *
-    */
     Template.prototype.augmentView = function () {
 
         var self = this;
@@ -294,6 +259,8 @@
                 return undefined; // if we return false the iteration stops
             });
         }
+
+        // self.renderFlashMessages();
 
     };
 
@@ -354,6 +321,24 @@
         return placeholder;
     };
 
+    Template.prototype.renderFlashMessages = function () {
+        var self = this,
+            msg_container = $(self.options.flash_messages_container_id).require_one();
+
+
+        msg_container.children().remove();
+
+        $.each(webapp.flash_messages, function (idx, msg) {
+            msg_container.append('<div class="alert">' +
+                msg.msg +
+                '</div>'
+                );
+        });
+
+        webapp.flash_messages = [];
+
+    };
+
     webapp.Template = Template;
 
 }(jQuery, webapp));
@@ -366,10 +351,48 @@
 
 /* TODO: move it somewhere else */
 
+/*
+* Template allows links to have some special classes
+* which modify their behaviour:
+*
+* - webappAsyncAction - clicking on the link pings the target URL
+*   without the page being reloaded. The server response is discarded
+*
+* - webappInvokeOnLoad - the URL will be pinged when the view is shown
+*
+* - webappConfirmDialog - shows a confirmation dialog, only pings the URL
+*   if the user chooses OK. The link's title tag is used for
+*   the dialog's message text
+*
+* - webappMethodDelete - uses DELETE instead of POST (otherwise it's GET)
+*   We can add more methods when needed though it's not yet
+*   clear how to send any data in a POST or PUT request.
+*
+* - webappSendData - sends the data from the link's data-send attribute
+*
+* - webappCollectDataMethod-<methodName> - invokes a method of the view
+*   and extends the data to be sent to the server with whatever the method returns
+*
+*
+* - webappGoBack - after the async action has been invoked,
+*   redirect to the previous page
+*
+* - webappOnSuccess-<method_name> - invoke a specified method
+*   of the view object after the call succeeds,
+*   i.e. webappOnSuccess-reload will reload
+*   the data from the server and re-render the template with that data.
+*
+* - webappPopup - display the target link in the popup. It is possible to
+*   invoke an async action and show the view in a popup at the same time
+*   by specifying both urls separated by a hash: /rest/some/url#/some/view
+*
+*/
+
+
 (function ($, webapp) {
     "use strict";
 
-    $(function () { // need to run this agter <body> is loaded
+    $(function () { // need to run this after <body> is loaded
 
         /// Every link marked with webappAsyncAction class will
         /// invoke an async task (well, it can be used to ping

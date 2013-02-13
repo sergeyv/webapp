@@ -30,6 +30,15 @@ from webapp.forms.data_format import (
 #from webapp.testing import sluggish, explode
 
 
+def _add_flash_messages(data, request):
+    if data is None:
+        print "WARNING: A view should return a dict, not None"
+    else:
+        if len(request.flash_messages):
+            data['__flash_messages__'] = request.flash_messages
+    return data
+
+
 # TODOXXX: fix remote validation
 def json_rest_empty(context, request):
     """
@@ -116,8 +125,9 @@ def json_rest_delete_subitems(context, request):
 
     context.delete_subitems(ids, request)
 
-    # TODO: Do something meaningful
-    return {'result': "OK"}
+    data = {'ids': params['id']}
+    data = _add_flash_messages(data, request)
+    return data
 
 
 @view_config(context=crud.IResource,
@@ -130,13 +140,12 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
-    if hasattr(context, '__soft_delete__'):
-        result = context.delete_item(request, context.__soft_delete__)  # returns task_id
-    else:
-        result = context.delete_item(request)
-        
-    if result is True:
-        return {'result': "OK"}
+
+    item_id = context.delete_item(request, soft=getattr(context, '__soft_delete__', False))
+
+    data = {'id': item_id}
+    data = _add_flash_messages(data, request)
+    return data
 
 
 def context_implements(*types):
@@ -171,7 +180,9 @@ def json_rest_create_f(context, request):
     #     print "z..."
     #     time.sleep(1)
 
-    return context.create(request)
+    data = context.create(request)
+    data = _add_flash_messages(data, request)
+    return data
 
 
 @view_config(context=IDataFormat,
@@ -189,6 +200,7 @@ def json_rest_get_f(context, request):
     start = time.time()
     data = context.read(request)
 
+    data = _add_flash_messages(data, request)
     #data.setdefault('stats', {})['total_time'] = time.time() - start
     return data
 
@@ -203,7 +215,9 @@ def json_rest_get_f(context, request):
 def json_rest_update_f(context, request):
     """
     """
-    return context.update(request)
+    data = context.update(request)
+    data = _add_flash_messages(data, request)
+    return data
 
 
 @view_config(context=IDataFormat,
@@ -225,6 +239,7 @@ def json_rest_list_f(context, request, permission=""):
     if isinstance(data, dict):
         data.setdefault('stats', {})['total_time'] = time.time() - start
 
+    data = _add_flash_messages(data, request)
     return data
 
 
@@ -248,12 +263,17 @@ def _do_validate(context, request):
     res_or_coll = format.__parent__
     structure = format.structure
 
-    if hasattr(structure, validator_name):
-        return getattr(structure, validator_name)(format, request)
-    if hasattr(res_or_coll, validator_name):
-        return getattr(res_or_coll, validator_name)(format, request)
+    data = None
 
-    raise HTTPNotFound("No validator found for attribute %s" % request.subpath[0])
+    if hasattr(structure, validator_name):
+        data = getattr(structure, validator_name)(format, request)
+    elif hasattr(res_or_coll, validator_name):
+        data = getattr(res_or_coll, validator_name)(format, request)
+    else:
+        raise HTTPNotFound("No validator found for attribute %s" % request.subpath[0])
+
+    data = _add_flash_messages(data, request)
+    return data
 
 
 @view_config(name="v",  # for 'Vendetta', obviously
