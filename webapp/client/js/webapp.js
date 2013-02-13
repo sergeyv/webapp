@@ -111,9 +111,16 @@
                 webapp._forgetXHR(jqx);
             });
 
-            /*$(document).ajaxSuccess(function (e, jqx) {
-                webapp._addRequestStats(e, jqx);
-            });*/
+            $(document).ajaxSuccess(function (e, jqx) {
+                // TODOXXX: this parses .responseText to JSON
+                // second time - it's inefficient but I wasn't
+                // able to find how to get json data from ajaxSuccess
+                var data = $.parseJSON(jqx.responseText);
+                if (data && data.__webapp_message__) {
+                    alert(data.__webapp_message__);
+                }
+
+            });
 
 
             /*$(document).ajaxError(function (e, jqx) {
@@ -439,14 +446,14 @@
     WebApp.prototype._rememberXHR = function (xhr) {
         xhr._id = ++webapp.xhr_id;
         webapp.currently_active_xhrs[xhr._id] = xhr;
-        console.log("Remembered id " + xhr._id);
-        console.log(webapp.currently_active_xhrs);
+        // console.log("Remembered id " + xhr._id);
+        // console.log(webapp.currently_active_xhrs);
     };
 
     WebApp.prototype._forgetXHR = function (xhr) {
-        console.log("Forgetting id " + xhr._id);
+        // console.log("Forgetting id " + xhr._id);
         delete webapp.currently_active_xhrs[xhr._id];
-        console.log(webapp.currently_active_xhrs);
+        // console.log(webapp.currently_active_xhrs);
     };
 
     WebApp.prototype.abortAllRequests = function () {
