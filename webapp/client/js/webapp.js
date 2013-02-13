@@ -119,7 +119,7 @@
                 // able to find how to get json data from ajaxSuccess
                 var data = $.parseJSON(jqx.responseText);
                 if (data && data.__flash_messages__) {
-                    webapp.flash_messages = data.__flash_messages__;
+                    webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
                 }
 
             });
