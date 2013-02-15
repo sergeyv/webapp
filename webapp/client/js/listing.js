@@ -204,6 +204,11 @@
             self.view.find("table.listingTable").append(fragment);
             self.event.num_loaded = num_loaded + data.items.length;
 
+            /* perform any JS initializations */
+            if (self.options.before_view_shown) {
+                self.options.before_view_shown.apply(self, [fragment]);
+            }
+
             callback(fragment, data);
         });
     };

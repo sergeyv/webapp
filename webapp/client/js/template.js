@@ -179,7 +179,7 @@
         /// start loading the partials
         self._initiate_ajax_calls().done(function () {
             self._ajax_finished.apply(self, arguments);
-        });;
+        });
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -244,7 +244,7 @@
         $.timeago.settings.allowFuture = true;*/
 
         if (self.options.before_view_shown) {
-            self.options.before_view_shown.apply(self);
+            self.options.before_view_shown.apply(self, [self.view]);
         }
     };
 
