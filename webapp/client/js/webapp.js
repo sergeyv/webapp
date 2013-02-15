@@ -666,8 +666,9 @@
             need_send_data = false,
             callback = function () {
 
-                $link.addClass("asyncTaskSent");
-
+				if(!$link.hassClass("webappHideSpinner")) {
+                	$link.addClass("asyncTaskSent");
+				}
                 /// find all classes which start with webappOnSuccess
                 /// if found, it expects it to be in a form webappOnSuccess-methodName.
                 /// If the view has such method, it is invoked when the call succeeds
