@@ -69,6 +69,115 @@
         return {ids: vals};
     };
 
+    Listing.prototype._render_pager = function () {
+        var self = this,
+            total = self.data.total_count,
+            batch_size = self.event.uri_args.batch_size || self.options.batch_size,
+            pages = Math.ceil(total / batch_size),
+            batch_start = self.event.uri_args.batch_start || 0,
+            current = Math.floor(batch_start / batch_size),
+            i = 0,
+            output = [],
+            bs;
+
+
+        if (pages > 1) { // don't need a pager for just a single page
+            output.push('<ul>');
+            for (i = 0; i < pages; i += 1) {
+                if (i === current) {
+                    output.push('<li><span class="current">' + (i + 1) + '</span></li>');
+                } else {
+                    bs = i * batch_size;
+                    output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a></li>');
+                }
+            }
+
+            /// next link
+            if (current < pages - 1) {
+                bs = (current + 1) * batch_size;
+                output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '"> next </a></li>');
+            } else {
+                //output.push('<ul><span class="discreet">(last)</span></ul>');
+            }
+            output.push('</ul>');
+        } else {
+            output.push('<span class="discreet">all ' + total + ' items shown</span>');
+        }
+
+        /// the current batch size
+        output.push('<div class="batchSize">' + batch_size + ' per page');
+
+        /// more link
+        if (pages > 1 && batch_size < 200) {
+            bs = Math.min(Math.floor(batch_size * 2), 200);
+            output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">more</a>');
+        }
+
+        /// less link is shown even if there's just one page
+        if (batch_size > 10) {
+            bs = Math.max(Math.floor(batch_size / 2), 10);
+            output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">less</a>');
+        }
+
+        output.push("</div>");
+
+
+        return output.join('\n');
+    };
+
+
+    Listing.prototype._render_load_more_link = function () {
+        var self = this,
+            total = self.data.total_count,
+            batch_size = self.event.uri_args.batch_size || self.options.batch_size,
+            pages = Math.ceil(total / batch_size),
+            batch_start = self.event.uri_args.batch_start || 0,
+            current = Math.floor(batch_start / batch_size),
+            i = 0,
+            output = [],
+            bs;
+
+        if (pages > 1) { // don't need a pager for just a single page
+
+            /// next link
+            if (current < pages - 1) {
+                bs = (current + 1) * batch_size;
+                output.push('<a class="loadMoreLink" href="#' + self.new_filter_url('batch_start', bs) + '"> more </a>');
+            } else {
+                output.push('<span class="discreet">all items shown</span>');
+            }
+        } else {
+            output.push('<span class="discreet">all ' + total + ' items shown</span>');
+        }
+
+        output.push("</div>");
+
+        return output.join('\n');
+    };
+
+
+    Listing.prototype.pager = function () {
+        var self = this;
+
+        if (self.options.scroll==='pager') {
+            return self._render_pager();
+        } else if (self.options.scroll==='click for more') {
+            /*render_pager();*/
+            return self._render_load_more_link();
+            /*self.view.find("a.loadMoreLink").click(function () {
+                alert("Hi!");
+                return false;
+            });*/
+
+        } else if (self.options.scroll==='infinite') {
+            /*render_pager();*/
+        }
+
+        /// <%=this.view.pager() %>
+    };
+
+
+
     Listing.prototype.augmentView = function () {
 
         var self = this;
@@ -98,92 +207,6 @@
         }
 
 
-        function render_pager() {
-            var total = self.data.total_count,
-                batch_size = self.event.uri_args.batch_size || self.options.batch_size,
-                pages = Math.ceil(total / batch_size),
-                batch_start = self.event.uri_args.batch_start || 0,
-                current = Math.floor(batch_start / batch_size),
-                i = 0,
-                output = [],
-                bs,
-                $pager = self.view.find("div.pagination");
-
-
-            if (pages > 1) { // don't need a pager for just a single page
-                output.push('<ul>');
-                for (i = 0; i < pages; i += 1) {
-                    if (i === current) {
-                        output.push('<li><span class="current">' + (i + 1) + '</span></li>');
-                    } else {
-                        bs = i * batch_size;
-                        output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a></li>');
-                    }
-                }
-
-                /// next link
-                if (current < pages - 1) {
-                    bs = (current + 1) * batch_size;
-                    output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '"> next </a></li>');
-                } else {
-                    //output.push('<ul><span class="discreet">(last)</span></ul>');
-                }
-                output.push('</ul>');
-            } else {
-                output.push('<span class="discreet">all ' + total + ' items shown</span>');
-            }
-
-            /// the current batch size
-            output.push('<div class="batchSize">' + batch_size + ' per page');
-
-            /// more link
-            if (pages > 1 && batch_size < 200) {
-                bs = Math.min(Math.floor(batch_size * 2), 200);
-                output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">more</a>');
-            }
-
-            /// less link is shown even if there's just one page
-            if (batch_size > 10) {
-                bs = Math.max(Math.floor(batch_size / 2), 10);
-                output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">less</a>');
-            }
-
-            output.push("</div>");
-
-
-            $pager.html(output.join('\n'));
-        }
-
-
-        function render_load_more_link() {
-            var total = self.data.total_count,
-                batch_size = self.event.uri_args.batch_size || self.options.batch_size,
-                pages = Math.ceil(total / batch_size),
-                batch_start = self.event.uri_args.batch_start || 0,
-                current = Math.floor(batch_start / batch_size),
-                i = 0,
-                output = [],
-                bs,
-                $pager = self.view.find("div.pagination");
-
-            if (pages > 1) { // don't need a pager for just a single page
-
-                /// next link
-                if (current < pages - 1) {
-                    bs = (current + 1) * batch_size;
-                    output.push('<a class="loadMoreLink" href="#' + self.new_filter_url('batch_start', bs) + '"> more </a>');
-                } else {
-                    output.push('<span class="discreet">all items shown</span>');
-                }
-            } else {
-                output.push('<span class="discreet">all ' + total + ' items shown</span>');
-            }
-
-            output.push("</div>");
-
-            $pager.html(output.join('\n'));
-        }
-
         // this is how to call a 'super' method in JS
         webapp.Template.prototype.augmentView.call(this);
 
@@ -194,19 +217,6 @@
             $cell.html('<a href="#' + self.new_sort_url(id) + '" class="' + get_sort_class(id) + '">' + title + '</a>');
         });
 
-        if (self.options.scroll==='pager') {
-            render_pager();
-        } else if (self.options.scroll==='click for more') {
-            /*render_pager();*/
-            render_load_more_link();
-            self.view.find("a.loadMoreLink").click(function () {
-                alert("Hi!");
-                return false;
-            });
-
-        } else if (self.options.scroll==='infinite') {
-            /*render_pager();*/
-        }
     };
 
     webapp.Listing = Listing;
