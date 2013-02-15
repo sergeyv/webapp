@@ -238,11 +238,6 @@
 
         self.augmentView();
 
-        // TODO: Move somewhere - webapp does not need to know
-        // about jquery.timeago at all.
-        /*$("abbr.timeago").timeago();
-        $.timeago.settings.allowFuture = true;*/
-
         if (self.options.before_view_shown) {
             self.options.before_view_shown.apply(self, [self.view]);
         }
