@@ -449,6 +449,8 @@ class DataFormatLister(DataFormatBase):
         if len(items) > batch_size:
             data['has_more'] = True
             data['next_batch_start'] = batch_start + batch_size
+            # remove the last element, which we don't need
+            items.pop()
 
         result = []
 

@@ -8,7 +8,7 @@
             batch_size: 50,
             searchable: true,
             need_filters: false, //add a Filters partial
-            scroll: 'pager' // can be 'pager', 'infinite', 'click for more'
+            scroll: 'pager' // can be 'pager', next-prev', 'infinite', 'click-for-more'
         }, options);
         webapp.Template.apply(this, [opts]);
 
@@ -69,7 +69,7 @@
         return {ids: vals};
     };
 
-    Listing.prototype._render_pager = function () {
+    Listing.prototype._render_pager = function (need_pages) {
         var self = this,
             total = self.data.total_count,
             batch_size = self.event.uri_args.batch_size || self.options.batch_size,
@@ -80,24 +80,36 @@
             output = [],
             bs;
 
+        output.push('<div class="pagination">');
 
         if (pages > 1) { // don't need a pager for just a single page
             output.push('<ul>');
-            for (i = 0; i < pages; i += 1) {
-                if (i === current) {
-                    output.push('<li><span class="current">' + (i + 1) + '</span></li>');
-                } else {
-                    bs = i * batch_size;
-                    output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a></li>');
+
+            /// prev link
+            if (current > 0) {
+                bs = (current - 1) * batch_size;
+                output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '"> &laquo; </a></li>');
+            } else {
+                output.push('<li><span class="current"> &laquo; </span></li>');
+            }
+
+            if (need_pages) {
+                for (i = 0; i < pages; i += 1) {
+                    if (i === current) {
+                        output.push('<li><span class="current">' + (i + 1) + '</span></li>');
+                    } else {
+                        bs = i * batch_size;
+                        output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a></li>');
+                    }
                 }
             }
 
             /// next link
             if (current < pages - 1) {
                 bs = (current + 1) * batch_size;
-                output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '"> next </a></li>');
+                output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '"> &raquo; </a></li>');
             } else {
-                //output.push('<ul><span class="discreet">(last)</span></ul>');
+                output.push('<li><span class="current"> &raquo; </span></li>');
             }
             output.push('</ul>');
         } else {
@@ -120,11 +132,11 @@
         }
 
         output.push("</div>");
+        output.push("</div>");
 
 
         return output.join('\n');
     };
-
 
     Listing.prototype._render_load_more_link = function () {
         var self = this,
@@ -137,20 +149,21 @@
             output = [],
             bs;
 
-        if (pages > 1) { // don't need a pager for just a single page
+        output.push('<div class="pagination"><ul>');
 
+        if (pages > 1) { // don't need a pager for just a single page
             /// next link
             if (current < pages - 1) {
                 bs = (current + 1) * batch_size;
-                output.push('<a class="loadMoreLink" href="#' + self.new_filter_url('batch_start', bs) + '"> more </a>');
+                output.push('<li><a class="loadMoreLink" href="#' + self.new_filter_url('batch_start', bs) + '"> show more </a></li>');
             } else {
-                output.push('<span class="discreet">all items shown</span>');
+                output.push('<li><span class="discreet">all items shown</span></li>');
             }
         } else {
-            output.push('<span class="discreet">all ' + total + ' items shown</span>');
+            output.push('<li><span class="discreet">all ' + total + ' items shown</span></li>');
         }
 
-        output.push("</div>");
+        output.push("</ul></div>");
 
         return output.join('\n');
     };
@@ -159,23 +172,41 @@
     Listing.prototype.pager = function () {
         var self = this;
 
-        if (self.options.scroll==='pager') {
-            return self._render_pager();
-        } else if (self.options.scroll==='click for more') {
-            /*render_pager();*/
-            return self._render_load_more_link();
-            /*self.view.find("a.loadMoreLink").click(function () {
-                alert("Hi!");
-                return false;
-            });*/
-
-        } else if (self.options.scroll==='infinite') {
-            /*render_pager();*/
+        switch (self.options.scroll) {
+            case 'pager': return self._render_pager(true);
+            case 'next-prev': return self._render_pager(false);
+            case 'click-for-more': return self._render_load_more_link();
+            case 'infinite': return '<div class="pagination"></div>';
         }
 
-        /// <%=this.view.pager() %>
     };
 
+    Listing.prototype.load_more = function (callback) {
+        /*
+        Loads the next portion of the listing and attaches it to the table,
+        then invokes a callback function passing it the DOM fragment rendered from the data
+        and the data for the current batch
+        */
+        var self = this,
+            total = self.data.total_count,
+            batch_size = self.event.uri_args.batch_size || self.options.batch_size,
+            num_loaded = self.event.num_loaded || self.data.items.length,
+            url = self.getRestUrl('with-params', undefined, {batch_start: num_loaded}),
+            blob,
+            fragment;
+        $.ajax({
+            type: "GET",
+            url: url,
+            cache: true
+        }).done(function (data) {
+            blob = self.render_data_return_html(self.template, data);
+            fragment = $(blob).find("table.listingTable tbody:last");
+            self.view.find("table.listingTable").append(fragment);
+            self.event.num_loaded = num_loaded + data.items.length;
+
+            callback(fragment, data);
+        });
+    };
 
 
     Listing.prototype.augmentView = function () {
@@ -217,9 +248,45 @@
             $cell.html('<a href="#' + self.new_sort_url(id) + '" class="' + get_sort_class(id) + '">' + title + '</a>');
         });
 
+
+        if (self.options.scroll === 'click-for-more') {
+            $(self.view)
+                .off("click", "a.loadMoreLink")
+                .on("click", "a.loadMoreLink", function () {
+
+                /*var $link = $(this);*/
+                self.load_more(function (fragment, data) {
+                    fragment.effect("highlight", {}, 1500);
+                    if (!data.has_more) {
+                        $(".pagination").html('<span class="discreet">All ' + self.event.num_loaded + ' items shown</span>');
+                    }
+                });
+                return false;
+            });
+        } else if (self.options.scroll === 'infinite') {
+            $(self.view).find('table.listingTable').infiniteScroll({
+                threshold: 150,
+                onEnd: function() {
+                    $(".pagination").html('<span class="discreet">All ' + self.event.num_loaded + ' items shown</span>');
+                },
+                onBottom: function(callback) {
+                    if ((self.event.num_loaded || 0) < self.data.total_count) {
+                        // console.log('At the end of the page. Loading more!');
+                        self.load_more(function (fragment, data) {
+                            callback(data.has_more ? true : false); /* the plugin requires strictly true or false */
+                            /* this triggers another scroll event which solves the problem
+                            with the initial listing being too short for the scrollbar to appear
+                            - in this case the plugin will continue to load portions of data until
+                            we have enough to fill the whole screen  */
+                            $(window).trigger('scroll');
+                        });
+                    }
+                }
+            });
+            $(window).trigger('scroll');
+        }
     };
 
     webapp.Listing = Listing;
 
 }(jQuery, webapp));
-
