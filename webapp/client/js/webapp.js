@@ -666,7 +666,7 @@
             need_send_data = false,
             callback = function () {
 
-				if(!$link.hassClass("webappHideSpinner")) {
+				if(!$link.hasClass("webappHideSpinner")) {
                 	$link.addClass("asyncTaskSent");
 				}
                 /// find all classes which start with webappOnSuccess
@@ -677,6 +677,7 @@
                     if (parts.length === 2 &&
                             parts[0] === "webappOnSuccess" &&
                             view[parts[1]]) {
+                        console.log(view);
                         view[parts[1]].apply(view);
                     }
                 });
