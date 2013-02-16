@@ -442,10 +442,15 @@
 
 
         self.form.find('div.loadableListbox').each(function () {
-            var $select = $(this).find('select');
-            $select.addClass("chosenInitialized").chosen({
-                disable_search_threshold: 3
-            });
+            var $select = $(this).find('select'),
+                opts = {
+                    disable_search_threshold: 3
+                };
+
+            if (!$select.hasClass('required')) {
+                opts.allow_single_deselect = true;
+            }
+            $select.addClass("chosenInitialized").chosen(opts);
             self.hideListbox($select);
             self.reloadLoadable($select);
         });
@@ -509,24 +514,8 @@
                 } else {
                     ids[orig] = true;
                 }
-                    /*$.each(data.items, function (idx, value) {
-                        var opt = $("<option/>").val(value[0]).html(value[1]);
-                        if (ids[value[0]]) {
-                            opt.attr("selected", "selected");
-                        }
-                        opt.appendTo($select);
-                    });*/
-                //} else {
-                /*if (data.items.length === 0) {
-                    self.hideListboxOnly($select);
-                } else {*/
-                    /* add an empty option for Chosen default text support
-                    - only add the option only if there are more than 1 results,
-                    otherwise just select the first result automatically
-                    */
-                    if (data.items.length > 1) {
-                        $('<option value=""></option>').appendTo($select);
-                    }
+                    /* add an empty option for Chosen default text support */
+                    $('<option value=""></option>').appendTo($select);
 
                     $.each(data.items, function (idx, value) {
                         var opt = $("<option/>").val(value[0]).html(value[1]).appendTo($select);
