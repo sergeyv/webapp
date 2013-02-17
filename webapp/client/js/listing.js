@@ -190,8 +190,8 @@
         var self = this,
             total = self.data.total_count,
             batch_size = self.event.uri_args.batch_size || self.options.batch_size,
-            num_loaded = self.event.num_loaded || self.data.items.length,
-            url = self.getRestUrl('with-params', undefined, {batch_start: num_loaded}),
+            // num_loaded = self.event.num_loaded || self.data.this_batch_count || self.data.items.length,
+            url = self.getRestUrl('with-params', undefined, {batch_start: self.data.next_batch_start}),
             blob,
             fragment;
         $.ajax({
@@ -202,7 +202,11 @@
             blob = self.render_data_return_html(self.template, data);
             fragment = $(blob).find("table.listingTable tbody:last");
             self.view.find("table.listingTable").append(fragment);
-            self.event.num_loaded = num_loaded + data.items.length;
+
+            /* update data */
+            self.data.items = self.data.items.concat(data.items);
+            self.data.next_batch_start = data.next_batch_start;
+            self.data.has_more = data.has_more;
 
             /* perform any JS initializations */
             if (self.options.before_view_shown) {
@@ -263,7 +267,7 @@
                 self.load_more(function (fragment, data) {
                     fragment.effect("highlight", {}, 1500);
                     if (!data.has_more) {
-                        $(".pagination").html('<span class="discreet">All ' + self.event.num_loaded + ' items shown</span>');
+                        $(".pagination").html('<span class="discreet">All ' + self.data.total_count + ' items shown</span>');
                     }
                 });
                 return false;
@@ -272,10 +276,10 @@
             $(self.view).find('table.listingTable').infiniteScroll({
                 threshold: 150,
                 onEnd: function() {
-                    $(".pagination").html('<span class="discreet">All ' + self.event.num_loaded + ' items shown</span>');
+                    $(".pagination").html('<span class="discreet">All ' + self.data.total_count + ' items shown</span>');
                 },
                 onBottom: function(callback) {
-                    if ((self.event.num_loaded || 0) < self.data.total_count) {
+                    if (self.data.has_more) {
                         // console.log('At the end of the page. Loading more!');
                         self.load_more(function (fragment, data) {
                             callback(data.has_more ? true : false); /* the plugin requires strictly true or false */
