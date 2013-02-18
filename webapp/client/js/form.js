@@ -454,32 +454,6 @@
             self.hideListbox($select);
             self.reloadLoadable($select);
         });
-
-        self.form.find('div.autoFillDropdown').each(function () {
-            //var $widget = $(this).find('div.autofillform');
-            /*self.autoFillForm($widget);*/
-            var $select = $(this).find('select');
-            $select.change(function () {
-                var item_id = self.event.parameters.item_id || 'new',
-                    url = self.getRestUrl("with-params",
-                        {
-                            item_id: item_id
-                        },
-                        {
-                            only: $select.data('dependent_fields'),
-                            set_field: $select.attr('name'),
-                            set_value: $select.val()
-                        });
-
-                webapp.Read(url, function (data) {
-                    var id_root = '#' + self.options.identifier;
-                    self.fill_form(id_root, data);
-                    // Only show the view after all the data is set.
-                    //webapp.controller.setActiveView(self);
-                });
-
-            });
-        });
     };
 
     Form.prototype.reloadLoadable = function ($select) {

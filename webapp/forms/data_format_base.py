@@ -213,8 +213,8 @@ class DataFormatBase(object):
                     #     ... need to flush the session here so model.client is loaded
                     #     model.client.name = "Client One"
 
-                    session = sa.orm.object_session(model)
-                    session.flush()
+                    # session = sa.orm.object_session(model)
+                    # session.flush()
 
                     submodel = getattr(model, name, None)
                     #print "SUBmodel: %s" % (value)

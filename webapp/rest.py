@@ -288,21 +288,6 @@ class RestCollection(FormAwareMixin, crud.Collection):
 
         resource = self.wrap_child(item, name="empty")
 
-        set_field = request.GET.get('set_field', None)
-        if set_field is not None:
-            set_value = request.GET.get('set_value', None)
-            if set_value:
-                # or use the deserialization machinery here?
-                setattr(item, set_field, int(set_value))
-
-                # AutoFillDropdown is not compatible with models which have
-                # nullable fields because to load relations we're temporariliy
-                # saving the object to the database before rolling the transaction back.
-                # The line below is an ugly hack to make Domain register form work.
-                # TODO: Need to remove the constraint from the field.
-                item.name = "xxx"
-                session.flush()
-
         # TODOXXX: Change this
         data = resource.serialize(format=format)
 
