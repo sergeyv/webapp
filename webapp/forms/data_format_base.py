@@ -371,7 +371,7 @@ class DataFormatBase(object):
 
             # skip None values from the output to make the output more compact
             # this potentially may break the forms, need to check
-            if value is not None:
+            if value is not None or getattr(structure, '__serialize_nulls__', False):
                 data[name] = value
 
         return data
