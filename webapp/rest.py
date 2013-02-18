@@ -35,7 +35,7 @@ class RestSubobject(crud.Traversable):
 
         class AutoresponderResource(webapp.RestSubobject):
 
-            def serialize(self, format='default', annotate=False, only_fields=None):
+            def serialize(self, format='default', annotate=False):
                 email = self.__parent__.model
                 print "TADA, serialize called"
                 return email.invoke_action('get_autoresponder')
@@ -303,12 +303,8 @@ class RestCollection(FormAwareMixin, crud.Collection):
                 item.name = "xxx"
                 session.flush()
 
-        only_fields = request.GET.get('only', None)
-        if only_fields is not None:
-            only_fields = [f.strip() for f in only_fields.split(',')]
-
         # TODOXXX: Change this
-        data = resource.serialize(format=format, only_fields=only_fields)
+        data = resource.serialize(format=format)
 
         import transaction
         transaction.abort()

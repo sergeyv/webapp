@@ -77,10 +77,6 @@ class DataFormatReader(DataFormatBase):
                 raise ValueError("AutoFillDropdown does not work")
                 session.flush()
 
-        only_fields = request.GET.get('only', None)
-        if only_fields is not None:
-            only_fields = [f.strip() for f in only_fields.split(',')]
-
         data = self.serialize(request)
 
         ### TODOXXX: We don't really want to rollback it, but we have to
