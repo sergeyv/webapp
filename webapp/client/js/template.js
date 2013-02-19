@@ -326,14 +326,23 @@
             msg_container = $(self.options.flash_messages_container_id).require_one();
 
 
-        msg_container.children().remove();
-
-        $.each(webapp.flash_messages, function (idx, msg) {
-            msg_container.append('<div class="alert">' +
-                msg.msg +
-                '</div>'
-                );
-        });
+		if(webapp.flash_messages.length > 0) {
+			
+			if(webapp.flash_messages[0].type == 'INFO') { // only clear and append if not using pre-rendered flash
+        		msg_container.children().remove();
+        		msg_container.toggleClass('webappHideFlash'); // reset just in case
+        		
+        		$.each(webapp.flash_messages, function (idx, msg) {
+			        msg_container.append('<div class="alert">' +
+			            msg.msg +
+			            '</div>'
+			            );
+		        });
+			} else if (webapp.flash_messages[0].type == 'SHOW') { // display pre-rendered flash message for certain templates
+           		msg_container.toggleClass('webappHideFlash'); // status message should be set to display: none before
+            }
+            
+		}
 
         webapp.flash_messages = [];
 

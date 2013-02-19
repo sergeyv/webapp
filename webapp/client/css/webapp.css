@@ -79,3 +79,7 @@ a.iconAdd:hover {
     padding-left: 24px;
 }
 
+/* set for pre-rendered flash messages and use type: 'SHOW' */
+.webappHideFlash {
+	display: none;
+}
