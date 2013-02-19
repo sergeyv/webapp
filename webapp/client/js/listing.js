@@ -280,7 +280,6 @@
                 },
                 onBottom: function(callback) {
                     if (self.data.has_more) {
-                        // console.log('At the end of the page. Loading more!');
                         self.load_more(function (fragment, data) {
                             callback(data.has_more ? true : false); /* the plugin requires strictly true or false */
                             /* this triggers another scroll event which solves the problem
