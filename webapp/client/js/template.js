@@ -179,7 +179,7 @@
         /// start loading the partials
         self._initiate_ajax_calls().done(function () {
             self._ajax_finished.apply(self, arguments);
-        });;
+        });
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -203,41 +203,43 @@
         this.render();
     };
 
+    Template.prototype.render_data_return_html = function (template, data) {
+        /*
+        renders data using the passed template, return a html blob
+        */
+        var self = this,
+            txt;
+
+        if (!template) {
+            return "ERROR: Template not found!";
+        }
+
+        try {
+            return $.jqote(template, {data: data, view: self});
+        } catch (err) {
+            if (!webapp.testmode) {
+                txt = "There was an error on this page.<br />" +
+                      "Error description: <strong>" +
+                      err.message + "</strong>";
+                /// webapp.showMessage(txt, "Template error: " + err.name);
+                return txt;
+            }
+        }
+    };
+
     Template.prototype.render = function () {
         /*
          * Renders the already-loaded template and data
          */
         var self = this,
-            txt,
-            q = [];
+            txt;
 
-
-        if (!self.template) {
-            window.alert("Template not found!");
-        }
-
-
-        try {
-            self.view.html($.jqote(self.template, {data: self.data, view: self}));
-        } catch (err) {
-            window.alert(err.message);
-            if (!webapp.testmode) {
-                txt = "There was an error on this page.<br />" +
-                      "Error description: <strong>" +
-                      err.message + "</strong>";
-                webapp.showMessage(txt, "Template error: " + err.name);
-            }
-        }
+        self.view.html(self.render_data_return_html(self.template, self.data));
 
         self.augmentView();
 
-        // TODO: Move somewhere - webapp does not need to know
-        // about jquery.timeago at all.
-        $("abbr.timeago").timeago();
-        $.timeago.settings.allowFuture = true;
-
         if (self.options.before_view_shown) {
-            self.options.before_view_shown.apply(self);
+            self.options.before_view_shown.apply(self, [self.view]);
         }
     };
 
@@ -259,9 +261,6 @@
                 return undefined; // if we return false the iteration stops
             });
         }
-
-        // self.renderFlashMessages();
-
     };
 
 

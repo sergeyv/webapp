@@ -213,8 +213,8 @@ class DataFormatBase(object):
                     #     ... need to flush the session here so model.client is loaded
                     #     model.client.name = "Client One"
 
-                    session = sa.orm.object_session(model)
-                    session.flush()
+                    # session = sa.orm.object_session(model)
+                    # session.flush()
 
                     submodel = getattr(model, name, None)
                     #print "SUBmodel: %s" % (value)
@@ -271,7 +271,7 @@ class DataFormatBase(object):
     def _default_item_deserializer(self, resource, schema, params, request):
         self._save_structure(resource, schema, params, request)
 
-    def _default_item_serializer(self, item, structure, request, only_fields=None):
+    def _default_item_serializer(self, item, structure, request):
 
         data = {}
         default = object()
@@ -279,11 +279,6 @@ class DataFormatBase(object):
         flattened = getattr(structure, "__flatten_subforms__", [])
 
         for (name, structure_field) in structure.attrs:
-
-            # the client is not interested in this field, skip
-            if (only_fields is not None) and (name not in only_fields):
-                #print "SKIPPING FIELD %s" % name
-                continue
 
             # Allow to specify callbacks defined on schema
             # to serialize specific attributes
@@ -376,7 +371,7 @@ class DataFormatBase(object):
 
             # skip None values from the output to make the output more compact
             # this potentially may break the forms, need to check
-            if value is not None:
+            if value is not None or getattr(structure, '__serialize_nulls__', False):
                 data[name] = value
 
         return data

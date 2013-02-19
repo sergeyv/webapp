@@ -242,6 +242,9 @@
                 }
             });
 
+            console.log("SERIZLIZED:");
+            console.log(o);
+
             return o;
         };
 

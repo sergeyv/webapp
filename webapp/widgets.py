@@ -138,25 +138,6 @@ class Tabular(SequenceDefault):
         return ""
 
 
-class AutoFillDropdown(LoadableListbox):
-    """
-        Widget to be used with a subform that when a value is selected
-        from a dropdown box it will fill the subform with the information
-        from the selected dropdown
-    """
-
-    type = 'AutoFillDropdown'
-    template = "field.AutoFillDropdown"
-
-    def __init__(self, **k):
-        """
-        dependent_fields is a comma-separated list of fields to be pre-filled
-        """
-        self.dependent_fields = k.pop('dependent_fields', '')
-        #self.form_load_from = k.pop('form_load_from', '')
-        super(AutoFillDropdown, self).__init__(**k)
-
-
 class CombinationField(Widget):
     """
         Widget that makes a combination of two different fields

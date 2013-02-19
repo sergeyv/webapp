@@ -442,38 +442,17 @@
 
 
         self.form.find('div.loadableListbox').each(function () {
-            var $select = $(this).find('select');
-            $select.addClass("chosenInitialized").chosen({
-                disable_search_threshold: 3
-            });
+            var $select = $(this).find('select'),
+                opts = {
+                    disable_search_threshold: 3
+                };
+
+            if (!$select.hasClass('required')) {
+                opts.allow_single_deselect = true;
+            }
+            $select.addClass("chosenInitialized").chosen(opts);
             self.hideListbox($select);
             self.reloadLoadable($select);
-        });
-
-        self.form.find('div.autoFillDropdown').each(function () {
-            //var $widget = $(this).find('div.autofillform');
-            /*self.autoFillForm($widget);*/
-            var $select = $(this).find('select');
-            $select.change(function () {
-                var item_id = self.event.parameters.item_id || 'new',
-                    url = self.getRestUrl("with-params",
-                        {
-                            item_id: item_id
-                        },
-                        {
-                            only: $select.data('dependent_fields'),
-                            set_field: $select.attr('name'),
-                            set_value: $select.val()
-                        });
-
-                webapp.Read(url, function (data) {
-                    var id_root = '#' + self.options.identifier;
-                    self.fill_form(id_root, data);
-                    // Only show the view after all the data is set.
-                    //webapp.controller.setActiveView(self);
-                });
-
-            });
         });
     };
 
@@ -509,24 +488,8 @@
                 } else {
                     ids[orig] = true;
                 }
-                    /*$.each(data.items, function (idx, value) {
-                        var opt = $("<option/>").val(value[0]).html(value[1]);
-                        if (ids[value[0]]) {
-                            opt.attr("selected", "selected");
-                        }
-                        opt.appendTo($select);
-                    });*/
-                //} else {
-                /*if (data.items.length === 0) {
-                    self.hideListboxOnly($select);
-                } else {*/
-                    /* add an empty option for Chosen default text support
-                    - only add the option only if there are more than 1 results,
-                    otherwise just select the first result automatically
-                    */
-                    if (data.items.length > 1) {
-                        $('<option value=""></option>').appendTo($select);
-                    }
+                    /* add an empty option for Chosen default text support */
+                    $('<option value=""></option>').appendTo($select);
 
                     $.each(data.items, function (idx, value) {
                         var opt = $("<option/>").val(value[0]).html(value[1]).appendTo($select);
