@@ -117,7 +117,13 @@
                 // TODOXXX: this parses .responseText to JSON
                 // second time - it's inefficient but I wasn't
                 // able to find how to get json data from ajaxSuccess
-                var data = $.parseJSON(jqx.responseText);
+                var data;
+                try {
+                    data = $.parseJSON(jqx.responseText);
+                } catch (e) {
+                    // pass
+                };
+
                 if (data && data.__flash_messages__) {
                     webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
                 }
@@ -241,9 +247,6 @@
                     }
                 }
             });
-
-            console.log("SERIZLIZED:");
-            console.log(o);
 
             return o;
         };
@@ -451,14 +454,10 @@
     WebApp.prototype._rememberXHR = function (xhr) {
         xhr._id = ++webapp.xhr_id;
         webapp.currently_active_xhrs[xhr._id] = xhr;
-        // console.log("Remembered id " + xhr._id);
-        // console.log(webapp.currently_active_xhrs);
     };
 
     WebApp.prototype._forgetXHR = function (xhr) {
-        // console.log("Forgetting id " + xhr._id);
         delete webapp.currently_active_xhrs[xhr._id];
-        // console.log(webapp.currently_active_xhrs);
     };
 
     WebApp.prototype.abortAllRequests = function () {
@@ -680,7 +679,6 @@
                     if (parts.length === 2 &&
                             parts[0] === "webappOnSuccess" &&
                             view[parts[1]]) {
-                        console.log(view);
                         view[parts[1]].apply(view);
                     }
                 });
