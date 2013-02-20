@@ -163,6 +163,30 @@
 
         /// do nothing, override in subclasses
     };
+    
+    Form.prototype.render_data_return_html = function (template, data) {
+        /*
+        renders data using the passed template, return a html blob
+        */
+        var self = this,
+            txt;
+
+        if (!template) {
+            return "ERROR: Template not found!";
+        }
+
+        try {
+            return $.jqote(template, {data: data, view: self});
+        } catch (err) {
+            alert(err.message);
+            if (!webapp.testmode) {
+                txt = "There was an error on this page.<br />"
+                    + "Error description: <strong>"
+                    + err.message + "</strong>";
+                webapp.showMessage(txt, "Template error: " + err.name);
+            }
+        }
+    };
 
 
     Form.prototype.render = function () {
@@ -172,57 +196,40 @@
             item_id,
             id_root;
 
-        if (!self.template) {
-            alert("Template not found!");
-        }
 
-
-        try {
-            self.view.html($.jqote(self.template, {data: self.data, view: self}));
-        } catch (err) {
-            //alert(self.template.html());
-            alert(err.message);
-            if (!webapp.testmode) {
-                txt = "There was an error on this page.<br />"
-                    + "Error description: <strong>"
-                    + err.message + "</strong>";
-                webapp.showMessage(txt, "Template error: " + err.name);
-            }
-        }
-
-
-        self.bindFormControls();
-        self.populateLoadables();
-
-        self.genericAugmentView();
-
-        /// Form is loaded, we can now adjust form's look
-        self.augmentView();
-
-        // and bind stuff
-        //self.bindFormControls();
-
-        self.register_combination_changes();
-
-        // self.validation_remote_modify();
-
-        if (self.options.need_save_data) {
-            // Set validation
-            self.setValidationRules();
-        }
-
-        // attach event handlers
-        self.setHandlers();
-
-        id_root = '#' + self.options.identifier;
-        item_id = self.event.parameters.item_id || 'new';
-        self.fill_form(id_root, self.data);
-
-        if (self.options.before_view_shown) {
-            self.options.before_view_shown.apply(self);
-        }
-
-
+			// to be consistent with template.js
+			self.view.html(self.render_data_return_html(self.template, self.data));
+	
+	        self.bindFormControls();
+	        self.populateLoadables();
+	
+	        self.genericAugmentView();
+	
+	        /// Form is loaded, we can now adjust form's look
+	        self.augmentView();
+	
+	        // and bind stuff
+	        //self.bindFormControls();
+	
+	        self.register_combination_changes();
+	
+	        // self.validation_remote_modify();
+	
+	        if (self.options.need_save_data) {
+	            // Set validation
+	            self.setValidationRules();
+	        }
+	
+	        // attach event handlers
+	        self.setHandlers();
+	
+	        id_root = '#' + self.options.identifier;
+	        item_id = self.event.parameters.item_id || 'new';
+	        self.fill_form(id_root, self.data);
+	
+	        if (self.options.before_view_shown) {
+	            self.options.before_view_shown.apply(self);
+        	}
     };
 
     // ----------------------------------------------------------------------- //
