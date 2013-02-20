@@ -395,7 +395,7 @@ It is possible to define some callbacks to be called before/after a view is show
     c.route("/domains/:item_id", new webapp.Template({
         identifier: "cDomainView",
         rest_service_root: "/domains/:item_id",
-        before_view_shown: function () {
+        before_view_shown: function (fragment) {
             this.view.find('pre').linkify();
         }
     }));

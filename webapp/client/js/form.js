@@ -219,7 +219,7 @@
         self.fill_form(id_root, self.data);
 
         if (self.options.before_view_shown) {
-            self.options.before_view_shown.apply(self);
+            self.options.before_view_shown.apply(self, [self.view]);
         }
 
 

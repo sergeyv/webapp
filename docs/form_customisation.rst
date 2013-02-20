@@ -194,7 +194,7 @@ after the form is rendered. The application can register callbacks to modify for
         identifier: "ClientAddForm",
         rest_service_root: "/clients",
 
-        before_view_shown: function () {
+        before_view_shown: function (fragment) {
             var $view = this.view,
             id = this.options.identifier;
 
