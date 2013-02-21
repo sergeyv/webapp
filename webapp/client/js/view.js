@@ -23,6 +23,7 @@
 
             $node = $('<div id="' + nodeId + '" class="contentView">');
 
+            console.log("Init: " + nodeId);
             $("#content-views").append($node);
             self.view = $("#" + nodeId);
 
@@ -42,6 +43,30 @@
     };
 
 
+    View.prototype.get_title = function () {
+        return this.event.parameters.title || this.options.title;
+    };
+
+    View.prototype.dismiss = function () {
+        /*
+        Hides a popup view using the appropriate method of a plugin used
+        */
+        var self = this,
+            dm = self.event.display_mode;
+        if (dm === "popup") {
+            console.log("dismissing dialog...");
+            self.view.dialog("close");
+        } else if (dm === "modal") {
+            console.log("dismissing modal...");
+            self.view.parents('.modal').require_one().modal("hide").remove();
+        } else {
+            console.log("Unknown display_mode: " + dm);
+        }
+
+        webapp.controller.currentView = self.event.parentView;
+    };
+
+
     View.prototype.modified_url = function (args) {
         var url = this.event.location; /*,
             slack = '';
@@ -57,7 +82,7 @@
         // deep-copy
         var args = $.extend({}, this.event.uri_args);
         args[attr] = val;
-        
+
         // extra_args optional parameter to be add more args to the url
         // useful for overriding the cached filter options in the case of some portlets
         extra_args = (typeof extra_args === "undefined") ? "" : extra_args;
@@ -66,12 +91,12 @@
 		    	args[key] = value;
 		    });
         }
-        
+
         if (attr != 'batch_start') {
         	args.batch_start = 0;
     	}
         // we want to go to the first page if filtering changes
-        
+
         return this.modified_url(args);
     };
 

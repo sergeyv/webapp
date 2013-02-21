@@ -57,17 +57,11 @@
         }
     };
 
-    Controller.prototype.popupView = function (view, event) {
-
-        event.is_popup = true;
-        view.event = event;
-
-        view.show();
-
-    };
-
-
-    Controller.prototype.showView = function (view, event) {
+    Controller.prototype.showMainView = function (view, event) {
+        /*
+        Shows the view as the "main" view, i.e. inserted in the main
+        container on the page and reflecting the state of the current URI
+        */
 
         view.controller = this;
 
@@ -98,6 +92,17 @@
         // reflect the change in the navigation
         this.updateMenu(event);
     };
+
+
+    Controller.prototype.showSecondaryView = function (view, event, mode) {
+
+        event.display_mode = mode;
+        view.event = event;
+        view.show();
+
+    };
+
+
 
     Controller.prototype.updateMenu = function (event) {
 
@@ -132,20 +137,50 @@
 
         /// if the view is shown in a popup, we don't need
         /// to hide the previous view etc.
-        if (view.event.is_popup) {
+        if (view.event.display_mode === "popup") {
             view.view.dialog({
                 modal: true,
                 width: "80%",
-                title: view.options.title,
-                beforeClose: function (event, ui) {
+                /* find the title directly on the page, remove it from there*/
+                title: view.view.find('.primaryPageHeading').detach().text()
+                /*beforeClose: function (event, ui) {
                     self.currentView = view.event.parentView;
-                }
+                }*/
             });
 
             view.event.parentView = self.currentView;
             self.currentView = view;
 
+        } else if (view.event.display_mode === "modal") {
+
+            var $modal =
+            $('<div class="modal hide fade" tabindex="-1" role="dialog" >' +
+            '  <div class="modal-header">' +
+            '    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
+            '  </div>' +
+            '  <div class="modal-body"></div>' +
+            '  <!--div class="modal-footer"></div-->' +
+            '</div>');
+
+            view.view.detach().appendTo($modal.find(".modal-body"));
+            $modal.find('.modal-header').append(view.view.find('.primaryPageHeading'));
+            /* this would move the buttons to a separate footer section
+               although keeping them as is both makes them look more consistent
+               and they work without extra fuss
+            */
+            $modal.find('.modal-footer').append(view.view.find('.actions'));
+
+
+            $modal.modal({
+                show: true
+            });
+
+            // view.view = $modal;
+            view.event.parentView = self.currentView;
+            self.currentView = view;
+
         } else {
+            /* show as main view */
             old_views = $(".activeContentView");
             $.each(old_views, function (idx, elem) {
                 var $elem = $(elem);

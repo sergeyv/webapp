@@ -33,10 +33,10 @@
     Template.prototype.constructor = Template;
 
     Template.prototype.init = function () {
-        /// this is called when the view is first shown
-        var self = this,
-            node_id,
-            $node;
+        /*
+         this is called once when the view is first shown
+         */
+        var self = this;
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -45,16 +45,7 @@
             });
         }
 
-        /// find or create the view container
-        node_id = self.options.identifier + '-view',
-        self.view = $("#" + node_id);
-        if (!self.view.length) {
-            /// Create and append a node if not found
-            $node = ($('<div id="' + node_id + '" class="contentView">'));
-
-            $("#content-views").append($node);
-            self.view = $("#" + node_id);
-        }
+        self.alreadyInitialized = true;
 
     };
 
@@ -162,7 +153,27 @@
 
 
     Template.prototype.show = function (container) {
-        this.init();
+        var self = this,
+            node_id,
+            $node;
+
+        if (!this.alreadyInitialized) {
+            this.init();
+        }
+
+        /// find or create the view container
+        node_id = self.options.identifier + '-view',
+        self.view = $("#" + node_id);
+        if (!self.view.length) {
+            /// Create and append a node if not found
+            $node = $('<div id="' + node_id + '" class="contentView"> </div>');
+
+            $("#content-views").append($node);
+            self.view = $("#" + node_id);
+        }
+
+
+
         this.reload();
     };
 
@@ -322,26 +333,26 @@
 
     Template.prototype.renderFlashMessages = function () {
         var self = this,
-            msg_container = $(self.options.flash_messages_container_id).require_one();
+            msg_container = $(self.options.flash_messages_container_id);//.require_one();
 
 
-		if(webapp.flash_messages.length > 0) {
-			
-			if(webapp.flash_messages[0].type == 'INFO') { // only clear and append if not using pre-rendered flash
-        		msg_container.children().remove();
-        		msg_container.toggleClass('webappHideFlash'); // reset just in case
-        		
-        		$.each(webapp.flash_messages, function (idx, msg) {
-			        msg_container.append('<div class="alert">' +
-			            msg.msg +
-			            '</div>'
-			            );
-		        });
-			} else if (webapp.flash_messages[0].type == 'SHOW') { // display pre-rendered flash message for certain templates
-           		msg_container.toggleClass('webappHideFlash'); // status message should be set to display: none before
+        if(webapp.flash_messages.length > 0) {
+
+            if(webapp.flash_messages[0].type == 'INFO') { // only clear and append if not using pre-rendered flash
+                msg_container.children().remove();
+                msg_container.toggleClass('webappHideFlash'); // reset just in case
+
+                $.each(webapp.flash_messages, function (idx, msg) {
+                    msg_container.append('<div class="alert">' +
+                        msg.msg +
+                        '</div>'
+                        );
+                });
+            } else if (webapp.flash_messages[0].type == 'SHOW') { // display pre-rendered flash message for certain templates
+                   msg_container.toggleClass('webappHideFlash'); // status message should be set to display: none before
             }
-            
-		}
+
+        }
 
         webapp.flash_messages = [];
 
@@ -457,7 +468,8 @@
                 }($link.attr("href"))),
                 hash = webapp.normalizeHash(href),
                 context = webapp.getEventContextForRoute(hash),
-                view = webapp.controller.currentView;
+                view = webapp.controller.currentView,
+                display_mode = $link.data('display') || "popup";
 
 
             context.popup_success_callback = function (added_id) {
@@ -479,7 +491,7 @@
             };
 
             if (context.mapping) {
-                context.mapping.controller.popupView(context.mapping.view, context);
+                context.mapping.controller.showSecondaryView(context.mapping.view, context, display_mode);
             } else {
                 webapp.showMessage("POPUP VIEW NOT FOUND: "  + hash);
             }

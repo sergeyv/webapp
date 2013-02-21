@@ -16,7 +16,6 @@
             button_title: "Save Changes",
             http_method: "PUT",
             need_load_data: true,
-            need_save_data: true,
             submit_action: 'redirect',
             render_template: false
         }, options);
@@ -92,18 +91,19 @@
     Form.prototype.genericAugmentView = function () {
         /// Do stuff we want on every form
         var self = this,
-            title = self.event.parameters.title || self.options.title,
+            title,
             button_title = self.event.parameters.button_title || self.options.button_title;
 
-        /*<button type="button" class="btn btn-link">Link</button>*/
-        if (self.options.need_save_data) {
-            self.view.find(".actions").append('&nbsp; or<button type="button" class="btn btn-link formCancelLink">Cancel</button>');
-        } else {
-            self.view.find(".actions").html('<button type="button" class="btn btn-link formCancelLink">Close</button>');
-        }
+        self.view.find(".actions").append('&nbsp; or<button type="button" data-dismiss="modal" class="btn btn-link formCancelLink">Cancel</button>');
         self.cancelLink = self.view.find("a.formCancelLink");
 
-        self.view.find(".webappPopup").click(function () {
+        title = self.get_title();
+        if (title) {
+            self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
+        }
+
+
+        /*self.view.find(".webappPopup").click(function () {
             var $link = $(this);
             return webapp.popupView($link.attr('href'), function (server_response) {
                 var $select = $link.parent().children("select");
@@ -111,44 +111,24 @@
                 self.reloadLoadable($select);
             });
 
-            /*var $link = $(this),
-                hash = webapp.normalizeHash($link.attr("href")),
-                context = webapp.getEventContextForRoute(hash);
+        });*/
 
 
-            context.popup_success_callback = function (added_id) {
-                //alert("Success: " + added_id);
-                var $select = $link.parent().children("select");
-                $select.data("original_value", added_id);
-                self.reloadLoadable($select);
-            };
-
-            if (context.mapping) {
-                context.mapping.controller.popupView(context.mapping.view, context);
-            } else {
-                self.showMessage("POPUP VIEW NOT FOUND: " + hash);
-            }
-            return false;*/
-        });
-
-
-        if (self.event.is_popup) {
+        if (self.event.display_mode === "popup") {
             self.cancelLink.click(function () {
+                alert("Hi there!");
                 self.view.dialog('close');
                 return false;
             });
-        } else {
-            if (title) {
-                self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
-            }
-            /// TODO: Add option/condition "add_cancel_link"?
+        } else if (!self.event.display_mode) {
+
             /// Cancel link points to the page we came from
             self.cancelLink.attr('href', webapp.previousPageUrl());
             self.cancelLink.click(function () {});
         }
         self.view.find("#" + self.options.identifier + "-action").val(button_title).addClass('btn btn-primary');
 
-        
+
     };
 
     Form.prototype.augmentView = function () {
@@ -166,7 +146,7 @@
 
         /// do nothing, override in subclasses
     };
-    
+
     Form.prototype.render_data_return_html = function (template, data) {
         /*
         renders data using the passed template, return a html blob
@@ -200,44 +180,43 @@
             id_root;
 
 
-			// to be consistent with template.js
-			self.view.html(self.render_data_return_html(self.template, self.data));
-			
-			
-	        self.bindFormControls();
-	        self.populateLoadables();
-	
-			// Init formish form
-       		self.view.formish();
-       		
-			if (!this.options.render_template) { // sets up elements we dont need with a custom template
-	        	self.genericAugmentView();
-	        	
-				/// Form is loaded, we can now adjust form's look
-		        self.augmentView();
-	       }
-	
-	        self.register_combination_changes();
-	
-	        // self.validation_remote_modify();
-	
-	        if (self.options.need_save_data) {
-	            // Set validation
-	            self.setValidationRules();
-	        }
-	
-	        // attach event handlers
-	        self.setHandlers();
-	
-	        id_root = '#' + self.options.identifier;
-	        item_id = self.event.parameters.item_id || 'new';
-	        self.fill_form(id_root, self.data);
-	        
-			
-	        if (self.options.before_view_shown) {
-	            self.options.before_view_shown.apply(self);
-        	}
+        // to be consistent with template.js
+        self.view.html(self.render_data_return_html(self.template, self.data));
 
+
+        self.bindFormControls();
+        self.populateLoadables();
+
+        // Init formish form
+        	self.view.formish();
+
+        if (!this.options.render_template) { // sets up elements we dont need with a custom template
+        	self.genericAugmentView();
+
+        	/// Form is loaded, we can now adjust form's look
+            self.augmentView();
+        }
+
+        self.register_combination_changes();
+
+        // self.validation_remote_modify();
+
+        if (self.options.need_save_data) {
+            // Set validation
+            self.setValidationRules();
+        }
+
+        // attach event handlers
+        self.setHandlers();
+
+        id_root = '#' + self.options.identifier;
+        item_id = self.event.parameters.item_id || 'new';
+        self.fill_form(id_root, self.data);
+
+
+        if (self.options.before_view_shown) {
+            self.options.before_view_shown.apply(self);
+        }
     };
 
     // ----------------------------------------------------------------------- //
@@ -596,8 +575,8 @@
                     $.extend(self.event.parameters, data);
                 }
 
-                if (self.event.is_popup) {
-                    self.view.dialog("close");
+                if (self.event.display_mode) {
+                    self.dismiss();
                     if (self.event.popup_success_callback) {
                         self.event.popup_success_callback(self.event.parameters);
                     }
@@ -629,27 +608,6 @@
         /// a listbox
         $.getJSON(url, function (data) {
             self.populate_listbox(listbox, data, addmore);
-        });
-    };
-
-    Form.prototype.register_combination_changes = function () {
-        this.form.find('div.combinationfield').each(function () {
-            var field_name = $(this).find('input').attr('id'),
-                fields = [],
-                cnt = 0;
-
-            $(this).find('div.combination-field').each(function () {
-                fields[cnt] = $(this).attr('field');
-                cnt += 1;
-                $('div.' + $(this).attr('field')).change(function () {
-                    var field_input = '',
-                        i;
-                    for (i = 0; i < cnt; i += 1) {
-                        field_input += $('#' + fields[i]).val();
-                    }
-                    $("input#" + field_name).val(field_input).change();
-                });
-            });
         });
     };
 

@@ -182,13 +182,9 @@
                         }
                     });
 
-                    /// Experiment with using Bootstrap's modal dialog
-                    /*$(self).find('div.modal-body').html(response);
-                    $(self).modal('show');*/
-
                 } else {
                     //alert(response);
-                    webapp.getController().showView(webapp.serverErrorView, webapp.getController().currentView.event);
+                    webapp.getController().showMainView(webapp.serverErrorView, webapp.getController().currentView.event);
                     $("div.activeContentView").html(response);
                 }
             });
@@ -412,7 +408,7 @@
         if (context.mapping) {
             // remember the url
             webapp.visitedUrlsLog.push(context.hash);
-            context.mapping.controller.showView(context.mapping.view, context);
+            context.mapping.controller.showMainView(context.mapping.view, context);
 
 
             // Check to see if this controller has a post-handler.
@@ -423,7 +419,7 @@
         } else {
             /// If we arrived here then no route was found; display a 404 message
             if (self.pageNotFoundView) {
-                self.getController().showView(self.pageNotFoundView, context);
+                self.getController().showMainView(self.pageNotFoundView, context);
             } else {
                 webapp.showMessage("NOT FOUND");
             }
@@ -533,7 +529,7 @@
         context.popup_success_callback = success_callback
 
         if (context.mapping) {
-            context.mapping.controller.popupView(context.mapping.view, context);
+            context.mapping.controller.showSecondaryView(context.mapping.view, context, "popup");
         } else {
             webapp.showMessage("POPUP VIEW NOT FOUND: " + hash);
         }
