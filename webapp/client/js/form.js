@@ -17,8 +17,8 @@
             http_method: "PUT",
             need_load_data: true,
             need_save_data: true,
-            submit_action: 'redirect'
-
+            submit_action: 'redirect',
+            render_template: false
         }, options);
 
         webapp.Template.apply(this, [opts]);
@@ -81,7 +81,11 @@
     };
 
     Form.prototype._get_template_load_url = function () {
-        return  webapp.forms_prefix + this.options.identifier;
+    	if (this.options.render_template) {
+        	return webapp.templates_prefix + this.options.template_name + ".html";
+    	} else {
+        	return  webapp.forms_prefix + this.options.identifier;
+        }
     };
 
 
@@ -199,37 +203,43 @@
 
 			// to be consistent with template.js
 			self.view.html(self.render_data_return_html(self.template, self.data));
+			
+			
+			if (!self.options.render_template)	{
+		        self.bindFormControls();
+		        self.populateLoadables();
+		
+		        self.genericAugmentView();
+		
+		
+		        // and bind stuff
+		        //self.bindFormControls();
+		
+		        self.register_combination_changes();
+		
+		        // self.validation_remote_modify();
+		
+		        if (self.options.need_save_data) {
+		            // Set validation
+		            self.setValidationRules();
+		        }
+		
+		        // attach event handlers
+		        self.setHandlers();
+		
+		        id_root = '#' + self.options.identifier;
+		        item_id = self.event.parameters.item_id || 'new';
+		        self.fill_form(id_root, self.data);
 	
-	        self.bindFormControls();
-	        self.populateLoadables();
-	
-	        self.genericAugmentView();
-	
+			}
+			
 	        /// Form is loaded, we can now adjust form's look
 	        self.augmentView();
-	
-	        // and bind stuff
-	        //self.bindFormControls();
-	
-	        self.register_combination_changes();
-	
-	        // self.validation_remote_modify();
-	
-	        if (self.options.need_save_data) {
-	            // Set validation
-	            self.setValidationRules();
-	        }
-	
-	        // attach event handlers
-	        self.setHandlers();
-	
-	        id_root = '#' + self.options.identifier;
-	        item_id = self.event.parameters.item_id || 'new';
-	        self.fill_form(id_root, self.data);
-	
+			
 	        if (self.options.before_view_shown) {
 	            self.options.before_view_shown.apply(self);
         	}
+
     };
 
     // ----------------------------------------------------------------------- //
