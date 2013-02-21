@@ -148,8 +148,7 @@
         }
         self.view.find("#" + self.options.identifier + "-action").val(button_title).addClass('btn btn-primary');
 
-        // Init formish form
-        self.view.formish();
+        
     };
 
     Form.prototype.augmentView = function () {
@@ -205,36 +204,35 @@
 			self.view.html(self.render_data_return_html(self.template, self.data));
 			
 			
-			if (!self.options.render_template)	{
-		        self.bindFormControls();
-		        self.populateLoadables();
-		
-		        self.genericAugmentView();
-		
-		
-		        // and bind stuff
-		        //self.bindFormControls();
-		
-		        self.register_combination_changes();
-		
-		        // self.validation_remote_modify();
-		
-		        if (self.options.need_save_data) {
-		            // Set validation
-		            self.setValidationRules();
-		        }
-		
-		        // attach event handlers
-		        self.setHandlers();
-		
-		        id_root = '#' + self.options.identifier;
-		        item_id = self.event.parameters.item_id || 'new';
-		        self.fill_form(id_root, self.data);
+	        self.bindFormControls();
+	        self.populateLoadables();
 	
-			}
-			
-	        /// Form is loaded, we can now adjust form's look
-	        self.augmentView();
+			// Init formish form
+       		self.view.formish();
+       		
+			if (!this.options.render_template) { // sets up elements we dont need with a custom template
+	        	self.genericAugmentView();
+	        	
+				/// Form is loaded, we can now adjust form's look
+		        self.augmentView();
+	       }
+	
+	        self.register_combination_changes();
+	
+	        // self.validation_remote_modify();
+	
+	        if (self.options.need_save_data) {
+	            // Set validation
+	            self.setValidationRules();
+	        }
+	
+	        // attach event handlers
+	        self.setHandlers();
+	
+	        id_root = '#' + self.options.identifier;
+	        item_id = self.event.parameters.item_id || 'new';
+	        self.fill_form(id_root, self.data);
+	        
 			
 	        if (self.options.before_view_shown) {
 	            self.options.before_view_shown.apply(self);
