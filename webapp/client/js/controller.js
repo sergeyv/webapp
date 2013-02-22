@@ -81,7 +81,7 @@
         var old_event = view.event||{uri_args:{}};
         if ($.isEmptyObject(event.uri_args)) {
             event.uri_args = old_event.uri_args;
-        };
+        }
 
         view.event = event;
         view.show();
@@ -178,11 +178,11 @@
 
         } else if (view.event.display_mode === "popover") {
 
-            view.event.initiating_element.popover({
+            view.event.initiating_element.instant_popover({
                 title: view.view.find('.primaryPageHeading').detach().text(),
                 content: view.view,
                 placement: 'bottom'
-            }).popover('show');
+            });
 
         } else {
             /* show as main view */

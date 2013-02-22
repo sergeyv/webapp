@@ -94,8 +94,9 @@
             title,
             button_title = self.event.parameters.button_title || self.options.button_title;
 
-        self.view.find(".actions").append('&nbsp; or<button type="button" data-dismiss="modal" class="btn btn-link formCancelLink">Cancel</button>');
-        self.cancelLink = self.view.find("a.formCancelLink");
+        self.view.find(".actions").append('&nbsp; or<button type="button" class="btn btn-link formCancelLink">Cancel</button>');
+
+        self.cancelLink = self.view.find(".formCancelLink").require_one();
 
         title = self.get_title();
         if (title) {
@@ -116,10 +117,14 @@
 
         if (self.event.display_mode === "popup") {
             self.cancelLink.click(function () {
-                alert("Hi there!");
+                //alert("Hi there!");
                 self.view.dialog('close');
                 return false;
             });
+        } else if (self.event.display_mode === "modal") {
+            self.cancelLink.attr('data-dismiss', 'modal');
+        } else if (self.event.display_mode === "popover") {
+            self.cancelLink.attr('data-dismiss', 'popover');
         } else if (!self.event.display_mode) {
 
             /// Cancel link points to the page we came from
