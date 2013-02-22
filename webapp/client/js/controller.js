@@ -94,9 +94,9 @@
     };
 
 
-    Controller.prototype.showSecondaryView = function (view, event, mode) {
+    Controller.prototype.showSecondaryView = function (view, event) {
 
-        event.display_mode = mode;
+        // event.display_mode = mode;
         view.event = event;
         view.show();
 
@@ -143,9 +143,7 @@
                 width: "80%",
                 /* find the title directly on the page, remove it from there*/
                 title: view.view.find('.primaryPageHeading').detach().text()
-                /*beforeClose: function (event, ui) {
-                    self.currentView = view.event.parentView;
-                }*/
+
             });
 
             view.event.parentView = self.currentView;
@@ -175,9 +173,16 @@
                 show: true
             });
 
-            // view.view = $modal;
             view.event.parentView = self.currentView;
             self.currentView = view;
+
+        } else if (view.event.display_mode === "popover") {
+
+            view.event.initiating_element.popover({
+                title: view.view.find('.primaryPageHeading').detach().text(),
+                content: view.view,
+                placement: 'bottom'
+            }).popover('show');
 
         } else {
             /* show as main view */

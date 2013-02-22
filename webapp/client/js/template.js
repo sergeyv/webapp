@@ -148,7 +148,7 @@
             if (self.options.after_view_shown) {
                 self.options.after_view_shown.apply(self);
             }
-        }
+        } 
     };
 
 
@@ -467,12 +467,14 @@
                     return l;
                 }($link.attr("href"))),
                 hash = webapp.normalizeHash(href),
-                context = webapp.getEventContextForRoute(hash),
-                view = webapp.controller.currentView,
-                display_mode = $link.data('display') || "popup";
+                event = webapp.getEventContextForRoute(hash),
+                current_view = webapp.controller.currentView;
 
+            if (!event.mapping) {
+                webapp.showMessage("POPUP VIEW NOT FOUND: "  + hash);
+            }
 
-            context.popup_success_callback = function (added_id) {
+            event.popup_success_callback = function (added_id) {
                 /// find all classes which start with webappOnSuccess
                 /// if found, it expects it to be in a form
                 /// webappOnSuccess-methodName.
@@ -483,18 +485,18 @@
                         fn;
                     if (parts.length === 2 &&
                             parts[0] === "webappOnSuccess" &&
-                            view[parts[1]]) {
-                        fn = view[parts[1]];
-                        fn.apply(view);
+                            current_view[parts[1]]) {
+                        fn = current_view[parts[1]];
+                        fn.apply(current_view);
                     }
                 });
             };
 
-            if (context.mapping) {
-                context.mapping.controller.showSecondaryView(context.mapping.view, context, display_mode);
-            } else {
-                webapp.showMessage("POPUP VIEW NOT FOUND: "  + hash);
-            }
+            event.initiating_element = $link;
+            event.display_mode = $link.data('display') || "popup";
+
+            webapp.controller.showSecondaryView(event.mapping.view, event);
+
             return false;
         });
     });
