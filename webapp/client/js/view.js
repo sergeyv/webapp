@@ -59,6 +59,13 @@
         } else if (dm === "modal") {
             console.log("dismissing modal...");
             self.view.parents('.modal').require_one().modal("hide").remove();
+        } else if (dm === "popover") {
+            /*console.log("dismissing modal...");
+            self.view.parents('.modal').require_one().modal("hide").remove();*/
+            $('[data-instant_popover-open=1]').each(function () {
+              if ($(this).data('instant_popover')) $(this).data('instant_popover').do_dismiss();
+            });
+
         } else {
             console.log("Unknown display_mode: " + dm);
         }

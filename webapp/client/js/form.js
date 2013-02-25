@@ -103,6 +103,12 @@
             self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
         }
 
+        /*self.cancelLink.on('click', function () {
+            /// close existing open popovers
+            $('[data-instant_popover-open=1]').each(function () {
+                if ($(this).data('instant_popover')) $(this).data('instant_popover').do_dismiss();
+            });
+        });*/
 
         /*self.view.find(".webappPopup").click(function () {
             var $link = $(this);
@@ -117,14 +123,20 @@
 
         if (self.event.display_mode === "popup") {
             self.cancelLink.click(function () {
-                //alert("Hi there!");
                 self.view.dialog('close');
                 return false;
             });
         } else if (self.event.display_mode === "modal") {
             self.cancelLink.attr('data-dismiss', 'modal');
         } else if (self.event.display_mode === "popover") {
-            self.cancelLink.attr('data-dismiss', 'popover');
+            //self.cancelLink.attr('data-dismiss', 'instant_popover');
+            self.cancelLink.on('click.formCancelLink', function () {
+                /// close existing open popovers
+                $('[data-instant_popover-open=1]').each(function () {
+                    if ($(this).data('instant_popover')) $(this).data('instant_popover').do_dismiss();
+                });
+                $('body').off('click.formCancelLink', ".formCancelLink");
+            });
         } else if (!self.event.display_mode) {
 
             /// Cancel link points to the page we came from
@@ -143,14 +155,6 @@
 
     };
 
-    Form.prototype.setHandlers = function () {
-        /*
-        Attach form handlers which respond to changes in the form_data
-        (i.e. to implement dependent controls etc.)
-        */
-
-        /// do nothing, override in subclasses
-    };
 
     Form.prototype.render_data_return_html = function (template, data) {
         /*
@@ -210,9 +214,6 @@
             // Set validation
             self.setValidationRules();
         }
-
-        // attach event handlers
-        self.setHandlers();
 
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
