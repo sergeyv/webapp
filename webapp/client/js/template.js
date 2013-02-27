@@ -193,13 +193,15 @@
          * and re-renders the view when they're loaded
          */
 
-        var self = this;
+        var self = this,
+            deferred;
 
         /// make sure we initiate template/json loading before we
-        /// start loading the partials
-        self._initiate_ajax_calls().done(function () {
-            self._ajax_finished.apply(self, arguments);
-        });
+        /// start loading the partials. The deferred may finish immediately
+        /// if there's nothing to load (the template has been cached
+        /// and there's no data, so we postpone attaching .done() to it until
+        /// after we initiated the partials
+        deferred = self._initiate_ajax_calls();
 
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -211,6 +213,12 @@
                 partial.deferred = partial._initiate_ajax_calls();
             });
         }
+
+        /// now, when partials are happily loading their stuff,
+        /// we attach .done() handler to the main deferred
+        deferred.done(function () {
+            self._ajax_finished.apply(self, arguments);
+        });
     };
 
 
