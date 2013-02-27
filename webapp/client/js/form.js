@@ -81,6 +81,10 @@
     };
 
     Form.prototype._get_template_load_url = function () {
+        /*
+        overrides Template's method to load formish-generated html blob
+        from a different URL
+        */
         if (this.options.uses_custom_template) {
             return webapp.templates_prefix + this.options.template_name + ".html";
         } else {
@@ -211,10 +215,7 @@
 
         // self.validation_remote_modify();
 
-        //if (self.options.need_save_data) {
-            // Set validation
         self.setValidationRules();
-        //}
 
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
