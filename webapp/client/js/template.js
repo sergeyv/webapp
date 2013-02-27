@@ -24,6 +24,15 @@
             flash_messages_container_id: "#flash_messages"
         }, options);
         webapp.View.apply(this, [opts]);
+
+        if (this.options.template_name) {
+            this.options.uses_custom_template = true;
+        }
+
+        if (this.options.data_format) {
+            this.options.uses_custom_data_format = true;
+        }
+
         this.options.template_name = this.options.template_name || this.options.identifier;
         this.options.data_format = this.options.data_format || this.options.identifier;
     }
@@ -148,7 +157,7 @@
             if (self.options.after_view_shown) {
                 self.options.after_view_shown.apply(self);
             }
-        } 
+        }
     };
 
 

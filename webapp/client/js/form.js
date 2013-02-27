@@ -16,8 +16,7 @@
             button_title: "Save Changes",
             http_method: "PUT",
             need_load_data: true,
-            submit_action: 'redirect',
-            render_template: false
+            submit_action: 'redirect'
         }, options);
 
         webapp.Template.apply(this, [opts]);
@@ -82,10 +81,10 @@
     };
 
     Form.prototype._get_template_load_url = function () {
-    	if (this.options.render_template) {
-        	return webapp.templates_prefix + this.options.template_name + ".html";
-    	} else {
-        	return  webapp.forms_prefix + this.options.identifier;
+        if (this.options.uses_custom_template) {
+            return webapp.templates_prefix + this.options.template_name + ".html";
+        } else {
+            return  webapp.forms_prefix + this.options.identifier;
         }
     };
 
@@ -199,23 +198,23 @@
         self.populateLoadables();
 
         // Init formish form
-        	self.view.formish();
+        self.view.formish();
 
-        if (!this.options.render_template) { // sets up elements we dont need with a custom template
-        	self.genericAugmentView();
+        //if (this.options.uses_custom_template) { // sets up elements we dont need with a custom template
+        self.genericAugmentView();
 
-        	/// Form is loaded, we can now adjust form's look
-            self.augmentView();
-        }
+        /// Form is loaded, we can now adjust form's look
+        self.augmentView();
+        //}
 
-        self.register_combination_changes();
+        //self.register_combination_changes();
 
         // self.validation_remote_modify();
 
-        if (self.options.need_save_data) {
+        //if (self.options.need_save_data) {
             // Set validation
-            self.setValidationRules();
-        }
+        self.setValidationRules();
+        //}
 
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
@@ -602,13 +601,10 @@
                         webapp.popupView(url);
                     }
                 }
-
             });
 
         return false;
     };
-
-
 
     Form.prototype.refresh_listbox_vocab = function (url, listbox, addmore) {
         var self = this;
