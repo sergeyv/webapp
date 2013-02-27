@@ -1,9 +1,10 @@
-/**
- * Very simple jQuery Color Picker.
+/*
+ * Very simple jQuery Color Picker
+ * https://github.com/tkrotoff/jquery-simplecolorpicker
  *
- * Copyright (C) 2012 Tanguy Krotoff
+ * Copyright (C) 2012-2013 Tanguy Krotoff <tkrotoff@gmail.com>
  *
- * Licensed under the MIT license.
+ * Licensed under the MIT license
  */
 
 (function($) {
@@ -23,52 +24,83 @@
     constructor: SimpleColorPicker,
 
     init: function(type, select, options) {
-      this.type = type;
+      var self = this;
 
-      this.$select = $(select);
-      this.options = $.extend({}, $.fn.simplecolorpicker.defaults, options);
+      self.type = type;
 
-      this.$select.hide();
+      self.$select = $(select);
+      var selectValue = self.$select.val();
+      self.options = $.extend({}, $.fn.simplecolorpicker.defaults, options);
+
+      self.$select.hide();
 
       // Trick: fix span alignment
       // When a span does not contain any text, its alignment is not correct
       var fakeText = '&nbsp;&nbsp;&nbsp;&nbsp;';
 
+      self.$colorList = null;
+
+      if (self.options.picker) {
+        var selectText = self.$select.find('option:selected').text();
+        self.$icon = $('<span class="simplecolorpicker icon"'
+                     + ' title="' + selectText + '"'
+                     + ' style="background-color: ' + selectValue + '"'
+                     + ' role="button" tabindex="0">'
+                     + fakeText
+                     + '</span>').insertAfter(self.$select);
+        self.$icon.on('click.' + self.type, $.proxy(self.showPicker, self));
+
+        self.$picker = $('<span class="simplecolorpicker picker"></span>').appendTo(document.body);
+        self.$colorList = self.$picker;
+
+        // Hide picker when clicking outside
+        $(document).on('mousedown.' + self.type, $.proxy(self.hidePicker, self));
+        self.$picker.on('mousedown.' + self.type, $.proxy(self.mousedown, self));
+      } else {
+        self.$inline = $('<span class="simplecolorpicker inline"></span>').insertAfter(self.$select);
+        self.$colorList = self.$inline;
+      }
+
       // Build the list of colors
       // <div class="selected" title="Green" style="background-color: #7bd148;" role="button"></div>
-      var colorList = '';
-      $('option', this.$select).each(function() {
+      var colors = '';
+      $('option', self.$select).each(function() {
         var option = $(this);
         var color = option.val();
         var title = option.text();
         var selected = '';
-        if (option.attr('selected')) {
+        if (option.prop('selected') === true || selectValue === color) {
           selected = 'class="selected"';
         }
-        colorList += '<div ' + selected + ' title="' + title + '" style="background-color: ' + color + ';" role="button" tabindex="0">'
-                     + fakeText
-                     + '</div>';
+        colors += '<div ' + selected
+                + ' title="' + title + '"'
+                + ' style="background-color: ' + color + '"'
+                + ' data-color="' + color + '"'
+                + ' role="button" tabindex="0">'
+                + fakeText
+                + '</div>';
       });
 
-      if (this.options.picker) {
-        var selectText = this.$select.find('option:selected').text();
-        var selectValue = this.$select.val();
-        this.$icon = $('<span class="simplecolorpicker icon" title="' + selectText + '" style="background-color: ' + selectValue + ';" role="button" tabindex="0">'
-                      + fakeText
-                      + '</span>').insertAfter(this.$select);
-        this.$icon.on('click.' + this.type, $.proxy(this.showPicker, this));
+      self.$colorList.html(colors);
+      self.$colorList.on('click.' + self.type, $.proxy(self.click, self));
+    },
 
-        this.$picker = $('<span class="simplecolorpicker picker"></span>').appendTo(document.body);
-        this.$picker.html(colorList);
-        this.$picker.on('click.' + this.type, $.proxy(this.click, this));
+    /**
+     * Changes the selected color.
+     *
+     * @param color the hexadecimal color to select, ex: '#fbd75b'
+     */
+    selectColor: function(color) {
+      var self = this;
 
-        // Hide picker when clicking outside
-        $(document).on('mousedown.' + this.type, $.proxy(this.hidePicker, this));
-        this.$picker.on('mousedown.' + this.type, $.proxy(this.mousedown, this));
+      var colorDiv = self.$colorList.find('div').filter(function() {
+        return $(this).data('color').toLowerCase() === color.toLowerCase();
+      });
+
+      if (colorDiv.length > 0) {
+        self.selectColorDiv(colorDiv);
       } else {
-        this.$inline = $('<span class="simplecolorpicker inline"></span>').insertAfter(this.$select);
-        this.$inline.html(colorList);
-        this.$inline.on('click.' + this.type, $.proxy(this.click, this));
+        console.error("The given color '" + color + "' could not be found");
       }
     },
 
@@ -87,27 +119,40 @@
       this.$picker.hide(this.options.delay);
     },
 
+    /**
+     * Selects the given div inside $colorList.
+     *
+     * The given div becomes the selected one.
+     * It also changes the HTML select value, this will emit the 'change' event.
+     */
+    selectColorDiv: function(colorDiv) {
+      var color = colorDiv.data('color');
+      var title = colorDiv.prop('title');
+
+      // Mark this div as the selected one
+      colorDiv.siblings().removeClass('selected');
+      colorDiv.addClass('selected');
+
+      if (this.options.picker) {
+        this.$icon.css('background-color', color);
+        this.$icon.prop('title', title);
+        this.hidePicker();
+      }
+
+      // Change HTML select value
+      this.$select.val(color);
+    },
+
+    /**
+     * The user clicked on a div inside $colorList.
+     */
     click: function(e) {
       var target = $(e.target);
       if (target.length === 1) {
         if (target[0].nodeName.toLowerCase() === 'div') {
-          // When you click on a color
-
-          var color = target.css('background-color');
-          var title = target.attr('title');
-
-          // Mark this div as the selected one
-          target.siblings().removeClass('selected');
-          target.addClass('selected');
-
-          if (this.options.picker) {
-            this.$icon.css('background-color', color);
-            this.$icon.attr('title', title);
-            this.hidePicker();
-          }
-
-          // Change HTML select value
-          this.$select.val(this.rgb2hex(color)).change();
+          // When you click on a color, make it the new selected one
+          this.selectColorDiv(target);
+          this.$select.trigger('change');
         }
       }
     },
@@ -120,37 +165,15 @@
       e.preventDefault();
     },
 
-    /**
-     * Converts a RGB color to its hexadecimal value.
-     *
-     * See http://stackoverflow.com/questions/1740700/get-hex-value-rather-than-rgb-value-using-jquery
-     */
-    rgb2hex: function(rgb) {
-      function hex(x) {
-        return ('0' + parseInt(x, 10).toString(16)).slice(-2);
-      }
-
-      var matches = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-      if (matches === null) {
-        // Fix for Internet Explorer < 9
-        // Variable rgb is already a hexadecimal value
-        return rgb;
-      } else {
-        return '#' + hex(matches[1]) + hex(matches[2]) + hex(matches[3]);
-      }
-    },
-
     destroy: function() {
       if (this.options.picker) {
         this.$icon.off('.' + this.type);
         this.$icon.remove();
-        this.$picker.off('.' + this.type);
-        this.$picker.remove();
         $(document).off('.' + this.type);
-      } else {
-        this.$inline.off('.' + this.type);
-        this.$inline.remove();
       }
+
+      this.$colorList.off('.' + this.type);
+      this.$colorList.remove();
 
       this.$select.removeData(this.type);
       this.$select.show();
@@ -162,6 +185,9 @@
    * How to use: $('#id').simplecolorpicker()
    */
   $.fn.simplecolorpicker = function(option) {
+    var args = $.makeArray(arguments);
+    args.shift();
+
     // For HTML element passed to the plugin
     return this.each(function() {
       var $this = $(this),
@@ -171,7 +197,7 @@
         $this.data('simplecolorpicker', (data = new SimpleColorPicker(this, options)));
       }
       if (typeof option === 'string') {
-        data[option]();
+        data[option].apply(data, args);
       }
     });
   };
