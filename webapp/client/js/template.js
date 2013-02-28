@@ -471,8 +471,8 @@
         });
 
         $("body")
-            .off("click", "a.webappPopup")
-            .on("click", "a.webappPopup", function () {
+            .off("click", ".webappPopup")
+            .on("click", ".webappPopup", function () {
 
             /* TODOXXX: Unify this with webapp.popupView
                and make this code to use that method */
