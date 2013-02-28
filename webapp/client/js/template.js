@@ -474,6 +474,9 @@
             .off("click", "a.webappPopup")
             .on("click", "a.webappPopup", function () {
 
+            /* TODOXXX: Unify this with webapp.popupView
+               and make this code to use that method */
+
             var $link = $(this),
                 href = (function (l) {
                     /* remove the part of the url before the hash */

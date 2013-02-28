@@ -117,7 +117,7 @@
 
         /*self.view.find(".webappPopup").click(function () {
             var $link = $(this);
-            return webapp.popupView($link.attr('href'), function (server_response) {
+            return webapp.popupView($link.attr('href'), "modal", function (server_response) {
                 var $select = $link.parent().children("select");
                 $select.data("original_value", server_response.item_id);
                 self.reloadLoadable($select);
@@ -599,7 +599,7 @@
                     if (self.options.submit_action === 'redirect') {
                         webapp.relocateTo(url);
                     } else if (self.options.submit_action === 'popup') {
-                        webapp.popupView(url);
+                        webapp.popupView(url, "popup");
                     }
                 }
             });

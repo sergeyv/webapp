@@ -84,10 +84,10 @@
         }
 
         view.event = event;
-        view.show();
-
         // Store the given view as the current view.
         this.currentView = view;
+
+        view.show();
 
         // reflect the change in the navigation
         this.updateMenu(event);
@@ -96,8 +96,12 @@
 
     Controller.prototype.showSecondaryView = function (view, event) {
 
+        var self = this;
         // event.display_mode = mode;
         view.event = event;
+        view.event.parentView = self.currentView;
+        self.currentView = view;
+
         view.show();
 
     };
@@ -146,8 +150,8 @@
 
             });
 
-            view.event.parentView = self.currentView;
-            self.currentView = view;
+            // view.event.parentView = self.currentView;
+            // self.currentView = view;
 
         } else if (view.event.display_mode === "modal") {
 
@@ -167,14 +171,21 @@
                and they work without extra fuss
             */
             $modal.find('.modal-footer').append(view.view.find('.actions'));
+            $modal.data('view_in_modal', view);
 
+            $modal.on('hidden', function () {
+                /* revert controller.currentView to the previous view. This is the right place to do this
+                   because the modal can be dismissed by a variety of ways
+                */
+                self.currentView = $modal.data('view_in_modal').event.parentView;
+            });
 
             $modal.modal({
                 show: true
             });
 
-            view.event.parentView = self.currentView;
-            self.currentView = view;
+            // view.event.parentView = self.currentView;
+            // self.currentView = view;
 
         } else if (view.event.display_mode === "popover") {
 

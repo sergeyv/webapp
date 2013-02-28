@@ -521,20 +521,21 @@
     /* end stats stuff */
 
 
-    WebApp.prototype.popupView = function (url, success_callback) {
+    WebApp.prototype.popupView = function (url, mode, success_callback) {
         var hash = webapp.normalizeHash(url),
-            context = webapp.getEventContextForRoute(hash);
+            event = webapp.getEventContextForRoute(hash);
 
+        mode = mode || "popup";
+        event.popup_success_callback = success_callback;
+        event.display_mode = mode;
 
-        context.popup_success_callback = success_callback
-
-        if (context.mapping) {
-            context.mapping.controller.showSecondaryView(context.mapping.view, context, "popup");
+        if (event.mapping) {
+            event.mapping.controller.showSecondaryView(event.mapping.view, event, mode);
         } else {
             webapp.showMessage("POPUP VIEW NOT FOUND: " + hash);
         }
         return false;
-    }
+    };
 
     // uses webapp.visitedUrlsLog
     // to return the previous page url
