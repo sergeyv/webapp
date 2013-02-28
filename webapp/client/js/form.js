@@ -439,10 +439,7 @@
 
 
     Form.prototype.populateLoadables = function () {
-
         var self = this;
-
-
         self.form.find('div.loadableListbox').each(function () {
             var $select = $(this).find('select'),
                 opts = {
@@ -473,7 +470,12 @@
         /// just yet (i.e. a master listbox was not loaded yet)
         if (from) {
             webapp.Read(from, function (data) {
-                $select.children().remove();
+                // keep the options marked with class="preserve"
+                $select.children(":not(.preserve)").remove();
+                if (!$select.children().length) {
+                    /* add an empty option for Chosen default text support */
+                    $('<option value=""></option>').appendTo($select);
+                }
 
                 /// for dependent listboxes, their options are loaded
                 /// after the content is loaded, so we need somehow to
@@ -490,16 +492,14 @@
                 } else {
                     ids[orig] = true;
                 }
-                    /* add an empty option for Chosen default text support */
-                    $('<option value=""></option>').appendTo($select);
 
-                    $.each(data.items, function (idx, value) {
-                        var opt = $("<option/>").val(value[0]).html(value[1]).appendTo($select);
-                        if (ids[value[0]]) {
-                            opt.attr("selected", "selected");
-                        }
-                    });
-                    self.showListbox($select);
+                $.each(data.items, function (idx, value) {
+                    var opt = $("<option/>").val(value[0]).html(value[1]).appendTo($select);
+                    if (ids[value[0]]) {
+                        opt.attr("selected", "selected");
+                    }
+                });
+                self.showListbox($select);
                 /*}*/
 
                 $select.removeData("original_value");

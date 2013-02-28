@@ -103,7 +103,6 @@ class DataFormatWriter(DataFormatBase):
         if hasattr(resource, "before_item_updated"):
             resource.before_item_updated(self, params, request)
 
-
         self.deserialize(params, request)
 
         #Flush session so changes have been applied
