@@ -106,7 +106,7 @@
 
         self.view.find(".actions").append('&nbsp; or<button type="button" class="btn btn-link formCancelLink">Cancel</button>');
 
-        self.cancelLink = self.view.find(".formCancelLink").require_one();
+        self.cancelLink = self.view.find(".formCancelLink");
 
         title = self.get_title();
         if (title) {
