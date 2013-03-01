@@ -10,13 +10,18 @@
         rest_service_root
         submit_action
         next_view
+        auto_fill - normally, a form is rendered first and then fill_form method
+            finds the controls and fills them with values from this.data. For
+            forms rendered from a custom template we don't need this behaviour
+            and in fact it may interfere with the manually
         */
         var opts = $.extend({
             title: "Add/Edit Item",
             button_title: "Save Changes",
             http_method: "PUT",
             need_load_data: true,
-            submit_action: 'redirect'
+            submit_action: 'redirect',
+            auto_fill: true
         }, options);
 
         webapp.Template.apply(this, [opts]);
@@ -219,8 +224,10 @@
 
         id_root = '#' + self.options.identifier;
         item_id = self.event.parameters.item_id || 'new';
-        self.fill_form(id_root, self.data);
 
+        if (self.options.auto_fill) {
+            self.fill_form(id_root, self.data);
+        }
 
         if (self.options.before_view_shown) {
             self.options.before_view_shown.apply(self);
