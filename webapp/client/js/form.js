@@ -426,7 +426,9 @@
                     // any dependent element
                     if (!$elem.hasClass('dependent')) {
                         $master_elem.change(function () {
-                            if ($(this).val()) {
+                            var val = $(this).val();
+                            /* multi-edit dialogs may have 'unchanged' value for some listboxes */
+                            if (val && val !== 'unchanged') {
                                 self.reloadLoadable($elem);
                             } else {
                                 self.hideListbox($elem);
@@ -440,7 +442,7 @@
                     /// load from, say, /providers/undefined/hosts, so we inject
                     /// a marker into the URL so later we can say if we need to skip
                     /// loading altogether
-                    if ($master_elem.val()) {
+                    if ($master_elem.val() && $master_elem.val() !== 'unchanged') {
                         return $1 + $master_elem.val();
                     } else {
                         return "MASTER_NOT_LOADED";
