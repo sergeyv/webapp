@@ -147,6 +147,16 @@
                 });
                 $('body').off('click.formCancelLink', ".formCancelLink");
             });
+        } else if (self.event.display_mode === "inline") {
+            //self.cancelLink.attr('data-dismiss', 'instant_popover');
+            self.cancelLink.on('click.formCancelLink', function () {
+                // do whatever the parent view wanst us to do on success
+                self.dismiss();
+                if (self.event.popup_success_callback) {
+                    self.event.popup_success_callback(self.event.parameters);
+                }
+                $('body').off('click.formCancelLink', ".formCancelLink");
+            });
         } else if (!self.event.display_mode) {
 
             /// Cancel link points to the page we came from
