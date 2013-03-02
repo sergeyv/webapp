@@ -196,7 +196,7 @@
             });
 
         } else if (view.event.display_mode === "inline") {
-            $(view.event.inline_container_selector).html(view.view);
+            $(view.event.inline_container_selector).require_one().html(view.view);
         } else {
             /* show as main view */
             old_views = $(".activeContentView");

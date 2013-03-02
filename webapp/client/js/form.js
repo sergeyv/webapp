@@ -34,7 +34,7 @@
     Form.prototype.bindFormControls = function () {
         var self = this,
             items;
-        self.form = $("#" + self.options.identifier);
+        self.form = $("#" + self.options.identifier).require_one();
         self.controls = {};
 
         items = self.form.serializeArray();
