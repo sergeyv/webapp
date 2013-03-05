@@ -15,7 +15,6 @@ import time
 import dottedish
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
-from pprint import pprint
 
 import crud
 
@@ -25,18 +24,52 @@ from webapp.forms.data_format import (
     IDataFormatWriter,
     IDataFormatLister,
     IDataFormatCreator
-    )
+)
 
 #from webapp.testing import sluggish, explode
 
 
 def _add_flash_messages(data, request):
+    """
+    An apptication can produce "flash messages" during the request
+    processing which are sent to the client and rendered
+    """
+
     if data is None:
         print "WARNING: A view should return a dict, not None"
     else:
         if len(request.flash_messages):
             data['__flash_messages__'] = request.flash_messages
     return data
+
+
+def _add_last_changed(data, request):
+    """
+    Adds last-changed
+    """
+    # TODOXXX: this introduces a dependency on models, KitovuCommon etc.
+    # Need to somehow factor out
+    from models.last_changed import LastChangedItem
+    since = request.cookies.get('last_changed', None)
+    session = request.dbsession
+    query = session.query(LastChangedItem)
+    if since is not None:
+        query = query.filter(LastChangedItem.modified > since)
+    # TODO: re-enable later
+    # alternatively, do not set a cookie, but send a "timestamp key"
+    # so if the client knows how to process the __recently_modified__ data
+    # it does the processing and then sets the cookie itself, otherwise
+    # the data is getting resent until the client does something about it
+    # request.response.set_cookie('last_changed', time.time())
+    result = []
+    for item in query.all():
+        result.append(item.item_type)
+
+    if result:
+        data['__recently_modified__'] = result
+
+    return data
+
 
 
 # TODOXXX: fix remote validation
@@ -51,7 +84,7 @@ def json_rest_empty(context, request):
         field_name = str(request.params.keys()[0])
         if hasattr(context, 'validate_' + validation_name):
             result = getattr(context, 'validate_' + validation_name)(
-                    request.params[field_name])
+                request.params[field_name])
             return result
         else:
             raise AttributeError('No validation method on context')
@@ -59,7 +92,8 @@ def json_rest_empty(context, request):
     return context.get_empty(request)
 
 
-@view_config(name="filters",
+@view_config(
+    name="filters",
     context=IDataFormatLister,
     permission="rest.list",
     request_method="GET",
@@ -75,7 +109,8 @@ def json_rest_filters(context, request):
     return context.get_filters(request)
 
 
-@view_config(name="incremental",
+@view_config(
+    name="incremental",
     context=crud.ICollection,
     permission="rest.list",
     request_method="GET",
@@ -100,7 +135,8 @@ def json_rest_incremental(context, request):
     return {'result': "HELLO! Nothing found!"}
 
 
-@view_config(context=crud.ICollection,
+@view_config(
+    context=crud.ICollection,
     permission="rest.delete",
     request_method="DELETE",
     renderer="better_json",
@@ -127,10 +163,13 @@ def json_rest_delete_subitems(context, request):
 
     data = {'ids': params['id']}
     data = _add_flash_messages(data, request)
+    data = _add_last_changed(data, request)
+
     return data
 
 
-@view_config(context=crud.IResource,
+@view_config(
+    context=crud.IResource,
     permission="rest.delete",
     request_method="DELETE",
     renderer="better_json",
@@ -145,6 +184,8 @@ def json_rest_delete_item(context, request):
 
     data = {'id': item_id}
     data = _add_flash_messages(data, request)
+    data = _add_last_changed(data, request)
+
     return data
 
 
@@ -167,7 +208,8 @@ def context_implements(*types):
 
 
 # TODOXXX: The method should be POST
-@view_config(context=IDataFormat,
+@view_config(
+    context=IDataFormat,
     permission="rest.create",
     request_method="PUT",
     renderer="better_json",
@@ -182,16 +224,19 @@ def json_rest_create_f(context, request):
 
     data = context.create(request)
     data = _add_flash_messages(data, request)
+    data = _add_last_changed(data, request)
+
     return data
 
 
-@view_config(context=IDataFormat,
+@view_config(
+    context=IDataFormat,
     permission="rest.view",
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
     custom_predicates=(context_implements(IDataFormatReader),),
-    )
+)
 def json_rest_get_f(context, request):
     """
     Returns a json dict representing the given object's data serialized using
@@ -201,32 +246,37 @@ def json_rest_get_f(context, request):
     data = context.read(request)
 
     data = _add_flash_messages(data, request)
+    data = _add_last_changed(data, request)
     #data.setdefault('stats', {})['total_time'] = time.time() - start
     return data
 
 
-@view_config(context=IDataFormat,
+@view_config(
+    context=IDataFormat,
     permission="rest.update",
     request_method="PUT",
     renderer="better_json",
     accept="text/plain",
     custom_predicates=(context_implements(IDataFormatWriter),)
-    )
+)
 def json_rest_update_f(context, request):
     """
     """
     data = context.update(request)
     data = _add_flash_messages(data, request)
+    data = _add_last_changed(data, request)
+
     return data
 
 
-@view_config(context=IDataFormat,
+@view_config(
+    context=IDataFormat,
     permission="rest.list",
     request_method="GET",
     renderer="better_json",
     accept="application/json",
     custom_predicates=(context_implements(IDataFormatLister),),
-    )
+)
 def json_rest_list_f(context, request, permission=""):
     """
     """
@@ -240,6 +290,8 @@ def json_rest_list_f(context, request, permission=""):
         data.setdefault('stats', {})['total_time'] = time.time() - start
 
     data = _add_flash_messages(data, request)
+    data = _add_last_changed(data, request)
+
     return data
 
 
@@ -276,36 +328,40 @@ def _do_validate(context, request):
     return data
 
 
-@view_config(name="v",  # for 'Vendetta', obviously
+@view_config(
+    name="v",  # for 'Vendetta', obviously
     context=IDataFormatWriter,
     permission="rest.update",
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
-    )
+)
 def validate_on_update(context, request):
     return _do_validate(context, request)
 
 
-@view_config(name="v",  # for 'Vendetta', obviously
+@view_config(
+    name="v",  # for 'Vendetta', obviously
     context=IDataFormatCreator,
     permission="rest.create",
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
-    )
+)
 def validate_on_create(context, request):
     return _do_validate(context, request)
 
 
 ### FOR DEBUG PURPOSES
 
-@view_config(name="formats",
+@view_config(
+    name="formats",
     context=crud.ITraversable,
     permission="rest.view",
     request_method="GET",
     renderer="string",
-    accept="text/plain")
+    accept="text/plain"
+)
 def list_resource_formats(context, request):
 
     return str(getattr(context, '__data_formats__', None))
