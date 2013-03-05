@@ -34,7 +34,7 @@
     Form.prototype.bindFormControls = function () {
         var self = this,
             items;
-        self.form = $("#" + self.options.identifier);
+        self.form = $("#" + self.options.identifier).require_one();
         self.controls = {};
 
         items = self.form.serializeArray();
@@ -145,6 +145,16 @@
                 $('[data-instant_popover-open=1]').each(function () {
                     if ($(this).data('instant_popover')) $(this).data('instant_popover').do_dismiss();
                 });
+                $('body').off('click.formCancelLink', ".formCancelLink");
+            });
+        } else if (self.event.display_mode === "inline") {
+            //self.cancelLink.attr('data-dismiss', 'instant_popover');
+            self.cancelLink.on('click.formCancelLink', function () {
+                // do whatever the parent view wanst us to do on success
+                self.dismiss();
+                if (self.event.popup_success_callback) {
+                    self.event.popup_success_callback(self.event.parameters);
+                }
                 $('body').off('click.formCancelLink', ".formCancelLink");
             });
         } else if (!self.event.display_mode) {
@@ -416,7 +426,9 @@
                     // any dependent element
                     if (!$elem.hasClass('dependent')) {
                         $master_elem.change(function () {
-                            if ($(this).val()) {
+                            var val = $(this).val();
+                            /* multi-edit dialogs may have 'unchanged' value for some listboxes */
+                            if (val && val !== 'unchanged') {
                                 self.reloadLoadable($elem);
                             } else {
                                 self.hideListbox($elem);
@@ -430,7 +442,7 @@
                     /// load from, say, /providers/undefined/hosts, so we inject
                     /// a marker into the URL so later we can say if we need to skip
                     /// loading altogether
-                    if ($master_elem.val()) {
+                    if ($master_elem.val() && $master_elem.val() !== 'unchanged') {
                         return $1 + $master_elem.val();
                     } else {
                         return "MASTER_NOT_LOADED";

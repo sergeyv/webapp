@@ -514,6 +514,7 @@
 
             event.initiating_element = $link;
             event.display_mode = $link.data('display') || "popup";
+            event.inline_container_selector = $link.data('container');
 
             webapp.controller.showSecondaryView(event.mapping.view, event);
 

@@ -176,7 +176,7 @@
             case 'pager': return self._render_pager(true);
             case 'next-prev': return self._render_pager(false);
             case 'click-for-more': return self._render_load_more_link();
-            case 'infinite': return '<div class="pagination"></div>';
+            case 'infinite': return '<div class="infiniteScrollMore"><span> </span> Loading...</div><div class="pagination"></div>';
         }
 
     };
@@ -194,6 +194,9 @@
             url = self.getRestUrl('with-params', undefined, {batch_start: self.data.next_batch_start}),
             blob,
             fragment;
+
+        self.view.find('.infiniteScrollMore').show();
+
         $.ajax({
             type: "GET",
             url: url,
@@ -207,6 +210,8 @@
             self.data.items = self.data.items.concat(data.items);
             self.data.next_batch_start = data.next_batch_start;
             self.data.has_more = data.has_more;
+
+            self.view.find('.infiniteScrollMore').hide();
 
             /* perform any JS initializations */
             if (self.options.before_view_shown) {
@@ -274,7 +279,7 @@
             });
         } else if (self.options.scroll === 'infinite') {
             $(self.view).find('table.listingTable').infiniteScroll({
-                threshold: 150,
+                threshold: 500, /* start loading more when less than 500px of the scroll left at the bottom */
                 onEnd: function() {
                     $(".pagination").html('<span class="discreet">All ' + self.data.total_count + ' items shown</span>');
                 },
