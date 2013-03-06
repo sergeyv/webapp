@@ -146,7 +146,12 @@
                 modal: true,
                 width: "80%",
                 /* find the title directly on the page, remove it from there*/
-                title: view.view.find('.primaryPageHeading').detach().text()
+                title: view.view.find('.primaryPageHeading').detach().text(),
+                close: function () {
+                    /* Restore the parent view as the currentView */
+                    if ( view.event.parentView )
+                        self.currentView = view.event.parentView;
+                }
 
             });
 
