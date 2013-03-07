@@ -57,6 +57,9 @@
 
         this.flash_messages = [];
 
+        this.request_cache = {};
+        this.request_cache_by_type = {};
+
         this.showMessage = function (msg, title) {
             /*
             Displays a message - a nicer replacement for
@@ -120,12 +123,15 @@
                 var data;
                 try {
                     data = $.parseJSON(jqx.responseText);
-                } catch (e) {
+                } catch (exc) {
                     // pass
-                };
+                }
 
-                if (data && data.__flash_messages__) {
-                    webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
+                if (data) {
+                    /* flash messages */
+                    if (data.__flash_messages__) {
+                        webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
+                    }
                 }
 
             });
@@ -613,6 +619,10 @@
     };
 
     WebApp.prototype.Update =  function (url, data, callback) {
+        /*
+        TODOXXX: replace everywhere with .Update2
+        also replace .Create, .Read and .Delete to use .get_cached_ajax()
+        */
 
         if (typeof data !== "string") {
             data = JSON.stringify(data || {});
@@ -632,6 +642,31 @@
 
         });
     };
+
+    WebApp.prototype.Update2 =  function (url, data) {
+
+        if (typeof data !== "string") {
+            data = JSON.stringify(data || {});
+        }
+
+        /*
+        we need to use .get_cached_ajax() here because it also
+        invalidates the cache
+        */
+
+        return webapp.get_cached_ajax(
+            false,
+            [],
+            {
+                type: "PUT",
+                url: url,
+                contentType: "application/json",
+                processData: false, // tell jQuery not to process
+                data: data
+            }
+        );
+    };
+
 
     WebApp.prototype.format_date = function (date_str) {
         /*
@@ -686,7 +721,7 @@
             meth = webapp.Delete;
             need_send_data = false;
         } else if ($link.hasClass("webappMethodPut")) {
-            meth = webapp.Update;
+            meth = webapp.Update2;
             need_send_data = true;
         } else if ($link.hasClass("webappMethodPost")) {
             meth = webapp.Create;
@@ -724,9 +759,9 @@
         /// parameter which unfortunately is in the middle
         /// we may need to refactor this because it's kinda ugly
         if (need_send_data) {
-            meth($link.attr('href'), data, callback);
+            meth($link.attr('href'), data).done(callback);
         } else {
-            meth($link.attr('href'), callback);
+            meth($link.attr('href')).done(callback);
         }
 
         if ($link.hasClass("webappGoBack")) {
@@ -735,6 +770,73 @@
         return false;
     };
 
+
+    /* CACHING */
+
+    WebApp.prototype.get_cached_ajax = function (use_cache, invalidated_by, options) {
+        /*
+        webapp maintains a cache of
+        */
+        var self = this,
+            cached = self.request_cache[options.url],
+            ajax;
+
+        if (use_cache && cached) {
+            console.log("FROM CACHE", options.url);
+            cached.used += 1;
+            return cached.ajax;
+        }
+
+        if (!use_cache) {
+            console.log("NOT USING CACHE: ", options.url);
+            ajax = $.ajax(options);
+        } else {
+            console.log("NOT FROM CACHE", options.url);
+            ajax = $.ajax(options);
+            self.request_cache[options.url] = {
+                ajax: ajax,
+                invalidated_by: invalidated_by,
+                used: 1
+            };
+
+            $.each(invalidated_by || [], function (idx, type) {
+                if (!self.request_cache_by_type[type]) {
+                    self.request_cache_by_type[type] = [];
+                }
+                self.request_cache_by_type[type].push(options.url);
+            });
+        }
+
+        return ajax.done(function (data) {
+            /* invalidate the cache  */
+            if (data.__recently_modified__) {
+                console.log("INVALIDATING");
+                webapp.purge_cache(data.__recently_modified__, data.__recently_modified_timestamp__);
+            }
+        });
+    };
+
+    WebApp.prototype.purge_cache = function (invalidated_by, timestamp) {
+        var self = this;
+        console.log("PURGING: ", invalidated_by);
+        invalidated_by.push('*'); // '*' entries are purged always
+        $.each(invalidated_by || [], function (idx, type) {
+            if (self.request_cache_by_type[type]) {
+
+                $.each(self.request_cache_by_type[type], function (idx, url) {
+                    delete self.request_cache[url];
+                });
+
+                delete self.request_cache_by_type[type];
+            }
+        });
+        $.removeCookie('last_changed', {path: '/'});
+        $.cookie('last_changed', timestamp, {path: '/'});
+        console.log($.cookie('last_changed'));
+
+    };
+
+    /* END CACHING */
 
 
     // ----------------------------------------------------------------------- //

@@ -7,6 +7,7 @@
 
 import json
 import time
+from datetime import datetime
 
 # from webob import Response
 
@@ -29,6 +30,18 @@ from webapp.forms.data_format import (
 #from webapp.testing import sluggish, explode
 
 
+class bcolors:
+    """
+    This is for printing color messages in the terminal
+    """
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
+
 def _add_flash_messages(data, request):
     """
     An apptication can produce "flash messages" during the request
@@ -49,11 +62,27 @@ def _add_last_changed(data, request):
     """
     # TODOXXX: this introduces a dependency on models, KitovuCommon etc.
     # Need to somehow factor out
+
+    TS_FORMAT = '%Y-%m-%d-%H-%M-%S'  # dashes are to avoid bothering with cookie urlencoding
+
+    if not (isinstance(data, dict)):
+        print bcolors.FAIL + "The response at " + request.url + " does not return a JSON dict" + bcolors.ENDC
+        print bcolors.WARNING + "Just a nagging reminder to fix this - all views should return a dict" + bcolors.ENDC
+        return data
+
+    # import pdb; pdb.set_trace()
+
     from models.last_changed import LastChangedItem
     since = request.cookies.get('last_changed', None)
     session = request.dbsession
     query = session.query(LastChangedItem)
     if since is not None:
+        # since = datetime.utcfromtimestamp(float(since))
+        try:
+            since = datetime.strptime(since, TS_FORMAT)
+        except ValueError:
+            since = datetime.strptime('1900-01-01-00-00-00', TS_FORMAT)
+        print bcolors.FAIL + ("Since %s" % since) + bcolors.ENDC
         query = query.filter(LastChangedItem.modified > since)
     # TODO: re-enable later
     # alternatively, do not set a cookie, but send a "timestamp key"
@@ -67,6 +96,9 @@ def _add_last_changed(data, request):
 
     if result:
         data['__recently_modified__'] = result
+        ts = datetime.utcnow().strftime(TS_FORMAT)
+        data['__recently_modified_timestamp__'] = ts
+        print bcolors.FAIL + ("TS %s" % ts) + bcolors.ENDC
 
     return data
 
@@ -262,6 +294,7 @@ def json_rest_get_f(context, request):
 def json_rest_update_f(context, request):
     """
     """
+
     data = context.update(request)
     data = _add_flash_messages(data, request)
     data = _add_last_changed(data, request)

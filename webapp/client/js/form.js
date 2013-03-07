@@ -582,14 +582,15 @@
         var self = this,
             form_data = self.form.serializeObject(),
             item_id = self.event.parameters.item_id || 'new',
-            meth = webapp.Update;
+            meth = webapp.Update2;
 
         if (self.options.http_method === "POST") {
             meth = webapp.Create;
         }
 
-        meth(self.getRestUrl("", {item_id: item_id}), form_data,
-            function (data) {
+        meth(self.getRestUrl("", {item_id: item_id}), form_data)
+            .done(function (data) {
+                console.log("FORM AJAX CALLBACK!!!");
 
                 /*
                     The server is supposed to return {item_id: 123} when
