@@ -805,8 +805,11 @@
         }
 
         return ajax.done(function (data) {
-            /* invalidate the cache  */
-            if (data.__recently_modified__) {
+            /*
+            invalidate the cache, do not fail if the client returns
+            something which is not a dict
+            */
+            if (data && (typeof data === "object") && data.__recently_modified__) {
                 console.log("INVALIDATING");
                 webapp._purge_cache(data.__recently_modified__, data.__recently_modified_timestamp__);
             }

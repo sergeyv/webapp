@@ -78,6 +78,8 @@ TODO:
 
 - Need to limit the cache size, at the moment it grows indefinitely (unless an invalidation message arrives).
 
+- if there's been more than a few minutes since the last request, we need to let the request through to make sure nobody else has changed the database since then. Or, alternatively, to issue a separate request to a special view which just returns those __recently_modified__ keys. Or to set a timer after each request which fires each few minutes and fetches cache invalidation messages - the latter seems like the best option.
+
 - Go through routes.js and put `invalidated_by` options.
 
 
