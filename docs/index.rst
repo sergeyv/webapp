@@ -13,3 +13,5 @@ on the client and server.
    validation.rst
    defaults.rst
    form_customisation.rst
+   caching.rst
+

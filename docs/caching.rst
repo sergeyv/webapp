@@ -3,6 +3,7 @@ webapp caching framework
 
 How caching works in webapp:
 
+
 Server-side part:
 -----------------
 
@@ -19,6 +20,7 @@ By "changed" here we mean "a record has been created" - basically, when a record
 Then, in `webapp.views.rest`, when returning a response for any method, we're appending `__recently_modified__` and `__recently_modified_timestamp__` keys to the output - the former is the list of all types which had been modified since a particular date (see below), and the latter is a timestamp (see `webapp.views.rest._add_last_changed`)
 
 So, basically, with every response we return a list of types which changed since the last time.
+
 
 On the client:
 --------------
@@ -46,6 +48,7 @@ and uses `__recently_modified_timestamp__` value to set a cookie which is used b
 
 Apart from specifying a type, it is also possible to specify '*' wildcard, in which case the cached request will be purged whenever the server says _any_ change happened.
 
+
 Views:
 ------
 
@@ -59,6 +62,23 @@ Views:
    }),
 
 `Form` has `use_cache` set to `false` so it always loads the data from the server.
+
+Loadable listboxes (only the client-side ones, defined in helpers.js) accept an optional `invalidated_by` argument. When missing, it defaults to '*', which is better than what we had previously but still is a bit sub-optimal.
+
+
+Gotchas:
+--------
+
+1. Issuing AJAX requests not via webapp.get_cached_ajax() (using $.ajax etc.) would ignore cache invalidation messages sent by the server, which will result in strange behaviour - for example, if a popup saves its data using $.ajax and tells the parent view to reload, the latter will not update because it'll get its data from the cache.
+
+2. Since the invalidation messages are tied to creating records, items which do not create records (stuff like Industry or PaymentMethod) currently will be cached forever (or, until the app is reloaded)
+
+TODO:
+-----
+
+- Need to limit the cache size, at the moment it grows indefinitely (unless an invalidation message arrives).
+
+- Go through routes.js and put `invalidated_by` options.
 
 
 
