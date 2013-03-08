@@ -21,7 +21,8 @@
             http_method: "PUT",
             need_load_data: true,
             submit_action: 'redirect',
-            auto_fill: true
+            auto_fill: true,
+            use_cache: false
         }, options);
 
         webapp.Template.apply(this, [opts]);
@@ -490,7 +491,7 @@
         /// empty 'from' url signals that we shouldn't attempt to load the data
         /// just yet (i.e. a master listbox was not loaded yet)
         if (from) {
-            webapp.Read(from, function (data) {
+            webapp.Read(from, $select.data('invalidated_by')).done(function (data) {
                 // keep the options marked with class="preserve"
                 $select.children(":not(.preserve)").remove();
                 if (!$select.children().length) {
@@ -584,14 +585,15 @@
         var self = this,
             form_data = self.form.serializeObject(),
             item_id = self.event.parameters.item_id || 'new',
-            meth = webapp.Update;
+            meth = webapp.Update2;
 
         if (self.options.http_method === "POST") {
             meth = webapp.Create;
         }
 
-        meth(self.getRestUrl("", {item_id: item_id}), form_data,
-            function (data) {
+        meth(self.getRestUrl("", {item_id: item_id}), form_data)
+            .done(function (data) {
+                console.log("FORM AJAX CALLBACK!!!");
 
                 /*
                     The server is supposed to return {item_id: 123} when

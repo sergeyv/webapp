@@ -17,11 +17,18 @@
         - aux_templates - a list of auxillary templates to be loaded along with the main template
         - rest_params_method - a method which should return an object, key=value pairs from which
                                will be appended to the REST url
+
+        - use_cache - whether we want to use app-wide caching
+        - invalidated_by - an array of "types" which may invalidate the current cache
+            This is basically a list of items which are directly or indirectly displayed on this page
+
         */
         var opts = $.extend({
             need_load_data: true,
             aux_templates: [],
-            flash_messages_container_id: "#flash_messages"
+            flash_messages_container_id: "#flash_messages",
+            use_cache: true,
+            invalidated_by: ['*']
         }, options);
         webapp.View.apply(this, [opts]);
 
@@ -77,20 +84,41 @@
 
         if (!self.template) {
             calls.push($.ajax({
-                    url: self._get_template_load_url(),
-                    cache: true
-                }));
+                url: self._get_template_load_url(),
+                cache: false /* do not cache templates */
+            }));
+            /*calls.push(
+                webapp.get_cached_ajax(
+                    self.options.use_cache,
+                    self.options.invalidated_by,
+                    {
+                        url: self._get_template_load_url(),
+                        cache: true
+                    }
+                )
+            );*/
         } else {
             calls.push(null);
         }
 
         if (self.options.need_load_data) {
-            calls.push(
+            /*calls.push(
                 $.ajax({
                     type: "GET",
                     url: self.getRestUrl("with-params"),
                     cache: true
-                }));
+                }));*/
+            calls.push(
+                webapp.get_cached_ajax(
+                    self.options.use_cache,
+                    self.options.invalidated_by,
+                    {
+                        type: "GET",
+                        url: self.getRestUrl("with-params"),
+                        cache: false /* do not cache data using HTTP means */
+                    }
+                )
+            );
         } else {
             calls.push(null);
         }

@@ -197,11 +197,15 @@
 
         self.view.find('.infiniteScrollMore').show();
 
-        $.ajax({
-            type: "GET",
-            url: url,
-            cache: true
-        }).done(function (data) {
+        webapp.get_cached_ajax(
+            self.options.use_cache,
+            self.options.invalidated_by,
+            {
+                type: "GET",
+                url: url,
+                cache: true
+            }
+        ).done(function (data) {
             blob = self.render_data_return_html(self.template, data);
             fragment = $(blob).find("table.listingTable tbody:last");
             self.view.find("table.listingTable").append(fragment);

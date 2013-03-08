@@ -56,11 +56,9 @@ class AssetRegistry(object):
     # Simple jquery color picker https://github.com/tkrotoff/jquery-simplecolorpicker
     "/webapp.client/core_js/jquery.simplecolorpicker.js",
 
-    # Jquery.cookie plugin - not directly used by the webapp
-    # but we need this for doing the auth with o-rbited
     # from http://plugins.jquery.com/node/1386/release
-    # TODOXXX: remove?
-    # "/webapp.client/core_js/jquery.cookie.js",
+    # we're using this for caching
+    "/webapp.client/core_js/jquery.cookie.js",
 
 
     # Formish

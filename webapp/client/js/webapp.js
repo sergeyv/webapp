@@ -57,6 +57,9 @@
 
         this.flash_messages = [];
 
+        this.request_cache = {};
+        this.request_cache_by_type = {};
+
         this.showMessage = function (msg, title) {
             /*
             Displays a message - a nicer replacement for
@@ -120,12 +123,15 @@
                 var data;
                 try {
                     data = $.parseJSON(jqx.responseText);
-                } catch (e) {
+                } catch (exc) {
                     // pass
-                };
+                }
 
-                if (data && data.__flash_messages__) {
-                    webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
+                if (data) {
+                    /* flash messages */
+                    if (data.__flash_messages__) {
+                        webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
+                    }
                 }
 
             });
@@ -568,70 +574,105 @@
         $(id).html(output);
     };
 
-    WebApp.prototype.Read =  function (url, callback) {
+    WebApp.prototype.Read = function (url, invalidated_by) {
 
-        return $.ajax({
-            type: "GET",
-            url: url,
-            //cache: false, // disable caching. May need to improve
-            success: function (data) {
-                return callback(data);
+        return webapp.get_cached_ajax(
+            true,
+            invalidated_by,
+            {
+                type: 'GET',
+                url: url,
+                contentType: "application/json",
+                processData: false // tell jQuery not to process
             }
-
-        });
+        );
     };
 
-    WebApp.prototype.Delete =  function (url, callback) {
+    // WebApp.prototype.Delete =  function (url, callback) {
 
-        return $.ajax({
-            type: "DELETE",
-            url: url,
-            success: function (data) {
-                return callback(data);
-            }
+    //     return $.ajax({
+    //         type: "DELETE",
+    //         url: url,
+    //         success: function (data) {
+    //             return callback(data);
+    //         }
 
-        });
-    };
+    //     });
+    // };
 
-    WebApp.prototype.Create =  function (url, data, callback) {
-
+    WebApp.prototype._send_request_with_body = function (url, data, method) {
         if (typeof data !== "string") {
             data = JSON.stringify(data || {});
         }
 
-        return $.ajax({
-            type: "POST",
-            url: url,
-            contentType: "application/json",
-            processData: false, // tell jQuery not to process
-            data: data,
-            success: function (data) {
-                callback(data);
-            }
+        /*
+        we need to use .get_cached_ajax() here because it also
+        invalidates the cache
+        */
 
-        });
+        return webapp.get_cached_ajax(
+            false,
+            [],
+            {
+                type: method,
+                url: url,
+                contentType: "application/json",
+                processData: false, // tell jQuery not to process
+                data: data
+            }
+        );
     };
 
-    WebApp.prototype.Update =  function (url, data, callback) {
-
-        if (typeof data !== "string") {
-            data = JSON.stringify(data || {});
-        }
-
-        return $.ajax({
-            type: "PUT",
-            url: url,
-            contentType: "application/json",
-            processData: false, // tell jQuery not to process
-            data: data,
-            success: function (data) {
-                if (typeof(callback)==="function") {
-                    callback(data);
-                }
-            }
-
-        });
+    WebApp.prototype.Create =  function (url, data) {
+        /*
+        Sends `data` to the `url` in a PUT request
+        */
+        return webapp._send_request_with_body(url, data, 'POST');
     };
+
+    WebApp.prototype.Delete =  function (url, data) {
+        /*
+        Sends `data` to the `url` in a DELETE request
+
+        A DELETE request can actually have a body:
+        http://stackoverflow.com/questions/299628/is-an-entity-body-allowed-for-an-http-delete-request
+        so it's no different from POST or PUT
+        */
+        return webapp._send_request_with_body(url, data, 'DELETE');
+    };
+
+    // WebApp.prototype.Update =  function (url, data, callback) {
+    //     /*
+    //     TODOXXX: replace everywhere with .Update2
+    //     also replace .Create, .Read and .Delete to use .get_cached_ajax()
+    //     */
+
+    //     if (typeof data !== "string") {
+    //         data = JSON.stringify(data || {});
+    //     }
+
+    //     return $.ajax({
+    //         type: "PUT",
+    //         url: url,
+    //         contentType: "application/json",
+    //         processData: false, // tell jQuery not to process
+    //         data: data,
+    //         success: function (data) {
+    //             if (typeof(callback)==="function") {
+    //                 callback(data);
+    //             }
+    //         }
+
+    //     });
+    // };
+
+    WebApp.prototype.Update2 =  function (url, data) {
+        /*
+        Sends `data` to the `url` in a PUT request
+        */
+        return webapp._send_request_with_body(url, data, 'PUT');
+    };
+
 
     WebApp.prototype.format_date = function (date_str) {
         /*
@@ -662,7 +703,6 @@
     WebApp.prototype.invoke_async_action = function (view, $link) {
         var webapp = this,
             meth = webapp.Read,
-            need_send_data = false,
             callback = function () {
 
 				if(!$link.hasClass("webappHideSpinner")) {
@@ -684,13 +724,10 @@
 
         if ($link.hasClass("webappMethodDelete")) {
             meth = webapp.Delete;
-            need_send_data = false;
         } else if ($link.hasClass("webappMethodPut")) {
-            meth = webapp.Update;
-            need_send_data = true;
+            meth = webapp.Update2;
         } else if ($link.hasClass("webappMethodPost")) {
             meth = webapp.Create;
-            need_send_data = true;
         }
 
 
@@ -718,15 +755,10 @@
 
         }
 
-        /// the signatures of webapp.Read and webapp.Delete
-        /// require 2 parameters - url and callback, while
-        /// webapp.Create and webapp.Update also accept `data`
-        /// parameter which unfortunately is in the middle
-        /// we may need to refactor this because it's kinda ugly
-        if (need_send_data) {
-            meth($link.attr('href'), data, callback);
+        if (meth === webapp.Read) {
+            meth($link.attr('href'), $link.data('invalidated_by')).done(callback);
         } else {
-            meth($link.attr('href'), callback);
+            meth($link.attr('href'), data).done(callback);
         }
 
         if ($link.hasClass("webappGoBack")) {
@@ -735,6 +767,76 @@
         return false;
     };
 
+
+    /* CACHING */
+
+    WebApp.prototype.get_cached_ajax = function (use_cache, invalidated_by, options) {
+        /*
+        webapp maintains a cache of
+        */
+        var self = this,
+            cached = self.request_cache[options.url],
+            ajax;
+
+        if (use_cache && cached) {
+            console.log("HIT", options.url);
+            cached.used += 1;
+            return cached.ajax; // make sure we don't do cache invalidation
+        }
+
+        if (!use_cache) {
+            console.log("NO CACHE: ", options.url);
+            ajax = $.ajax(options);
+        } else {
+            console.log("MISS", options.url);
+            ajax = $.ajax(options);
+            self.request_cache[options.url] = {
+                ajax: ajax,
+                invalidated_by: invalidated_by,
+                used: 1
+            };
+
+            $.each(invalidated_by || ['*'], function (idx, type) {
+                if (!self.request_cache_by_type[type]) {
+                    self.request_cache_by_type[type] = [];
+                }
+                self.request_cache_by_type[type].push(options.url);
+            });
+        }
+
+        return ajax.done(function (data) {
+            /* invalidate the cache  */
+            if (data.__recently_modified__) {
+                console.log("INVALIDATING");
+                webapp._purge_cache(data.__recently_modified__, data.__recently_modified_timestamp__);
+            }
+        });
+    };
+
+    WebApp.prototype._purge_cache = function (invalidated_by, timestamp) {
+        var self = this;
+        console.log("PURGING: ", invalidated_by);
+        invalidated_by = invalidated_by || [];
+        if (invalidated_by.indexOf('*') === -1) {
+            invalidated_by.push('*'); // '*' entries are purged always
+        }
+        $.each(invalidated_by, function (idx, type) {
+            if (self.request_cache_by_type[type]) {
+
+                $.each(self.request_cache_by_type[type], function (idx, url) {
+                    delete self.request_cache[url];
+                });
+
+                delete self.request_cache_by_type[type];
+            }
+        });
+        $.removeCookie('last_changed', {path: '/'});
+        $.cookie('last_changed', timestamp, {path: '/'});
+        console.log($.cookie('last_changed'));
+
+    };
+
+    /* END CACHING */
 
 
     // ----------------------------------------------------------------------- //
