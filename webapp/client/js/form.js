@@ -21,7 +21,8 @@
             http_method: "PUT",
             need_load_data: true,
             submit_action: 'redirect',
-            auto_fill: true
+            auto_fill: true,
+            use_cache: false
         }, options);
 
         webapp.Template.apply(this, [opts]);
@@ -488,7 +489,7 @@
         /// empty 'from' url signals that we shouldn't attempt to load the data
         /// just yet (i.e. a master listbox was not loaded yet)
         if (from) {
-            webapp.Read(from, function (data) {
+            webapp.Read(from, $select.data('invalidated_by')).done(function (data) {
                 // keep the options marked with class="preserve"
                 $select.children(":not(.preserve)").remove();
                 if (!$select.children().length) {
