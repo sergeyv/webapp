@@ -119,6 +119,7 @@ class FormAwareMixin(object):
             data_format_obj = data_format_factory()
             data_format_obj.__name__ = name
             data_format_obj.__parent__ = self
+            data_format_obj.__acl__ = data_format_obj.get_acl()
             return data_format_obj
 
         return crud.Traversable.__getitem__(self, name)

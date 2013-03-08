@@ -108,9 +108,12 @@ class DataFormatBase(object):
         else:
             return "<%s wrapping >" % self.__class__.__name__
 
-    @property
-    def __acl__(self):
-        return getattr(self.structure, '__acl__', [])
+    def get_acl( self ):
+        acl = getattr( self.structure, '__acl__', [] )
+        
+        if callable( acl ):
+            return acl( self )
+        return acl
 
     def _type_deserialize_string(self, value):
         # Convert empty strings to NULLs

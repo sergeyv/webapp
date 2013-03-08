@@ -469,6 +469,7 @@
             if (!$select.hasClass('required')) {
                 opts.allow_single_deselect = true;
             }
+            opts.inherit_select_classes = true;
             $select.addClass("chosenInitialized").chosen(opts);
             self.hideListbox($select);
             self.reloadLoadable($select);
