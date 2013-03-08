@@ -779,16 +779,16 @@
             ajax;
 
         if (use_cache && cached) {
-            console.log("FROM CACHE", options.url);
+            console.log("HIT", options.url);
             cached.used += 1;
             return cached.ajax; // make sure we don't do cache invalidation
         }
 
         if (!use_cache) {
-            console.log("NOT USING CACHE: ", options.url);
+            console.log("NO CACHE: ", options.url);
             ajax = $.ajax(options);
         } else {
-            console.log("CACHE MISS", options.url);
+            console.log("MISS", options.url);
             ajax = $.ajax(options);
             self.request_cache[options.url] = {
                 ajax: ajax,
@@ -796,7 +796,7 @@
                 used: 1
             };
 
-            $.each(invalidated_by || [], function (idx, type) {
+            $.each(invalidated_by || ['*'], function (idx, type) {
                 if (!self.request_cache_by_type[type]) {
                     self.request_cache_by_type[type] = [];
                 }
@@ -816,8 +816,11 @@
     WebApp.prototype._purge_cache = function (invalidated_by, timestamp) {
         var self = this;
         console.log("PURGING: ", invalidated_by);
-        invalidated_by.push('*'); // '*' entries are purged always
-        $.each(invalidated_by || [], function (idx, type) {
+        invalidated_by = invalidated_by || [];
+        if (invalidated_by.indexOf('*') === -1) {
+            invalidated_by.push('*'); // '*' entries are purged always
+        }
+        $.each(invalidated_by, function (idx, type) {
             if (self.request_cache_by_type[type]) {
 
                 $.each(self.request_cache_by_type[type], function (idx, url) {

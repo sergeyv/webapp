@@ -63,7 +63,7 @@ def _add_last_changed(data, request):
     # TODOXXX: this introduces a dependency on models, KitovuCommon etc.
     # Need to somehow factor out
 
-    TS_FORMAT = '%Y-%m-%d-%H-%M-%S'  # dashes are to avoid bothering with cookie urlencoding
+    TS_FORMAT = '%Y-%m-%d-%H-%M-%S.%f'  # dashes are to avoid bothering with cookie urlencoding
 
     if not (isinstance(data, dict)):
         print bcolors.FAIL + "The response at " + request.url + " does not return a JSON dict" + bcolors.ENDC
@@ -81,7 +81,7 @@ def _add_last_changed(data, request):
         try:
             since = datetime.strptime(since, TS_FORMAT)
         except ValueError:
-            since = datetime.strptime('1900-01-01-00-00-00', TS_FORMAT)
+            since = datetime.strptime('1900-01-01-00-00-00.000', TS_FORMAT)
         print bcolors.FAIL + ("Since %s" % since) + bcolors.ENDC
         query = query.filter(LastChangedItem.modified > since)
     # TODO: re-enable later
