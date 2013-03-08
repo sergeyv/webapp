@@ -156,6 +156,7 @@
                     self.event.popup_success_callback(self.event.parameters);
                 }
                 $('body').off('click.formCancelLink', ".formCancelLink");
+                return false; // stops it from submitting the form
             });
         } else if (!self.event.display_mode) {
 
