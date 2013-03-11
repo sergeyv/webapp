@@ -161,7 +161,7 @@
         } else if (view.event.display_mode === "modal") {
 
             var $modal =
-            $('<div class="modal hide fade" tabindex="-1" role="dialog" >' +
+            $('<div class="modal hide" tabindex="-1" role="dialog" >' +
             '  <div class="modal-header">' +
             '    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
             '  </div>' +
