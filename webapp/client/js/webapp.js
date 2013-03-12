@@ -811,12 +811,12 @@
             */
             if (data && (typeof data === "object") && data.__recently_modified__) {
                 console.log("INVALIDATING");
-                webapp._purge_cache(data.__recently_modified__, data.__recently_modified_timestamp__);
+                webapp.purge_cache(data.__recently_modified__, data.__recently_modified_timestamp__);
             }
         });
     };
 
-    WebApp.prototype._purge_cache = function (invalidated_by, timestamp) {
+    WebApp.prototype.purge_cache = function (invalidated_by, timestamp) {
         var self = this;
         console.log("PURGING: ", invalidated_by);
         invalidated_by = invalidated_by || [];
@@ -833,9 +833,12 @@
                 delete self.request_cache_by_type[type];
             }
         });
-        $.removeCookie('last_changed', {path: '/'});
-        $.cookie('last_changed', timestamp, {path: '/'});
-        console.log($.cookie('last_changed'));
+
+        if (timestamp) {
+            $.removeCookie('last_changed', {path: '/'});
+            $.cookie('last_changed', timestamp, {path: '/'});
+            console.log($.cookie('last_changed'));
+        }
 
     };
 

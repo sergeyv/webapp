@@ -43,7 +43,7 @@ The returned object is the same "deferred" returned by jQuery's $.ajax, and it h
       }
    );
 
-The actual cache invalidation is done by `webapp._purge_cache(invalidated_by, timestamp)` function - whenever it sees `__recently_modified__` key in the data returned by any request, it invalidates all cached requests stored for those types,
+The actual cache invalidation is done by `webapp.purge_cache(invalidated_by, timestamp)` function - whenever it sees `__recently_modified__` key in the data returned by any request, it invalidates all cached requests stored for those types,
 and uses `__recently_modified_timestamp__` value to set a cookie which is used by the `webapp.views.rest._add_last_changed` on the server (see above) to only show changes since the last update.
 
 Apart from specifying a type, it is also possible to specify '*' wildcard, in which case the cached request will be purged whenever the server says _any_ change happened.
