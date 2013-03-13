@@ -818,7 +818,7 @@
             invalidated_by.push('*'); // '*' entries are purged always
         }
         $.each(invalidated_by, function (idx, type) {
-            console.log("PURGING: ", invalidated_by);
+            console.log("PURGING: ", type);
             if (self.request_cache_by_type[type]) {
 
                 $.each(self.request_cache_by_type[type], function (idx, url) {
