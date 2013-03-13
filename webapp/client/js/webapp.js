@@ -59,6 +59,8 @@
 
         this.request_cache = {};
         this.request_cache_by_type = {};
+        this.served_cached_requests = 0;
+        this.served_total_requests = 0;
 
         this.showMessage = function (msg, title) {
             /*
@@ -588,18 +590,6 @@
         );
     };
 
-    // WebApp.prototype.Delete =  function (url, callback) {
-
-    //     return $.ajax({
-    //         type: "DELETE",
-    //         url: url,
-    //         success: function (data) {
-    //             return callback(data);
-    //         }
-
-    //     });
-    // };
-
     WebApp.prototype._send_request_with_body = function (url, data, method) {
         if (typeof data !== "string") {
             data = JSON.stringify(data || {});
@@ -751,11 +741,33 @@
         */
         var self = this,
             cached = self.request_cache[options.url],
-            ajax;
+            ajax,
+            update_stats = function () {
+                $("#inconspicuous-caching-stats").text(
+                    self.served_cached_requests + '/' + self.served_total_requests +
+                    ' (' +
+                    (self.served_cached_requests / self.served_total_requests * 100).toFixed(1) +
+                    '%)'
+                );
+            };
+
+        self.served_total_requests += 1;
 
         if (use_cache && cached) {
             console.log("HIT", options.url);
             cached.used += 1;
+            /*if (cached.ajax.isResolved()) {
+                console.log("mocking deferred");
+                return {
+                    done: function (callback) {
+                        console.log("mocking deferred");
+                        callback(cached.data);
+                        return this;
+                    }
+                };
+            }*/
+            self.served_cached_requests += 1;
+            update_stats();
             return cached.ajax; // make sure we don't do cache invalidation
         }
 
@@ -768,8 +780,10 @@
             self.request_cache[options.url] = {
                 ajax: ajax,
                 invalidated_by: invalidated_by,
-                used: 1
+                used: 1/*,
+                data: null*/
             };
+            update_stats();
 
             $.each(invalidated_by || ['*'], function (idx, type) {
                 if (!self.request_cache_by_type[type]) {
@@ -782,23 +796,29 @@
         return ajax.done(function (data) {
             /*
             invalidate the cache, do not fail if the client returns
-            something which is not a dict
+            somethin.request_cache[options.url]g which is not a dict
             */
+            // self.request_cache[options.url].data = data;
+            console.log("AJAX FINISHED:", options.url);
             if (data && (typeof data === "object") && data.__recently_modified__) {
-                console.log("INVALIDATING");
+                console.log("INVALIDATING", data.__recently_modified__);
                 webapp.purge_cache(data.__recently_modified__, data.__recently_modified_timestamp__);
+            } else if (typeof data !== "object") {
+                console.log("data is not a json dict", data);
+            } else {
+                console.log("nothing to invalidate");
             }
         });
     };
 
     WebApp.prototype.purge_cache = function (invalidated_by, timestamp) {
         var self = this;
-        console.log("PURGING: ", invalidated_by);
         invalidated_by = invalidated_by || [];
         if (invalidated_by.indexOf('*') === -1) {
             invalidated_by.push('*'); // '*' entries are purged always
         }
         $.each(invalidated_by, function (idx, type) {
+            console.log("PURGING: ", invalidated_by);
             if (self.request_cache_by_type[type]) {
 
                 $.each(self.request_cache_by_type[type], function (idx, url) {
