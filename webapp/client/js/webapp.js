@@ -641,32 +641,7 @@
         return webapp._send_request_with_body(url, data, 'DELETE');
     };
 
-    // WebApp.prototype.Update =  function (url, data, callback) {
-    //     /*
-    //     TODOXXX: replace everywhere with .Update2
-    //     also replace .Create, .Read and .Delete to use .get_cached_ajax()
-    //     */
-
-    //     if (typeof data !== "string") {
-    //         data = JSON.stringify(data || {});
-    //     }
-
-    //     return $.ajax({
-    //         type: "PUT",
-    //         url: url,
-    //         contentType: "application/json",
-    //         processData: false, // tell jQuery not to process
-    //         data: data,
-    //         success: function (data) {
-    //             if (typeof(callback)==="function") {
-    //                 callback(data);
-    //             }
-    //         }
-
-    //     });
-    // };
-
-    WebApp.prototype.Update2 =  function (url, data) {
+    WebApp.prototype.Update =  function (url, data) {
         /*
         Sends `data` to the `url` in a PUT request
         */
@@ -706,7 +681,7 @@
             callback = function () {
 
 				if(!$link.hasClass("webappHideSpinner")) {
-                	$link.addClass("asyncTaskSent");
+                    $link.addClass("asyncTaskSent");
 				}
                 /// find all classes which start with webappOnSuccess
                 /// if found, it expects it to be in a form webappOnSuccess-methodName.
@@ -725,7 +700,7 @@
         if ($link.hasClass("webappMethodDelete")) {
             meth = webapp.Delete;
         } else if ($link.hasClass("webappMethodPut")) {
-            meth = webapp.Update2;
+            meth = webapp.Update;
         } else if ($link.hasClass("webappMethodPost")) {
             meth = webapp.Create;
         }

@@ -585,7 +585,7 @@
         var self = this,
             form_data = self.form.serializeObject(),
             item_id = self.event.parameters.item_id || 'new',
-            meth = webapp.Update2;
+            meth = webapp.Update;
 
         if (self.options.http_method === "POST") {
             meth = webapp.Create;
