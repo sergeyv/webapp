@@ -385,7 +385,7 @@
 
             if(webapp.flash_messages[0].type == 'INFO') { // only clear and append if not using pre-rendered flash
                 msg_container.children().remove();
-                msg_container.toggleClass('webappHideFlash'); // reset just in case
+                // msg_container.toggleClass('webappHideFlash'); // reset just in case
 
                 $.each(webapp.flash_messages, function (idx, msg) {
                     msg_container.append('<div class="alert">' +

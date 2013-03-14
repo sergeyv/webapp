@@ -839,6 +839,9 @@
 
     /* END CACHING */
 
+    WebApp.prototype.urlsafe_json = function (obj) {
+        return encodeURIComponent(JSON.stringify(obj));
+    };
 
     // ----------------------------------------------------------------------- //
     // ----------------------------------------------------------------------- //
