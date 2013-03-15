@@ -45,6 +45,7 @@
         });
     };
 
+
     Form.prototype.setValidationRules = function () {
         var self = this,
             rules = $.extend({}, webapp.getValidationRules(self.options.identifier)); // make a copy
@@ -608,7 +609,9 @@
 
                 if (self.event.display_mode) {
                     self.dismiss();
-                    if (self.event.popup_success_callback) {
+                    if (self.options.before_dismiss) {
+                        self.options.before_dismiss.apply(self, [data]);
+                    } else if (self.event.popup_success_callback) {
                         self.event.popup_success_callback(self.event.parameters);
                     }
                 } else {
