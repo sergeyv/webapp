@@ -186,6 +186,19 @@
                 self.options.after_view_shown.apply(self);
             }
         }
+
+        /* if an expandable contains too little text we remove the
+        .expandable class and show it as is*/
+        $.each(self.view.find('.expandable'), function (idx, elem) {
+            var $exp = $(this);
+            // the height should be slightly less than 145 px defined in
+            if ($exp.height() > 200) {
+                $exp.addClass('long');
+            } else {
+                $exp.find('.read-more').remove();
+            }
+        });
+
     };
 
 
@@ -224,6 +237,12 @@
         var self = this,
             deferred;
 
+        if (self.options.partials) {
+            $.each(self.options.partials, function (idx, partial) {
+                partial.parent_is_reloading();
+            });
+        }
+
         /// make sure we initiate template/json loading before we
         /// start loading the partials. The deferred may finish immediately
         /// if there's nothing to load (the template has been cached
@@ -249,11 +268,16 @@
         });
     };
 
+    Template.prototype.parent_is_reloading = function () {
+        //// TODOXXX: save the DOM node
+    };
 
     Template.prototype.update_data = function (data) {
         /*
         updates the data and re-renders the view - useful when some ajax
         call returns (partial) data and we want to refresh the view
+
+        TODOXXX: Not used anywhere, not clear how it will work with caching
         */
         $.extend(this.data, data);
         this.render();

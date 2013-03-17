@@ -73,7 +73,7 @@
             url += "@" + self.options.data_format;
         }
 
-        /* a view can define an function to provide additional rest parameters */
+        /* a view can define a function to provide additional rest parameters */
         /* TODOXXX: this has been copied from View.collectRestParams */
         if (self.options.rest_params_method) {
             $.each(self.options.rest_params_method.apply(self), function (key, value) {

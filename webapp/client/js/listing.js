@@ -191,9 +191,13 @@
             total = self.data.total_count,
             batch_size = self.event.uri_args.batch_size || self.options.batch_size,
             // num_loaded = self.event.num_loaded || self.data.this_batch_count || self.data.items.length,
-            url = self.getRestUrl('with-params', undefined, {batch_start: self.data.next_batch_start}),
+            url,
             blob,
             fragment;
+
+
+        self.event.uri_args.batch_start = self.data.next_batch_start;
+        url = self.getRestUrl('with-params');
 
         self.view.find('.infiniteScrollMore').show();
 
