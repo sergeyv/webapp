@@ -247,7 +247,7 @@ def context_implements(*types):
     renderer="better_json",
     accept="text/plain",
     custom_predicates=(context_implements(IDataFormatCreator),)
-    )
+)
 def json_rest_create_f(context, request):
 
     # for i in range(10):
