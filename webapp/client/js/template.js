@@ -87,27 +87,12 @@
                 url: self._get_template_load_url(),
                 cache: false /* do not cache templates */
             }));
-            /*calls.push(
-                webapp.get_cached_ajax(
-                    self.options.use_cache,
-                    self.options.invalidated_by,
-                    {
-                        url: self._get_template_load_url(),
-                        cache: true
-                    }
-                )
-            );*/
+
         } else {
             calls.push(null);
         }
 
         if (self.options.need_load_data) {
-            /*calls.push(
-                $.ajax({
-                    type: "GET",
-                    url: self.getRestUrl("with-params"),
-                    cache: true
-                }));*/
             calls.push(
                 webapp.get_cached_ajax(
                     self.options.use_cache,
