@@ -76,11 +76,18 @@
         the URL by clicking on a tab - we preserve the previous uri_args
         which shows the page as it was when we left it the last time.
 
-        TODOXXX: need also to modify the actual address string!
+        This only makes sense for the listing and is
+        controlled by preserve_uri_args option
         */
         var old_event = view.event||{uri_args:{}};
-        if ($.isEmptyObject(event.uri_args)) {
-            event.uri_args = old_event.uri_args;
+        if ($.isEmptyObject(event.uri_args) &&
+            old_event.hash &&
+            old_event.hash != event.hash &&
+            view.options.preserve_uri_args) {
+            //event.uri_args = old_event.uri_args;
+            if (old_event.hash != event.hash) {
+                return webapp.relocateTo(old_event.hash);
+            }
         }
 
         view.event = event;

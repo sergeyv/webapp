@@ -7,8 +7,10 @@
         var opts = $.extend({
             batch_size: 50,
             searchable: true,
-            need_filters: false, //add a Filters partial
-            scroll: 'pager' // can be 'pager', next-prev', 'infinite', 'click-for-more'
+            /*need_filters: false, //add a Filters partial*/
+            scroll: 'pager', // can be 'pager', next-prev', 'infinite', 'click-for-more'
+            preserve_uri_args: true // if a user visits a page for the second time,
+                                    // we want to show the view in the same state the next time
         }, options);
         webapp.Template.apply(this, [opts]);
 
@@ -30,11 +32,11 @@
             $node;
 
         ///
-        if (this.options.need_filters) {
+        /*if (this.options.need_filters) {
             this.options.partials.filters = new webapp.Filters({
                 rest_service_root: self.getRestUrl()  + "/filters"
             });
-        }
+        }*/
 
         // this is how to call a 'super' method in JS
         webapp.Template.prototype.init.call(this);
