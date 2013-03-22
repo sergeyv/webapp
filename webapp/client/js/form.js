@@ -572,7 +572,7 @@
         //}
 
         //$('.chzn-drop .chzn-search input[type="text"]').focus();
-        $select.next().find('input[type="text"]').focus();
+        /*$select.next().find('input[type="text"]').focus();*/
 
     };
 
