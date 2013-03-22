@@ -310,6 +310,19 @@
         }
     };
 
+
+    Listing.prototype.aboutToBeHidden = function () {
+        /*
+        Turn off the infinite scroll listener
+        */
+        var self = this;
+
+        console.log("aboutToBeHidden");
+        if (self.options.scroll === 'infinite') {
+            $(window).off('scroll.infinite resize.infinite');
+        }
+    };
+
     webapp.Listing = Listing;
 
 }(jQuery, webapp));
