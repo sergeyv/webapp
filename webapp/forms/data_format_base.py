@@ -108,11 +108,11 @@ class DataFormatBase(object):
         else:
             return "<%s wrapping >" % self.__class__.__name__
 
-    def get_acl( self ):
-        acl = getattr( self.structure, '__acl__', [] )
+    def get_acl(self):
+        acl = getattr(self.structure, '__acl__', [])
 
-        if callable( acl ):
-            return acl( self )
+        if callable(acl):
+            return acl(self)
         return acl
 
     def _type_deserialize_string(self, value):
