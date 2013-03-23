@@ -110,7 +110,7 @@ class DataFormatBase(object):
 
     def get_acl( self ):
         acl = getattr( self.structure, '__acl__', [] )
-        
+
         if callable( acl ):
             return acl( self )
         return acl
@@ -123,8 +123,10 @@ class DataFormatBase(object):
         if not value:
             return None
 
-        return unicode(value).encode('utf-8')
-        #return str(value)  # strangely, this does not cause the test to fail either
+        # SA presents values which are read from the database
+        # as unicode, so setting an encoded string, while working in general,
+        # fails when trying to join new and existing fields etc.
+        return unicode(value)  # .encode('utf-8')
 
     def _type_deserialize_int(self, value):
         if value:

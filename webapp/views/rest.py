@@ -70,8 +70,6 @@ def _add_last_changed(data, request):
         print bcolors.WARNING + "Just a nagging reminder to fix this - all views should return a dict" + bcolors.ENDC
         return data
 
-    # import pdb; pdb.set_trace()
-
     from models.last_changed import LastChangedItem
     since = request.cookies.get('last_changed', None)
     session = request.dbsession
@@ -250,10 +248,6 @@ def context_implements(*types):
 )
 def json_rest_create_f(context, request):
 
-    # for i in range(10):
-    #     print "z..."
-    #     time.sleep(1)
-
     data = context.create(request)
     data = _add_flash_messages(data, request)
     data = _add_last_changed(data, request)
@@ -294,7 +288,6 @@ def json_rest_get_f(context, request):
 def json_rest_update_f(context, request):
     """
     """
-
     data = context.update(request)
     data = _add_flash_messages(data, request)
     data = _add_last_changed(data, request)
