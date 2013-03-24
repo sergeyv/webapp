@@ -232,6 +232,13 @@
         });
     };
 
+    Listing.prototype.reload = function () {
+        var self = this;
+        if (self.options.scroll == 'infinite' || self.options.scroll == 'click-for-more') {
+            self.event.uri_args.batch_start = 0;
+        }
+        webapp.Template.prototype.reload.call(this);
+    };
 
     Listing.prototype.augmentView = function () {
 

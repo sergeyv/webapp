@@ -72,6 +72,7 @@ class AssetRegistry(object):
     "/webapp.client/js/template.js",
     "/webapp.client/js/form.js",
     "/webapp.client/js/listing.js",
+    "/webapp.client/js/infinite_listing.js",
     "/webapp.client/js/filters.js",
     "/webapp.client/js/partial.js",
 
