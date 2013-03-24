@@ -42,6 +42,13 @@
         return '<div class="infiniteScrollMore"><span> </span> Loading...</div><div class="pagination"></div>';
     };
 
+    InfiniteListing.prototype.reload = function () {
+        var self = this;
+        delete self.data;
+        webapp.Template.prototype.reload.call(this);
+    };
+
+
     InfiniteListing.prototype.load_more = function (callback) {
         /*
         Loads the next portion of the listing and attaches it to the table,
