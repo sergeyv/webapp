@@ -44,6 +44,7 @@
 
     InfiniteListing.prototype.reload = function () {
         var self = this;
+        // if we don't delete it, the view will use next_batch_start from data
         delete self.data;
         webapp.Template.prototype.reload.call(this);
     };
