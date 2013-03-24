@@ -529,13 +529,45 @@
     /* end stats stuff */
 
 
-    WebApp.prototype.popupView = function (url, mode, success_callback) {
+    WebApp.prototype.popupView = function (url, mode, initiating_element, success_callback) {
         var hash = webapp.normalizeHash(url),
             event = webapp.getEventContextForRoute(hash);
+
+        url = (function (l) {
+                    /* remove the part of the url before the hash */
+                    var parts = l.split('#');
+                    if (parts.length === 2) {
+                        return "#" + parts[1];
+                    }
+                    return l;
+                }(url));
 
         mode = mode || "popup";
         event.popup_success_callback = success_callback;
         event.display_mode = mode;
+        event.initiating_element = initiating_element;
+        if (initiating_element) {
+            event.inline_container_selector = initiating_element.data('container');
+        }
+
+        event.popup_success_callback = success_callback || function (server_response) {
+            var current_view = webapp.controller.currentView;
+            /// find all classes which start with webappOnSuccess
+            /// if found, it expects it to be in a form
+            /// webappOnSuccess-methodName.
+            /// If the view has such method,
+            /// it is invoked when the call succeeds
+            $(initiating_element.attr('class').split(' ')).each(function (idx, val) {
+                var parts = val.split('-'),
+                    fn;
+                if (parts.length === 2 &&
+                        parts[0] === "webappOnSuccess" &&
+                        current_view[parts[1]]) {
+                    fn = current_view[parts[1]];
+                    fn.apply(current_view);
+                }
+            });
+        };
 
         if (event.mapping) {
             event.mapping.controller.showSecondaryView(event.mapping.view, event, mode);

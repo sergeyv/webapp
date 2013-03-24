@@ -123,32 +123,20 @@
         });*/
 
 
-
-
-
-
-
-
         /* TODO: this is supposed to reload the listbox when the popup is
          submitted. This does not currently work.
 
          Fix. */
 
 
-
-
-
-
-
-
-        self.view.find(".webappPopup").click(function () {
+        /*self.view.find(".webappPopup").click(function () {
             var $link = $(this);
             return webapp.popupView($link.attr('href'), "modal", function (server_response) {
                 var $select = $link.parent().children("select");
                 $select.data("original_value", server_response.item_id);
                 self.reloadLoadable($select);
             });
-        });
+        });*/
 
 
         if (self.event.display_mode === "popup") {
