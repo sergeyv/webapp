@@ -13,7 +13,7 @@
         auto_fill - normally, a form is rendered first and then fill_form method
             finds the controls and fills them with values from this.data. For
             forms rendered from a custom template we don't need this behaviour
-            and in fact it may interfere with the manually
+            and in fact it may interfere with the manually set values
         */
         var opts = $.extend({
             title: "Add/Edit Item",
@@ -217,7 +217,6 @@
 
 
         self.bindFormControls();
-        self.populateLoadables();
 
         // Init formish form
         self.view.formish();
@@ -241,6 +240,12 @@
         if (self.options.auto_fill) {
             self.fill_form(id_root, self.data);
         }
+
+        /* should go after fill_form because the latter sets orig_value
+        - in its abscence things behave funny when the vocab request finishes
+        instantly because of caching
+        */
+        self.populateLoadables();
 
         if (self.options.before_view_shown) {
             self.options.before_view_shown.apply(self);
