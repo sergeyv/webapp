@@ -511,50 +511,8 @@
             .off("click", ".webappPopup")
             .on("click", ".webappPopup", function () {
 
-            /* TODOXXX: Unify this with webapp.popupView
-               and make this code to use that method */
-
-            var $link = $(this),
-                href = (function (l) {
-                    /* remove the part of the url before the hash */
-                    var parts = l.split('#');
-                    if (parts.length === 2) {
-                        return "#" + parts[1];
-                    }
-                    return l;
-                }($link.attr("href"))),
-                hash = webapp.normalizeHash(href),
-                event = webapp.getEventContextForRoute(hash),
-                current_view = webapp.controller.currentView;
-
-            if (!event.mapping) {
-                webapp.showMessage("POPUP VIEW NOT FOUND: "  + hash);
-            }
-
-            event.popup_success_callback = function (added_id) {
-                /// find all classes which start with webappOnSuccess
-                /// if found, it expects it to be in a form
-                /// webappOnSuccess-methodName.
-                /// If the view has such method,
-                /// it is invoked when the call succeeds
-                $($link.attr('class').split(' ')).each(function (idx, val) {
-                    var parts = val.split('-'),
-                        fn;
-                    if (parts.length === 2 &&
-                            parts[0] === "webappOnSuccess" &&
-                            current_view[parts[1]]) {
-                        fn = current_view[parts[1]];
-                        fn.apply(current_view);
-                    }
-                });
-            };
-
-            event.initiating_element = $link;
-            event.display_mode = $link.data('display') || "popup";
-            event.inline_container_selector = $link.data('container');
-
-            webapp.controller.showSecondaryView(event.mapping.view, event);
-
+            var $link = $(this);
+            webapp.popupView($link.attr("href"), $link.data('display'), $link);
             return false;
         });
     });
