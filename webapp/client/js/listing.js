@@ -240,6 +240,47 @@
         webapp.Template.prototype.reload.call(this);
     };
 
+
+    Listing.prototype.new_sort_url = function (value) {
+        /* returns the current url with sort_on and sort_order values changed */
+        var args = $.extend({}, this.event.uri_args); // deep copy
+        if (args.sort_on === value) {
+            if (args.sort_order === 'desc') {
+                args.sort_order = 'asc';
+            } else {
+                args.sort_order = 'desc';
+            }
+        }
+        args.sort_on = value;
+        args.batch_start = 0; // we want to go to the first page if sorting changes
+        return this.modified_url(args);
+    };
+
+    Listing.prototype.new_filter_url = function (attr, val, extra_args) {
+        /* returns the current url with one of the filters changed */
+        // deep-copy
+        var args = $.extend({}, this.event.uri_args);
+        args[attr] = val;
+
+        // extra_args optional parameter to be add more args to the url
+        // useful for overriding the cached filter options in the case of some portlets
+        extra_args = (typeof extra_args === "undefined") ? "" : extra_args;
+        if(extra_args) {
+            $.each(extra_args, function(key, value) {
+                args[key] = value;
+            });
+        }
+
+        if (attr != 'batch_start') {
+            args.batch_start = 0;
+        }
+        // we want to go to the first page if filtering changes
+
+        return this.modified_url(args);
+    };
+
+
+
     Listing.prototype.augmentView = function () {
 
         var self = this;
