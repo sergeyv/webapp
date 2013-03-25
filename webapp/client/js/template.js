@@ -183,7 +183,6 @@
                 $exp.find('.read-more').remove();
             }
         });
-
     };
 
 
@@ -217,6 +216,7 @@
         /*
          * Loads JSON data and template (if necessarry)
          * and re-renders the view when they're loaded
+         * Returns the deferred used to load the data
          */
 
         var self = this,
@@ -251,6 +251,8 @@
         deferred.done(function () {
             self._ajax_finished.apply(self, arguments);
         });
+
+        return deferred;
     };
 
     Template.prototype.parent_is_reloading = function () {
