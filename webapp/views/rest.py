@@ -288,6 +288,8 @@ def json_rest_get_f(context, request):
 def json_rest_update_f(context, request):
     """
     """
+    dummy = request.json_body
+    print "Got json body: %s" % dummy
     print "01"
     data = context.update(request)
     print "02"
