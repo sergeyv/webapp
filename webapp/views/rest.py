@@ -288,10 +288,13 @@ def json_rest_get_f(context, request):
 def json_rest_update_f(context, request):
     """
     """
+    print "01"
     data = context.update(request)
+    print "02"
     data = _add_flash_messages(data, request)
+    print "03"
     data = _add_last_changed(data, request)
-
+    print "04"
     return data
 
 
@@ -307,8 +310,6 @@ def json_rest_list_f(context, request, permission=""):
     """
     """
     start = time.time()
-
-    # time.sleep(10);
 
     data = context.get_items_listing(request)
 
