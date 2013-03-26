@@ -36,18 +36,10 @@
         return this.modified_url(args);
     };
 
-    InfiniteListing.prototype.new_filter_url = function (attr, val, extra_args) {
-        /* returns the current url with one of the filters changed */
+    InfiniteListing.prototype.new_filter_url = function (attrs) {
+        /* returns the current url with one or more of the filters changed */
         // deep-copy
-        var args = $.extend({}, this.event.uri_args);
-        args[attr] = val;
-
-        // extra_args optional parameter to be add more args to the url
-        // useful for overriding the cached filter options in the case of some portlets
-        $.each(extra_args||[], function(key, value) {
-            args[key] = value;
-        });
-
+        var args = $.extend({}, this.event.uri_args, attrs);
         return this.modified_url(args);
     };
 
@@ -125,7 +117,7 @@
 
     InfiniteListing.prototype.augmentView = function () {
         var self = this,
-            $table = $(self.view).find('table.listingTable').require_one();
+            $table = $(self.view).find('table.listingTable');
         /*
         the plugin registers a global event listener which prevents it from
         gracefully disappearing when the view is reloaded, so we make sure

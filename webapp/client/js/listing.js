@@ -90,7 +90,7 @@
             /// prev link
             if (current > 0) {
                 bs = (current - 1) * batch_size;
-                output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '"> &laquo; </a></li>');
+                output.push('<li><a href="#' + self.new_filter_url({batch_start: bs}) + '"> &laquo; </a></li>');
             } else {
                 output.push('<li><span class="current"> &laquo; </span></li>');
             }
@@ -101,7 +101,7 @@
                         output.push('<li><span class="current">' + (i + 1) + '</span></li>');
                     } else {
                         bs = i * batch_size;
-                        output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '">' + (i + 1) + '</a></li>');
+                        output.push('<li><a href="#' + self.new_filter_url({batch_start: bs}) + '">' + (i + 1) + '</a></li>');
                     }
                 }
             }
@@ -109,7 +109,7 @@
             /// next link
             if (current < pages - 1) {
                 bs = (current + 1) * batch_size;
-                output.push('<li><a href="#' + self.new_filter_url('batch_start', bs) + '"> &raquo; </a></li>');
+                output.push('<li><a href="#' + self.new_filter_url({batch_start: bs}) + '"> &raquo; </a></li>');
             } else {
                 output.push('<li><span class="current"> &raquo; </span></li>');
             }
@@ -124,13 +124,13 @@
         /// more link
         if (pages > 1 && batch_size < 200) {
             bs = Math.min(Math.floor(batch_size * 2), 200);
-            output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">more</a>');
+            output.push('<a href="#' + self.new_filter_url({batch_size: bs}) + '" title="' + bs + ' per page">more</a>');
         }
 
         /// less link is shown even if there's just one page
         if (batch_size > 10) {
             bs = Math.max(Math.floor(batch_size / 2), 10);
-            output.push('<a href="#' + self.new_filter_url('batch_size', bs) + '" title="' + bs + ' per page">less</a>');
+            output.push('<a href="#' + self.new_filter_url({batch_size: bs}) + '" title="' + bs + ' per page">less</a>');
         }
 
         output.push("</div>");
@@ -157,7 +157,7 @@
             /// next link
             if (current < pages - 1) {
                 bs = (current + 1) * batch_size;
-                output.push('<li><a class="loadMoreLink" href="#' + self.new_filter_url('batch_start', bs) + '"> show more </a></li>');
+                output.push('<li><a class="loadMoreLink" href="#' + self.new_filter_url({batch_start: bs}) + '"> show more </a></li>');
             } else {
                 output.push('<li><span class="discreet">all items shown</span></li>');
             }
@@ -256,25 +256,15 @@
         return this.modified_url(args);
     };
 
-    Listing.prototype.new_filter_url = function (attr, val, extra_args) {
-        /* returns the current url with one of the filters changed */
+    Listing.prototype.new_filter_url = function (attrs) {
+        /* returns the current url with one or more of the filters changed */
         // deep-copy
-        var args = $.extend({}, this.event.uri_args);
-        args[attr] = val;
+        var args = $.extend({}, this.event.uri_args, attrs);
 
-        // extra_args optional parameter to be add more args to the url
-        // useful for overriding the cached filter options in the case of some portlets
-        extra_args = (typeof extra_args === "undefined") ? "" : extra_args;
-        if(extra_args) {
-            $.each(extra_args, function(key, value) {
-                args[key] = value;
-            });
-        }
-
-        if (attr != 'batch_start') {
+        // we want to go to the first page if filtering changes
+        if (!attrs.batch_start) {
             args.batch_start = 0;
         }
-        // we want to go to the first page if filtering changes
 
         return this.modified_url(args);
     };

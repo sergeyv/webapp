@@ -25,8 +25,10 @@
         /* .chosen() removed */
         self.view.find("select").change(function () {
             var $select = $(this),
-                url = self.new_filter_url("filter-"+$select.data("filter-id"), $select.val());
-            webapp.relocateTo(url);
+                args = {};
+
+            args["filter-" + $select.data("filter-id")] = $select.val();
+            webapp.relocateTo(self.new_filter_url(args));
         });
     };
 
