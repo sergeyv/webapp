@@ -116,7 +116,12 @@ def _weird_uwsgi_bug_workaround(request):
     The fix is to make sure the request body is getting read always
     which unfortunately has a small performance penalty
     """
-    return request.json_body
+
+    # it complains if the request does not contain valid json
+    try:
+        return request.json_body
+    except ValueError:
+        return None
 
 
 # TODOXXX: fix remote validation
@@ -197,8 +202,9 @@ def json_rest_delete_subitems(context, request):
     and attempt to delete the item itself
 
     """
+    _weird_uwsgi_bug_workaround(request)
     try:
-        params = json.loads(request.body)
+        params = request.json_body
         # Formish uses dotted syntax to deal with nested structures
         # we need to unflatten it
         params = dottedish.api.unflatten(params.items())
@@ -226,7 +232,7 @@ def json_rest_delete_item(context, request):
     When a DELETE request is sent to a Resource,
     it attempts to delete the item itself
     """
-
+    _weird_uwsgi_bug_workaround(request)
     item_id = context.delete_item(request, soft=getattr(context, '__soft_delete__', False))
 
     data = {'id': item_id}
@@ -265,6 +271,7 @@ def context_implements(*types):
 )
 def json_rest_create_f(context, request):
 
+    _weird_uwsgi_bug_workaround(request)
     data = context.create(request)
     data = _add_flash_messages(data, request)
     data = _add_last_changed(data, request)
@@ -305,16 +312,11 @@ def json_rest_get_f(context, request):
 def json_rest_update_f(context, request):
     """
     """
-    dummy = request.json_body
-    print "Got json body: %s" % dummy
-    print "01"
+    _weird_uwsgi_bug_workaround(request)
+
     data = context.update(request)
-    print "02"
     data = _add_flash_messages(data, request)
-    print "03"
     data = _add_last_changed(data, request)
-    print "04"
-    print "View returns: %s" % data
 
     return data
 
