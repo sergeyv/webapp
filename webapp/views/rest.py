@@ -101,6 +101,23 @@ def _add_last_changed(data, request):
     return data
 
 
+def _weird_uwsgi_bug_workaround(request):
+    """
+    There's a weird issue with UWSGI which results in the POST/PUT request
+    not returning any data if the python application didn't access the request
+    body - this is a side-effect of uwsgi trying to optimize things and nginx
+    not quite agreeing whether closing the socket without reading the data first
+    is a valid behaviour or a manifestation of the client (uwsgi) failing.
+
+    The issue is 3 years old already, so is unlikely to be fixed quickly
+    http://lists.unbit.it/pipermail/uwsgi/2010-June/000416.html
+    http://lists.unbit.it/pipermail/uwsgi/2011-February/001400.html
+
+    The fix is to make sure the request body is getting read always
+    which unfortunately has a small performance penalty
+    """
+    return request.json_body
+
 
 # TODOXXX: fix remote validation
 def json_rest_empty(context, request):
