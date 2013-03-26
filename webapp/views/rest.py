@@ -295,6 +295,8 @@ def json_rest_update_f(context, request):
     print "03"
     data = _add_last_changed(data, request)
     print "04"
+    print "View returns: %s" % data
+
     return data
 
 
