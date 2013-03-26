@@ -29,21 +29,12 @@
         return params;
     };
 
-    InfiniteListing.prototype.new_sort_url = function (value) {
-        /* returns the current url with sort_on and sort_order values changed */
-        var args = $.extend({}, this.event.uri_args); // deep copy
-        args.sort_on = value;
-        return this.modified_url(args);
-    };
-
     InfiniteListing.prototype.new_filter_url = function (attrs) {
         /* returns the current url with one or more of the filters changed */
         // deep-copy
         var args = $.extend({}, this.event.uri_args, attrs);
         return this.modified_url(args);
     };
-
-
 
     InfiniteListing.prototype.collectSelectedIds = function () {
         var checkboxes = this.view.find("input.multiEdit:checked"),
