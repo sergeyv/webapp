@@ -104,6 +104,7 @@
         ).done(function (data) {
             blob = self.render_data_return_html(self.template, data);
             fragment = $(blob).find("table.listingTable tbody:last");
+            $(fragment).css("border-top", "4px solid red");
             self.view.find("table.listingTable").append(fragment);
 
             /* update data */
@@ -123,25 +124,34 @@
     };
 
     InfiniteListing.prototype.augmentView = function () {
-        var self = this;
-        $(self.view).find('table.listingTable').infiniteScroll({
-            threshold: 500, /* start loading more when less than 500px of the scroll left at the bottom */
-            onEnd: function() {
-                $(".pagination").html('<span class="discreet">All ' + self.data.total_count + ' items shown</span>');
-            },
-            onBottom: function(callback) {
-                if (self.data.has_more) {
-                    self.load_more(function (fragment, data) {
-                        callback(data.has_more ? true : false); /* the plugin requires strictly true or false */
-                        /* this triggers another scroll event which solves the problem
-                        with the initial listing being too short for the scrollbar to appear
-                        - in this case the plugin will continue to load portions of data until
-                        we have enough to fill the whole screen  */
-                        $(window).trigger('scroll');
-                    });
+        var self = this,
+            $table = $(self.view).find('table.listingTable').require_one();
+        /*
+        the plugin registers a global event listener which prevents it from
+        gracefully disappearing when the view is reloaded, so we make sure
+        we unregister the previous event listener prior to initializing the plugin
+        */
+        $(window).off('scroll.infinite resize.infinite');
+        if (!$table.data('infinite-scroll-initalized')) {
+            $table.data('infinite-scroll-initalized', 'yes').infiniteScroll({
+                threshold: 500, /* start loading more when less than 500px of the scroll left at the bottom */
+                onEnd: function() {
+                    $(".pagination").html('<span class="discreet">All ' + self.data.total_count + ' items shown</span>');
+                },
+                onBottom: function(callback) {
+                    if (self.data.has_more) {
+                        self.load_more(function (fragment, data) {
+                            callback(data.has_more ? true : false); /* the plugin requires strictly true or false */
+                            /* this triggers another scroll event which solves the problem
+                            with the initial listing being too short for the scrollbar to appear
+                            - in this case the plugin will continue to load portions of data until
+                            we have enough to fill the whole screen  */
+                            $(window).trigger('scroll');
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
         $(window).trigger('scroll');
     };
 
@@ -150,12 +160,7 @@
         /*
         Turn off the infinite scroll listener
         */
-        var self = this;
-
-        console.log("aboutToBeHidden");
-        if (self.options.scroll === 'infinite') {
-            $(window).off('scroll.infinite resize.infinite');
-        }
+        $(window).off('scroll.infinite resize.infinite');
     };
 
     webapp.InfiniteListing = InfiniteListing;

@@ -828,17 +828,17 @@
         return ajax.done(function (data) {
             /*
             invalidate the cache, do not fail if the client returns
-            somethin.request_cache[options.url]g which is not a dict
+            something which is not a dict
             */
             // self.request_cache[options.url].data = data;
-            console.log("AJAX FINISHED:", options.url);
+            // console.log("AJAX FINISHED:", options.url);
             if (data && (typeof data === "object") && data.__recently_modified__) {
                 console.log("INVALIDATING", data.__recently_modified__);
                 webapp.purge_cache(data.__recently_modified__, data.__recently_modified_timestamp__);
             } else if (typeof data !== "object") {
                 console.log("data is not a json dict", data);
             } else {
-                console.log("nothing to invalidate");
+                // console.log("nothing to invalidate");
             }
         });
     };
