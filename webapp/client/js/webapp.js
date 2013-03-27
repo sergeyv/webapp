@@ -529,7 +529,7 @@
     /* end stats stuff */
 
 
-    WebApp.prototype.popupView = function (url, mode, initiating_element, success_callback) {
+    WebApp.prototype.popupView = function (url, mode, initiating_element, success_callback, custom_class_body) {
         var hash = webapp.normalizeHash(url),
             event = webapp.getEventContextForRoute(hash);
 
@@ -543,6 +543,8 @@
                 }(url));
 
         mode = mode || "popup";
+        custom_class_body = custom_class_body || "";
+        event.custom_class_body = custom_class_body;
         event.popup_success_callback = success_callback;
         event.display_mode = mode;
         event.initiating_element = initiating_element;

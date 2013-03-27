@@ -514,7 +514,7 @@
             .on("click", ".webappPopup", function () {
 
             var $link = $(this);
-            webapp.popupView($link.attr("href"), $link.data('display'), $link);
+            webapp.popupView($link.attr("href"), $link.data('display'), $link, undefined, $link.data('custom_class_body'));
             return false;
         });
     });

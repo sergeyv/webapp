@@ -172,7 +172,7 @@
             '  <div class="modal-header">' +
             '    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
             '  </div>' +
-            '  <div class="modal-body"></div>' +
+            '  <div class="modal-body ' + (view.event.custom_class_body || "") +'"></div>' +
             '  <!--div class="modal-footer"></div-->' +
             '</div>');
 
