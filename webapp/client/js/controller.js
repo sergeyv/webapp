@@ -200,12 +200,14 @@
             // self.currentView = view;
 
         } else if (view.event.display_mode === "popover") {
-
-            view.event.initiating_element.instant_popover({
+            var args = {
                 title: view.view.find('.primaryPageHeading').detach().text(),
                 content: view.view,
-                placement: 'bottom'
-            });
+                placement: 'bottom',
+                template: '<div class="popover"><div class="arrow"></div><div class="popover-inner ' + (view.event.custom_class_body || "") +'"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>'
+            }
+
+            view.event.initiating_element.instant_popover(args);
 
         } else if (view.event.display_mode === "inline") {
             $(view.event.inline_container_selector).require_one().html(view.view);
