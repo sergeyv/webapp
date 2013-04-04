@@ -177,7 +177,7 @@
         $.each(self.view.find('.expandable'), function (idx, elem) {
             var $exp = $(this);
             // the height should be slightly less than 145 px defined in
-            if ($exp.height() > 200) {
+            if ($exp.height() > 500) {
                 $exp.addClass('long');
             } else {
                 $exp.find('.read-more').remove();
