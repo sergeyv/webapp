@@ -877,6 +877,16 @@
         return encodeURIComponent(JSON.stringify(obj));
     };
 
+    WebApp.prototype.attrsafe_json = function (obj) {
+        /* converts a json object to a representaion
+        which is safe to use in a html attribute */
+        var s = JSON.stringify(obj);
+        if (s) {
+            s = s.replace(/\"/g, "&quot;");
+        }
+        return s;
+    };
+
     // ----------------------------------------------------------------------- //
     // ----------------------------------------------------------------------- //
 
