@@ -353,7 +353,7 @@ class DataFormatLister(DataFormatBase):
 
         # a structure can override get_items_query method
         if hasattr(structure, "get_items_query"):
-            query = structure.get_items_query(self, collection, order_by=order_by)
+            query = structure.get_items_query(self, request)
         else:
             query = collection.get_items_query(order_by=order_by)
 
