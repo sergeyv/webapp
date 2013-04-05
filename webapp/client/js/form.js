@@ -498,12 +498,17 @@
                 return (arg && typeof arg === 'object' &&
                         typeof arg.length === 'number' &&
                         !(arg.propertyIsEnumerable('length')));
-            };
+            },
+            invalidated_by = $select.data('invalidated_by');
 
         /// empty 'from' url signals that we shouldn't attempt to load the data
         /// just yet (i.e. a master listbox was not loaded yet)
         if (from) {
-            webapp.Read(from, $select.data('invalidated_by')).done(function (data) {
+            // invalidated_by is a string here but needs to be an array to work
+            if ( invalidated_by != undefined )
+                invalidated_by = invalidated_by.split(',')
+
+            webapp.Read(from, invalidated_by).done(function (data) {
                 // keep the options marked with class="preserve"
                 $select.children(":not(.preserve)").remove();
                 if (!$select.children().length) {
