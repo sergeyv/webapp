@@ -3,6 +3,7 @@
 
     function View(options) {
         this.options = $.extend({}, options);
+        this.event = {};
     }
 
     /// see http://phrogz.net/js/classes/OOPinJS.html for details
