@@ -54,12 +54,12 @@
          */
         var self = this;
 
-        if (self.options.partials) {
+        /*if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
                 partial.options.is_partial = true;
                 partial.parentView = self;
             });
-        }
+        }*/
 
         self.alreadyInitialized = true;
 
@@ -193,6 +193,14 @@
 
         if (!this.alreadyInitialized) {
             this.init();
+        }
+
+
+        if (self.options.partials) {
+            $.each(self.options.partials, function (idx, partial) {
+                partial.options.is_partial = true;
+                partial.parentView = self;
+            });
         }
 
         /// find or create the view container
