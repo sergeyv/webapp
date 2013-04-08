@@ -3,6 +3,10 @@
 
     function View(options) {
         this.options = $.extend({}, options);
+        /*
+        sometimes we want to call a view's method without showing the view first
+        - this works better if this.event exists, even if empty
+        */
         this.event = {};
     }
 
