@@ -649,11 +649,14 @@
         return false;
     };
 
+
+    /* TODOXXX: IS NOT CALLED FROM ANYWHERE */
     Form.prototype.refresh_listbox_vocab = function (url, listbox, addmore) {
         var self = this;
         /// query an id-value list form the server and populate
         /// a listbox
         $.getJSON(url, function (data) {
+            /* TODOXXX: DOES NOT EXIST ANYWHERE */
             self.populate_listbox(listbox, data, addmore);
         });
     };
