@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import InvalidRequestError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from .stats import SessionStatsBase, before_cursor_execute
+from .stats import SessionStatsBase, before_cursor_execute, begin
 
 _DBSession = None
 
@@ -126,7 +126,6 @@ class WebappBase(object):
         return get_session().query(cls).all()
 
 
-
 Base = declarative_base(cls=WebappBase)
 
 
@@ -137,8 +136,9 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
     # or move db stuff somewhere out of webapp
     from zope.sqlalchemy import ZopeTransactionExtension
 
-    engine = sa.create_engine(db_string, echo=False) #db_echo)
+    engine = sa.create_engine(db_string, echo=False)  # db_echo)
     event.listen(engine, "before_cursor_execute", before_cursor_execute)
+    event.listen(engine, "begin", begin)
 
     session = scoped_session(sessionmaker(class_=SessionStatsBase, extension=ZopeTransactionExtension()))
     session.configure(bind=engine)
