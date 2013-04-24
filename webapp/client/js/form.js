@@ -294,6 +294,11 @@
             };
 
         if (!data) { return; }
+        /* 
+        stats make pre-filling a form very slow 
+        TODOXXX: this is kinda a wrong place to deal with this
+        */
+        delete data.stats;
 
         if (first_lvl) {
             // Fill out data provided by server with defaults provided in the URI
