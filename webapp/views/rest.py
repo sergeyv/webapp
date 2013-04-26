@@ -379,7 +379,7 @@ def _do_validate(context, request):
     else:
         raise HTTPNotFound("No validator found for attribute %s" % request.subpath[0])
 
-    data = _add_flash_messages(data, request)
+    # data = _add_flash_messages(data, request)
     return data
 
 
