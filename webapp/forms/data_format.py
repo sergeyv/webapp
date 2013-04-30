@@ -182,10 +182,10 @@ class DataFormatCreator(DataFormatReader):
         resource = self.create_and_deserialize(params, request)
 
         if hasattr(self.structure, "after_item_created"):
-            self.structure.after_item_created(resource, request)
+            self.structure.after_item_created(resource, params, request)
 
         if hasattr(resource, "after_item_created"):
-            resource.after_item_created(self, request)
+            resource.after_item_created(self, params, request)
 
         return resource
 
