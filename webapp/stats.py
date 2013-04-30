@@ -2,13 +2,8 @@
 
 # https://gist.github.com/258394
 
-from sqlalchemy import MetaData
-from sqlalchemy.orm import scoped_session, sessionmaker
+import traceback
 from sqlalchemy.orm.session import Session as SessionBase
-from sqlalchemy.interfaces import ConnectionProxy
-
-from datetime import datetime
-import time
 
 import webapp
 
@@ -20,7 +15,8 @@ class QueryStats(object):
         self.begin()
 
     def add_query(self, statement, parameters):
-        self.queries += [(statement, parameters)]
+        stack = traceback.format_stack()
+        self.queries += [(statement, parameters, stack)]
         # self.time_elapsed += elapsed
         self.query_count += 1
 
@@ -30,6 +26,10 @@ class QueryStats(object):
 
     def __repr__(self):
         return "%s(query_count=%d)" % (self.__class__.__name__, self.query_count)
+
+
+def begin(conn):
+    webapp.get_session().stats.begin()
 
 
 def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
@@ -45,8 +45,3 @@ class SessionStatsBase(SessionBase):
     def __init__(self, *args, **kw):
         SessionBase.__init__(self, *args, **kw)
         self.stats = QueryStats()
-
-        #print "*"*80
-        #print "SESSION CREATED"
-        #print "*"*80
-

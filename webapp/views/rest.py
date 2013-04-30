@@ -29,6 +29,8 @@ from webapp.forms.data_format import (
 
 #from webapp.testing import sluggish, explode
 
+from webapp.forms.data_format import _add_stats
+
 
 class bcolors:
     """
@@ -297,6 +299,8 @@ def json_rest_get_f(context, request):
 
     data = _add_flash_messages(data, request)
     data = _add_last_changed(data, request)
+    data = _add_stats(data, request)
+
     #data.setdefault('stats', {})['total_time'] = time.time() - start
     return data
 
@@ -341,6 +345,7 @@ def json_rest_list_f(context, request, permission=""):
 
     data = _add_flash_messages(data, request)
     data = _add_last_changed(data, request)
+    data = _add_stats(data, request)
 
     return data
 

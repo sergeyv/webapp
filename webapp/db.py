@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import InvalidRequestError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from .stats import SessionStatsBase, before_cursor_execute
+from .stats import SessionStatsBase, before_cursor_execute, begin
 
 _DBSession = None
 
@@ -126,7 +126,6 @@ class WebappBase(object):
         return get_session().query(cls).all()
 
 
-
 Base = declarative_base(cls=WebappBase)
 
 
@@ -137,11 +136,10 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
     # or move db stuff somewhere out of webapp
     from zope.sqlalchemy import ZopeTransactionExtension
 
-    engine = sa.create_engine(db_string, echo=False) #db_echo)
+    engine = sa.create_engine(db_string, echo=False)  # db_echo)
     event.listen(engine, "before_cursor_execute", before_cursor_execute)
+    event.listen(engine, "begin", begin)
 
-    # TODOXXX: We probably don't want SessionStatsBase to be used in
-    # the worker process
     session = scoped_session(sessionmaker(class_=SessionStatsBase, extension=ZopeTransactionExtension()))
     session.configure(bind=engine)
 
@@ -149,26 +147,8 @@ def initialize_sql(db_string, db_echo, populate_fn=None):
 
     Base.metadata.bind = engine
 
-    # print "Creating mooball schema"
-
     conn = engine.connect()
     conn = conn.execution_options(autocommit=False)
-
-    # conn.execute("BEGIN")
-    # conn.execute("DROP SCHEMA IF EXISTS mooball CASCADE")
-    # conn.execute("CREATE SCHEMA mooball")
-    # conn.execute("COMMIT")
-    # conn.execute("SET search_path TO mooball")
-    # print conn.execute("SELECT current_schema()").scalar()
-    # without an explicit bind, create_all may check out a random
-    # connection from the pool, which may be different from the one we called
-    # search_path on
-    # Base.metadata.create_all(bind=conn)
-    # TODOXXX: Can we create the extension in a separate schema once
-    # so we don't have to create it in every "workspace" schema individually?
-    # IN addition, one needs to be a super-user to be able to create extensions
-    # conn.execute("CREATE EXTENSION pgcrypto")
-    # conn.execute("COMMIT")
 
     if populate_fn is not None:
         try:

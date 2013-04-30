@@ -267,17 +267,6 @@
         //// TODOXXX: save the DOM node
     };
 
-    Template.prototype.update_data = function (data) {
-        /*
-        updates the data and re-renders the view - useful when some ajax
-        call returns (partial) data and we want to refresh the view
-
-        TODOXXX: Not used anywhere, not clear how it will work with caching
-        */
-        $.extend(this.data, data);
-        this.render();
-    };
-
     Template.prototype.render_data_return_html = function (template, data) {
         /*
         renders data using the passed template, return a html blob

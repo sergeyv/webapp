@@ -294,6 +294,11 @@
             };
 
         if (!data) { return; }
+        /* 
+        stats make pre-filling a form very slow 
+        TODOXXX: this is kinda a wrong place to deal with this
+        */
+        delete data.stats;
 
         if (first_lvl) {
             // Fill out data provided by server with defaults provided in the URI
@@ -649,17 +654,6 @@
         return false;
     };
 
-
-    /* TODOXXX: IS NOT CALLED FROM ANYWHERE */
-//    Form.prototype.refresh_listbox_vocab = function (url, listbox, addmore) {
-//       var self = this;
-//        /// query an id-value list form the server and populate
-//        /// a listbox
-//        $.getJSON(url, function (data) {
-//            /* TODOXXX: DOES NOT EXIST ANYWHERE */
-//            self.populate_listbox(listbox, data, addmore);
-//        });
-//    };
 
     webapp.Form = Form;
 
