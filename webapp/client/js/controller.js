@@ -193,7 +193,9 @@
             });
 
             $modal.modal({
-                show: true
+                show: true,
+                backdrop: 'static',
+                keyboard: false
             });
 
             // view.event.parentView = self.currentView;
