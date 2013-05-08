@@ -1,17 +1,9 @@
-# from datetime import datetime
-# from decimal import Decimal
-# import json
-# import cgi
 import time
-import transaction
 from zope.interface import Interface, implements
 
 import dottedish
 import sqlalchemy as sa
 
-# from webapp.forms import Literal
-# from webapp import DynamicDefault
-# from webapp.exc import WebappError
 from webapp.db import get_session
 
 from .data_format_base import DataFormatBase
@@ -34,6 +26,10 @@ class IDataFormatLister(IDataFormat):
 
 
 class IDataFormatCreator(IDataFormat):
+    """ """
+
+
+class IDataFormatDeletor(IDataFormat):
     """ """
 
 
@@ -116,6 +112,57 @@ class DataFormatWriter(DataFormatBase):
             resource.after_item_updated(self, request)
 
         return {'item_id': resource.model.id}
+
+
+class DataFormatDeletor(DataFormatBase):
+    implements(IDataFormatDeletor)
+
+    __allow_loadable__ = False
+
+    # def deserialize(self, params, request):
+    #     resource = self.__parent__
+    #     structure = self.structure
+    #     return self._default_item_deserializer(resource, structure, params, request)
+
+    def delete(self, request):
+        """
+        Deletes the resource
+        """
+
+        resource = self.__parent__
+        structure = self.structure
+
+        item_id = resource.model.id
+
+        # Structure can completely override the default logic
+        if hasattr(structure, "delete"):
+            return structure.delete(self, request)
+
+        # Formish uses dotted syntax to deal with nested structures
+        # we need to unflatten it
+        params = request.json_body
+        params = dottedish.api.unflatten(params.items())
+
+        if hasattr(structure, "before_item_deleted"):
+            structure.before_item_updated(self, request)
+
+        if hasattr(resource, "before_item_deleted"):
+            resource.before_item_updated(self, request)
+
+        # self.deserialize(params, request)
+        resource.delete_item(request)
+
+        #Flush session so changes have been applied
+        # before we call the after context hook
+        sa.orm.object_session(resource.model).flush()
+
+        # if hasattr(structure, "after_item_updated"):
+        #     structure.after_item_updated(self, request)
+
+        # if hasattr(resource, "after_item_updated"):
+        #     resource.after_item_updated(self, request)
+
+        return {'item_id': item_id}
 
 
 class DataFormatCreator(DataFormatReader):

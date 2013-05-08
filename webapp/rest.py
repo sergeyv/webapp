@@ -88,6 +88,7 @@ from webapp.forms.data_format import (
     DataFormatReadWrite,
     DataFormatLister,
     DataFormatCreator,
+    DataFormatDeletor,
     VocabLister
     )
 
@@ -135,7 +136,6 @@ class FormAwareMixin(object):
         except KeyError:
             raise WebappFormError('Format "%s" is not registered with %s' % (format, self))
 
-
     @classmethod
     def _data_format_decorator(cls, name_or_cls, wrapper_cls):
         """
@@ -160,12 +160,11 @@ class FormAwareMixin(object):
             # register the format with the name of the schema class, i.e. ContactEditForm
             if schemaish_cls.__name__ in formats_dict:
                 raise WebappFormError(FORMAT_ALREADY_REGISTERED_MSG % {
-                        'fmt_name': schemaish_cls.__name__,
-                        'resource': cls,
-                        'current': formats_dict[schemaish_cls.__name__],
-                        'new': data_format_factory
-                    }
-                    )
+                    'fmt_name': schemaish_cls.__name__,
+                    'resource': cls,
+                    'current': formats_dict[schemaish_cls.__name__],
+                    'new': data_format_factory
+                })
             formats_dict[schemaish_cls.__name__] = data_format_factory
             # also, if the format was registeres with
             # @ContactResource.readwrite_format('edit'), we register the format with
@@ -174,7 +173,6 @@ class FormAwareMixin(object):
                 formats_dict[additional_name] = data_format_factory
             # it's important to return it otherwise nested decorators won't work
             return schemaish_cls
-
 
         if isinstance(name_or_cls, basestring):
             # we were passed a string which means the decorator was called
@@ -219,7 +217,6 @@ class FormAwareMixin(object):
         """
         return cls._data_format_decorator(name_or_cls, DataFormatReadWrite)
 
-
     @classmethod
     def listing_format(cls, name_or_cls):
         """
@@ -232,6 +229,17 @@ class FormAwareMixin(object):
         """
         return cls._data_format_decorator(name_or_cls, DataFormatCreator)
 
+    @classmethod
+    def delete_format(cls, name_or_cls):
+        """
+        Only one delete fromat can be registered for a resource
+        """
+        name = cls.__name__ + 'Delete'
+        if name_or_cls.__name__ != name:
+            raise WebappFormError("A delete format for %s should be called %s instead of %s" % (
+                cls, name, name_or_cls.__name__)
+            )
+        return cls._data_format_decorator(name_or_cls, DataFormatDeletor)
 
     @classmethod
     def allow_vocab_listing(cls, *args):
@@ -241,15 +249,12 @@ class FormAwareMixin(object):
         if not hasattr(cls, '__data_formats__'):
             cls.__data_formats__ = {}
 
-
         v = cls.__data_formats__.setdefault('vocab', VocabLister())
-
 
         for role in args:
             t = (Allow, role, 'rest.list',)
             if not t in v.__acl__:
                 v.__acl__.append(t)
-
 
 
 class RestCollection(FormAwareMixin, crud.Collection):
