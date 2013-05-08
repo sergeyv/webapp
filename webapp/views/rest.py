@@ -235,9 +235,13 @@ def json_rest_delete_item(context, request):
     it attempts to delete the item itself
     """
     _weird_uwsgi_bug_workaround(request)
-    item_id = context.delete_item(request, soft=getattr(context, '__soft_delete__', False))
 
-    data = {'id': item_id}
+    name = '@' + context.__class__.__name__ + 'Delete'
+    format = context[name]
+    data = format.delete(request)
+
+    # item_id = context.delete_item(request, soft=getattr(context, '__soft_delete__', False))
+    # data = {'id': item_id}
     data = _add_flash_messages(data, request)
     data = _add_last_changed(data, request)
 
