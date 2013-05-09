@@ -149,7 +149,7 @@ def json_rest_empty(context, request):
 @view_config(
     name="filters",
     context=IDataFormatLister,
-    permission="rest.list",
+    permission="rest.access",
     request_method="GET",
     renderer="better_json")
 def json_rest_filters(context, request):
@@ -166,7 +166,7 @@ def json_rest_filters(context, request):
 @view_config(
     name="incremental",
     context=crud.ICollection,
-    permission="rest.list",
+    permission="rest.access",
     request_method="GET",
     renderer="better_json")
 def json_rest_incremental(context, request):
@@ -191,7 +191,7 @@ def json_rest_incremental(context, request):
 
 @view_config(
     context=crud.ICollection,
-    permission="rest.delete",
+    permission="rest.access",
     request_method="DELETE",
     renderer="better_json",
     accept="text/plain")
@@ -225,7 +225,7 @@ def json_rest_delete_subitems(context, request):
 
 @view_config(
     context=crud.IResource,
-    permission="rest.delete",
+    permission="rest.access",
     request_method="DELETE",
     renderer="better_json",
     accept="text/plain")
@@ -269,7 +269,7 @@ def context_implements(*types):
 # TODOXXX: The method should be POST
 @view_config(
     context=IDataFormat,
-    permission="rest.create",
+    permission="rest.access",
     request_method="PUT",
     renderer="better_json",
     accept="text/plain",
@@ -287,7 +287,7 @@ def json_rest_create_f(context, request):
 
 @view_config(
     context=IDataFormat,
-    permission="rest.view",
+    permission="rest.access",
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
@@ -311,7 +311,7 @@ def json_rest_get_f(context, request):
 
 @view_config(
     context=IDataFormat,
-    permission="rest.update",
+    permission="rest.access",
     request_method="PUT",
     renderer="better_json",
     accept="text/plain",
@@ -331,7 +331,7 @@ def json_rest_update_f(context, request):
 
 @view_config(
     context=IDataFormat,
-    permission="rest.list",
+    permission="rest.access",
     request_method="GET",
     renderer="better_json",
     accept="application/json",
@@ -390,7 +390,7 @@ def _do_validate(context, request):
 @view_config(
     name="v",  # for 'Vendetta', obviously
     context=IDataFormatWriter,
-    permission="rest.update",
+    permission="rest.access",
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
@@ -402,7 +402,7 @@ def validate_on_update(context, request):
 @view_config(
     name="v",  # for 'Vendetta', obviously
     context=IDataFormatCreator,
-    permission="rest.create",
+    permission="rest.access",
     request_method="GET",
     renderer="better_json",
     accept="text/plain",
@@ -413,14 +413,14 @@ def validate_on_create(context, request):
 
 ### FOR DEBUG PURPOSES
 
-@view_config(
-    name="formats",
-    context=crud.ITraversable,
-    permission="rest.view",
-    request_method="GET",
-    renderer="string",
-    accept="text/plain"
-)
-def list_resource_formats(context, request):
-
-    return str(getattr(context, '__data_formats__', None))
+#@view_config(
+#    name="formats",
+#    context=crud.ITraversable,
+#    permission="rest.access",
+#    request_method="GET",
+#    renderer="string",
+#    accept="text/plain"
+#)
+#def list_resource_formats(context, request):
+#
+#    return str(getattr(context, '__data_formats__', None))
