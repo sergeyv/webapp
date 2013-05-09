@@ -86,8 +86,10 @@ class AssetRegistry(object):
     #"/formish.css/formish.css",
     "/webapp.client/css/webapp.css",
     )
+    
+    core_less_assets = ()
 
-    def __init__(self, css_assets=None, js_assets=None):
+    def __init__(self, less_assets=None, css_assets=None, js_assets=None):
 
 
         self.js_assets = [r for r in self.core_js_assets]
@@ -101,6 +103,11 @@ class AssetRegistry(object):
             for r in css_assets:
                 self.css_assets.append(r)
 
+        self.less_assets = [r for r in self.core_less_assets]
+        if less_assets is not None:
+            for r in less_assets:
+                self.less_assets.append(r)
+
 
     def render_javascript_assets(self):
         lines = ["<!-- JS assets -->"]
@@ -113,7 +120,14 @@ class AssetRegistry(object):
     def render_css_assets(self):
         lines = ["<!-- CSS assets -->"]
         for r in self.css_assets:
-            line = """<link rel="stylesheet" href="%s" />""" % r
+            line = """<link rel="stylesheet" type="text/css" href="%s" />""" % r
+            lines.append(line)
+        return "\n".join(lines)
+
+    def render_less_assets(self):
+        lines = ["<!-- LESS assets -->"]
+        for r in self.less_assets:
+            line = """<link rel="stylesheet/less" type="text/css" href="%s" />""" % r
             lines.append(line)
         return "\n".join(lines)
 
@@ -122,6 +136,9 @@ class AssetRegistry(object):
 
     def add_css_asset(self, r):
         self.css_asset.append(r)
+
+    def add_less_asset(self, r):
+        self.less_asset.append(r)
 
     def remove_js_asset(self, r):
         try:
@@ -135,8 +152,17 @@ class AssetRegistry(object):
         except ValueError:
             pass
 
+    def remove_less_asset(self, r):
+        try:
+            self.less_assets.remove(r)
+        except ValueError:
+            pass
+
     def replace_js_assets(self, new_assets):
         self.js_assets = new_assets
 
     def replace_css_assets(self, new_assets):
         self.css_assets = new_assets
+
+    def replace_less_assets(self, new_assets):
+        self.less_assets = new_assets
