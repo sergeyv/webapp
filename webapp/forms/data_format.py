@@ -144,10 +144,10 @@ class DataFormatDeletor(DataFormatBase):
         params = dottedish.api.unflatten(params.items())
 
         if hasattr(structure, "before_item_deleted"):
-            structure.before_item_updated(self, request)
+            structure.before_item_deleted(self, request)
 
         if hasattr(resource, "before_item_deleted"):
-            resource.before_item_updated(self, request)
+            resource.before_item_deleted(self, request)
 
         # self.deserialize(params, request)
         resource.delete_item(request)
@@ -155,12 +155,6 @@ class DataFormatDeletor(DataFormatBase):
         #Flush session so changes have been applied
         # before we call the after context hook
         sa.orm.object_session(resource.model).flush()
-
-        # if hasattr(structure, "after_item_updated"):
-        #     structure.after_item_updated(self, request)
-
-        # if hasattr(resource, "after_item_updated"):
-        #     resource.after_item_updated(self, request)
 
         return {'item_id': item_id}
 

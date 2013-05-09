@@ -89,6 +89,10 @@
         return url + '(json):' + encodeURIComponent(JSON.stringify(args));
     };
 
+    View.prototype.go_back = function () {
+        webapp.relocateTo(webapp.previousPageUrl());
+    };
+
 
     View.prototype.collectRestParams = function () {
         /*
