@@ -355,7 +355,6 @@
         */
         var self = this;
 
-        console.log("aboutToBeHidden");
         if (self.options.scroll === 'infinite') {
             $(window).off('scroll.infinite resize.infinite');
         }

@@ -410,17 +410,3 @@ def validate_on_update(context, request):
 def validate_on_create(context, request):
     return _do_validate(context, request)
 
-
-### FOR DEBUG PURPOSES
-
-#@view_config(
-#    name="formats",
-#    context=crud.ITraversable,
-#    permission="rest.access",
-#    request_method="GET",
-#    renderer="string",
-#    accept="text/plain"
-#)
-#def list_resource_formats(context, request):
-#
-#    return str(getattr(context, '__data_formats__', None))

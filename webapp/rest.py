@@ -120,7 +120,10 @@ class FormAwareMixin(object):
             data_format_obj = data_format_factory()
             data_format_obj.__name__ = name
             data_format_obj.__parent__ = self
-            data_format_obj.__acl__ = data_format_obj.get_acl()
+            try:
+                data_format_obj.__acl__ = data_format_obj.get_acl()
+            except AttributeError:  # the get_acl may raise AttributeError to indicate we should fall back to the parent acl
+                pass
             return data_format_obj
 
         return crud.Traversable.__getitem__(self, name)

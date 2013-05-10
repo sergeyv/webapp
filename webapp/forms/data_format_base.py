@@ -109,11 +109,21 @@ class DataFormatBase(object):
             return "<%s wrapping >" % self.__class__.__name__
 
     def get_acl(self):
-        acl = getattr(self.structure, '__acl__', [])
+
+        # raises AttributeError if the __acl__ does not exist
+        acl = self.structure.__acl__
 
         if callable(acl):
             return acl(self)
         return acl
+
+    def get_local_roles(self, request):
+        roles = []
+        if hasattr(self.structure, 'get_local_roles'):
+            roles += self.structure.get_local_roles(self, request)
+        if hasattr(self.__parent__, 'get_local_roles'):
+            roles += self.__parent__.get_local_roles(request)
+        return roles
 
     def _type_deserialize_string(self, value):
         # Convert empty strings to NULLs
