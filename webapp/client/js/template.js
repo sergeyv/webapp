@@ -157,7 +157,16 @@
         /// wait for each partial to finish loading and render it
         $.each(self.options.partials || [], function (partial_name, partial) {
             partial.deferred.done(function () {
-                partial.view = self.view.find('.partial[data-partial="' + partial_name + '"]');
+                if ( partial.options.render_to )
+                {
+                    // Partial is set to render to a css selector anywhere 
+                    // on the current page instead of just a partial placeholder
+                    // in the current view
+                    partial.view = $( partial.options.render_to );
+                }
+                else
+                    partial.view = self.view.find('.partial[data-partial="' + partial_name + '"]');
+                
                 partial._ajax_finished.apply(partial, arguments);
             });
         });
