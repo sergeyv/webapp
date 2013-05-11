@@ -147,7 +147,7 @@ class DataFormatDeletor(DataFormatBase):
             structure.before_item_deleted(self, request)
 
         if hasattr(resource, "before_item_deleted"):
-            resource.before_item_deleted(self, request)
+            resource.before_item_deleted(request)
 
         # self.deserialize(params, request)
         resource.delete_item(request)
