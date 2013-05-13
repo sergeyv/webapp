@@ -118,12 +118,12 @@ class DataFormatBase(object):
         return acl
 
     def get_local_roles(self, request):
-        roles = []
-        if hasattr(self.structure, 'get_local_roles'):
-            roles += self.structure.get_local_roles(self, request)
-        if hasattr(self.__parent__, 'get_local_roles'):
-            roles += self.__parent__.get_local_roles(request)
-        return roles
+        """
+        Return structure's local roles - if the method does not exist
+        the access will raise AttributeError which will signal the callee
+        to proceed up the traversal chain
+        """
+        return self.structure.get_local_roles(self, request)
 
     def _type_deserialize_string(self, value):
         # Convert empty strings to NULLs
