@@ -34,15 +34,16 @@ class SafeHTML(sc.String):
 
     @staticmethod
     def clean(value):
-        value = value.strip()
-        if not value:
-            return None
-        cleaner = Cleaner(style=True)
-        doc = fromstring(value)
-        cleaner(doc)
-        autolink(doc)
-        word_break(doc)
-        return tostring(doc)
+        return value
+        # value = value.strip()
+        # if not value:
+        #     return None
+        # cleaner = Cleaner(style=True)
+        # doc = fromstring(value)
+        # cleaner(doc)
+        # autolink(doc)
+        # word_break(doc)
+        # return tostring(doc)
 
 
 class Group(sc.attr.Container):
