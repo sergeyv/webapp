@@ -11,6 +11,8 @@ from webapp.exc import WebappError
 
 _marker = []
 
+from .fields import SafeHTML
+
 
 def _all_data_fields_are_empty(value):
     """
@@ -133,6 +135,7 @@ class DataFormatBase(object):
         if not value:
             return None
 
+        value = cgi.escape(value)
         # SA presents values which are read from the database
         # as unicode, so setting an encoded string, while working in general,
         # fails when trying to join new and existing fields etc.
@@ -178,6 +181,10 @@ class DataFormatBase(object):
                 raise AttributeError("Wrong boolean value: %s" % (value))
         return value
 
+    def _type_deserialize_html(self, value):
+
+        return SafeHTML.clean(value)
+
     TYPE_SERIALIZERS_MAP = {
         sc.String: _type_deserialize_string,
         sc.Integer: _type_deserialize_int,
@@ -185,6 +192,7 @@ class DataFormatBase(object):
         sc.Date: _type_deserialize_date,
         sc.DateTime: _type_deserialize_datetime,
         sc.Boolean: _type_deserialize_boolean,
+        SafeHTML: _type_deserialize_html,
     }
 
     def _save_structure(self, resource, schema, data, request):
@@ -381,8 +389,8 @@ class DataFormatBase(object):
 
             # Escape HTML tags if the name of the attribute not in __no_html_escape__
             # attribute of the structure
-            if isinstance(value, basestring) and name not in getattr(structure, '__no_html_escape__', set()):
-                value = cgi.escape(value)
+            #if isinstance(value, basestring) and name not in getattr(structure, '__no_html_escape__', set()):
+            #    value = cgi.escape(value)
 
             # skip None values from the output to make the output more compact
             # this potentially may break the forms, need to check

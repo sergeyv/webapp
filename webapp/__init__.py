@@ -18,8 +18,10 @@ from app_root import IRootCollection, RootCollection
 from theme import set_theme, get_theme
 from theme import AssetRegistry
 
-from .forms import auto_schema, Literal
+
+from .forms import auto_schema
 from .forms import FormRegistry, LoadableForm, loadable
+from .forms.fields import Literal, SafeHTML
 
 
 from .defaults import *

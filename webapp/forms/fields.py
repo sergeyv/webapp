@@ -1,21 +1,51 @@
 
 
-from schemaish.attr import Container
-from schemaish.attr import LeafAttribute
+import schemaish as sc
+# from schemaish.attr import Container
+# from schemaish.attr import LeafAttribute
+
+from lxml.html import (
+    tostring,
+    fromstring
+)
+
+from lxml.html.clean import (
+    Cleaner,
+    autolink,
+    word_break
+)
 
 
-class Literal(LeafAttribute):
+class Literal(sc.attr.LeafAttribute):
     """
     A schema attribute which means that the serialization framework
     should just serialize the value of the model's attribute as is,
     without making assumptions about it.
-    It's useful to serialize a result of some mnethod which may
+    It's useful to serialize a result of some method which may
     return some complex (but still json-serializable) list or dictionary
     """
     pass
 
 
-class Group(Container):
+class SafeHTML(sc.String):
+    """
+    A schemma attribute which is cleaned using lxml/clean_html on save
+    """
+
+    @staticmethod
+    def clean(value):
+        value = value.strip()
+        if not value:
+            return None
+        cleaner = Cleaner(style=True)
+        doc = fromstring(value)
+        cleaner(doc)
+        autolink(doc)
+        word_break(doc)
+        return tostring(doc)
+
+
+class Group(sc.attr.Container):
 
     attrs = []
 
@@ -38,6 +68,5 @@ class Group(Container):
 
     @property
     def default(self):
-        return dict( [(name, getattr(a,'default',None)) for name, a in self.attrs] )
-
+        return dict([(name, getattr(a, 'default', None)) for name, a in self.attrs])
 
