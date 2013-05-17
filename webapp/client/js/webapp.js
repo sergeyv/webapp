@@ -411,7 +411,7 @@
             context = self.getEventContextForRoute(address_change_event.value);
 
         webapp.abortAllRequests();
-        webapp.clearStats()
+        webapp.clearStats();
 
         if (context.mapping) {
             // remember the url
