@@ -15,7 +15,7 @@ from db import Base, initialize_sql, get_session, set_dbsession, get_session_cla
 
 from app_root import IRootCollection, RootCollection
 
-from theme import set_theme, get_theme
+#from theme import set_theme, get_theme
 from theme import AssetRegistry
 
 

@@ -5,13 +5,13 @@
 #     License: refer to LICENSE.txt
 ##########################################
 
-_theme_registry = {}
-
-def set_theme(name, theme):
-    _theme_registry[name] = theme
-
-def get_theme(name):
-    return _theme_registry[name]
+#_theme_registry = {}
+#
+#def set_theme(name, theme):
+#    _theme_registry[name] = theme
+#
+#def get_theme(name):
+#    return _theme_registry[name]
 
 
 class AssetRegistry(object):
