@@ -488,6 +488,9 @@
             var $link = $(this),
                 view = webapp.controller.currentView;
 
+            if ( $link.hasClass('disabled') )
+                return false;
+
             /// if the link also has 'webappConfirmDialog' class,
             /// we show a confirmation dialog and only invoke
             // the action if the user clicks OK
@@ -520,6 +523,9 @@
             .on("click", ".webappPopup", function () {
 
             var $link = $(this);
+
+            if ( $link.hasClass('disabled') )
+                return false;
             webapp.popupView($link.attr("href"), $link.data('display'), $link, undefined, $link.data('custom_class_body'));
             return false;
         });
