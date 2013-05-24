@@ -4,9 +4,9 @@ import schemaish as sc
 # from schemaish.attr import Container
 # from schemaish.attr import LeafAttribute
 
-import lxml.html
-import lxml.html.soupparser
-import lxml.html.clean
+#import lxml.html
+#import lxml.html.soupparser
+#import lxml.html.clean
 
 
 class Literal(sc.attr.LeafAttribute):
@@ -30,16 +30,17 @@ class SafeHTML(sc.String):
         value = value.strip()
         if not value:
             return None
-        cleaner = lxml.html.clean.Cleaner(style=True)
-        try:
-            doc = lxml.html.fromstring(value)
-        except:
-            doc = lxml.html.soupparser.fromstring(value)
+        return value
+        #cleaner = lxml.html.clean.Cleaner(style=True)
+        #try:
+        #    doc = lxml.html.fromstring(value)
+        #except:
+        #    doc = lxml.html.soupparser.fromstring(value)
 
-        cleaner(doc)
-        lxml.html.clean.autolink(doc)
-        lxml.html.clean.word_break(doc)
-        return lxml.html.tostring(doc)
+        #cleaner(doc)
+        #lxml.html.clean.autolink(doc)
+        #lxml.html.clean.word_break(doc)
+        #return lxml.html.tostring(doc)
 
 
 class Group(sc.attr.Container):
