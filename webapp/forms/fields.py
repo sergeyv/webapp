@@ -1,12 +1,8 @@
 
-
+import bleach
 import schemaish as sc
 # from schemaish.attr import Container
 # from schemaish.attr import LeafAttribute
-
-#import lxml.html
-#import lxml.html.soupparser
-#import lxml.html.clean
 
 
 class Literal(sc.attr.LeafAttribute):
@@ -30,7 +26,11 @@ class SafeHTML(sc.String):
         value = value.strip()
         if not value:
             return None
+        value = bleach.clean(value, strip=True)
+        value = bleach.linkify(value)
         return value
+
+
         #cleaner = lxml.html.clean.Cleaner(style=True)
         #try:
         #    doc = lxml.html.fromstring(value)
