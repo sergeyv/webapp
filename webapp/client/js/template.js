@@ -120,6 +120,18 @@
                 );
             });
         }
+        
+        /* Initiate partial's ajax calls */
+        if (self.options.partials) {
+            $.each(self.options.partials, function (idx, partial) {
+                partial.event = self.event;
+                /// create a deferred but do not attach .done() to it -
+                /// we only want to deal with partials after
+                /// the main template is loaded. We do that in
+                /// ._ajax_finished() method
+                partial.deferred = partial._initiate_ajax_calls();
+            });
+        }
 
         return $.when.apply(null, calls);
     };
@@ -156,6 +168,11 @@
 
         /// wait for each partial to finish loading and render it
         $.each(self.options.partials || [], function (partial_name, partial) {
+            // !NOTE!: These are here as the show method will not be called
+            //         on a partial, thus breaking any partials it may have.
+            partial.options.is_partial = true;
+            partial.parentView = self;
+
             partial.deferred.done(function () {
                 if ( partial.options.render_to )
                 {
@@ -166,7 +183,7 @@
                 }
                 else
                     partial.view = self.view.find('.partial[data-partial="' + partial_name + '"]');
-                
+                    
                 partial._ajax_finished.apply(partial, arguments);
             });
         });
@@ -251,17 +268,6 @@
         /// and there's no data, so we postpone attaching .done() to it until
         /// after we initiated the partials
         deferred = self._initiate_ajax_calls();
-
-        if (self.options.partials) {
-            $.each(self.options.partials, function (idx, partial) {
-                partial.event = self.event;
-                /// create a deferred but do not attach .done() to it -
-                /// we only want to deal with partials after
-                /// the main template is loaded. We do that in
-                /// ._ajax_finished() method
-                partial.deferred = partial._initiate_ajax_calls();
-            });
-        }
 
         /// now, when partials are happily loading their stuff,
         /// we attach .done() handler to the main deferred
