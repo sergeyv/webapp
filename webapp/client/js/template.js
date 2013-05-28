@@ -120,7 +120,7 @@
                 );
             });
         }
-        
+
         /* Initiate partial's ajax calls */
         if (self.options.partials) {
             $.each(self.options.partials, function (idx, partial) {
@@ -176,14 +176,14 @@
             partial.deferred.done(function () {
                 if ( partial.options.render_to )
                 {
-                    // Partial is set to render to a css selector anywhere 
+                    // Partial is set to render to a css selector anywhere
                     // on the current page instead of just a partial placeholder
                     // in the current view
                     partial.view = $( partial.options.render_to );
                 }
                 else
                     partial.view = self.view.find('.partial[data-partial="' + partial_name + '"]');
-                    
+
                 partial._ajax_finished.apply(partial, arguments);
             });
         });
@@ -311,7 +311,12 @@
          * Renders the already-loaded template and data
          */
         var self = this,
-            txt;
+            txt,
+            start;
+
+        self.timings = {};
+
+        self.timings.render_start = new Date();
 
         self.view.html(self.render_data_return_html(self.template, self.data));
 
@@ -320,26 +325,12 @@
         if (self.options.before_view_shown) {
             self.options.before_view_shown.apply(self, [self.view]);
         }
+        console.log(self.options.identifier, ": render took", new Date() - start, 'ms');
     };
 
 
     Template.prototype.augmentView = function () {
-
         var self = this;
-
-        /// Every link marked with webappInvokeOnLoad class will
-        /// be 'clicked' programmatically when the view is loaded
-        /// (in the same manner webappAsyncAction links are invoked when clicked). You can hide the link using css if it should not be displayed in the UI
-
-        /// prevent an infinite loop when a view is reloaded
-        /// as a result of an async task succeeding
-        if (!self.event.async_message) {
-            self.view.find("a.webappInvokeOnLoad").each(function (idx, elem) {
-                var $link = $(elem);
-                webapp.invoke_async_action(self, $link);
-                return undefined; // if we return false the iteration stops
-            });
-        }
     };
 
 
