@@ -368,28 +368,6 @@
 
     };
 
-    Template.prototype.renderForm = function (form_name, data) {
-        /*
-        * Loads a loadable form and uses it to render the data.
-        * Can be invoked from the template as
-        * <%=this.view.renderForm("FormName", this.data); %>
-        * (experimental)
-        * TODO: The form is currently loaded on every invocation
-        * of the function. Should be loaded once
-        */
-        var self = this,
-            load_from = webapp.forms_prefix + form_name,
-            id_root = form_name,
-            placeholder = '<div id="' + id_root + '">(+here it is!+)</div>';
-
-        $.get(load_from, function (form_html) {
-            $('#' + id_root).html(form_html).find('div.actions').remove();
-            self.fill_form(id_root, data);
-        });
-
-        return placeholder;
-    };
-
     Template.prototype.renderFlashMessages = function () {
         var self = this,
             msg_container = $(self.options.flash_messages_container_id);//.require_one();
