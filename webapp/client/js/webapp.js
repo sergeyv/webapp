@@ -768,7 +768,6 @@
 
 
     /* CACHING */
-
     WebApp.prototype.get_cached_ajax = function (use_cache, invalidated_by, options) {
         /*
         webapp maintains a cache of
@@ -869,6 +868,14 @@
             console.log($.cookie('last_changed'));
         }
 
+    };
+
+    WebApp.prototype.purge_cached_request = function (url) {
+        /*
+        Removes a spacific request from the cache
+        */
+        var self = this;
+        delete self.request_cache[url];
     };
 
     /* END CACHING */
