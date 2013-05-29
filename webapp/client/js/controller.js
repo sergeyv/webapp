@@ -207,7 +207,7 @@
                 content: view.view,
                 placement: 'bottom',
                 template: '<div class="popover"><div class="arrow"></div><div class="popover-inner ' + (view.event.custom_class_body || "") +'"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>'
-            }
+            };
 
             view.event.initiating_element.instant_popover(args);
 
@@ -232,8 +232,11 @@
 
         // a view can define a callback to be called after the view is shown
         if (view.options.after_view_shown) {
+            view.timings.after_view_shown_start = new Date();
             view.options.after_view_shown.apply(view);
+            view.timings.after_view_shown_end = new Date();
         }
+        view.log_timings();
 
         // a global callback
         if (webapp.after_view_fully_loaded) {

@@ -47,6 +47,8 @@
         webapp.controller.setActiveView(this);
     };
 
+    View.prototype.log_timings = function () {
+    };
 
     View.prototype.get_title = function () {
         return this.event.parameters.title || this.options.title;

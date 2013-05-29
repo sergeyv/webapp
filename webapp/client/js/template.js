@@ -194,8 +194,11 @@
         } else {
             self.view.removeClass("loading");
             if (self.options.after_view_shown) {
+                self.timings.after_view_shown_start = new Date();
                 self.options.after_view_shown.apply(self);
+                self.timings.after_view_shown_end = new Date();
             }
+            self.log_timings();
         }
 
         /* if an expandable contains too little text we remove the
@@ -320,12 +323,14 @@
 
         self.view.html(self.render_data_return_html(self.template, self.data));
 
+        self.timings.render_end = new Date();
         self.augmentView();
 
         if (self.options.before_view_shown) {
+            self.timings.before_view_shown_start = self.timings.render_end;
             self.options.before_view_shown.apply(self, [self.view]);
+            self.timings.before_view_shown_end = new Date();
         }
-        console.log(self.options.identifier, ": render took", new Date() - start, 'ms');
     };
 
 
@@ -333,6 +338,31 @@
         var self = this;
     };
 
+
+    Template.prototype.log_timings = function () {
+        var self = this,
+            msg = "TOO SLOW: " + self.options.identifier,
+            render_time = self.timings.render_end - self.timings.render_start,
+            bws_time = (self.timings.before_view_shown_end || 0) - (self.timings.before_view_shown_start || 0),
+            aws_time = (self.timings.after_view_shown_end || 0) - (self.timings.after_view_shown_start || 0),
+            TOO_SLOW = 20,
+            total_time = render_time + bws_time + aws_time;
+
+        if (total_time > TOO_SLOW) {
+            msg += " shown in " + total_time + "ms: " +
+                "(render: " + render_time + "ms; ";
+            if (bws_time) {
+                msg += "before_view_shown: " + bws_time + "ms; ";
+            }
+
+            if (aws_time) {
+                msg += "after_view_shown: " + aws_time + "ms; ";
+            }
+
+            console.warn(msg);
+        }
+
+    };
 
     Template.prototype.fill_form = function (id_root, data) {
         /* Recursively iterate over the json data, find elements
