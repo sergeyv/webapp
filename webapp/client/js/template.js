@@ -441,9 +441,6 @@
 * Template allows links to have some special classes
 * which modify their behaviour:
 *
-* - webappAsyncAction - clicking on the link pings the target URL
-*   without the page being reloaded. The server response is discarded
-*
 * - webappInvokeOnLoad - the URL will be pinged when the view is shown
 *
 * - webappConfirmDialog - shows a confirmation dialog, only pings the URL
@@ -480,15 +477,11 @@
 
     $(function () { // need to run this after <body> is loaded
 
-        /// Every link marked with webappAsyncAction class will
-        /// invoke an async task (well, it can be used to ping
-        /// any URL, but the result is discarded, so it's only
-        /// useful for async tasks
-        // self.view.find("a.webappAsyncAction").click(function () {
+        var selector = "a.webappMethodPut, a.webappMethodPost, a.webappMethodDelete";
 
         $("body")
-            .off("click", "a.webappAsyncAction")
-            .on("click", "a.webappAsyncAction", function () {
+            .off("click", selector)
+            .on("click", selector, function () {
 
             var $link = $(this),
                 view = webapp.controller.currentView;

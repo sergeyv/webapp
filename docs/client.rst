@@ -177,22 +177,6 @@ webapp.Template allows links to have some special classes
 which modify their behaviour. This allows to avoid having any 'custom' JS code
 in templates:
 
-- ``webappAsyncAction`` - clicking on the link pings the target URL
-  without the page being reloaded. The server response is discarded
-
-.. code-block:: html
-
-    <a class="webappAsyncAction"
-       href="<%=this.view.getRestBase() %>/<%=server.id %>/start">
-        <img src="/images/start.png" alt="Start" />
-    </a>
-
-- ``webappInvokeOnLoad`` - the URL will be pinged when the view is shown
-
-- ``webappConfirmDialog`` - shows a confirmation dialog, only pings the URL
-  if the user chooses OK. The link's title tag is used for
-  the dialog's message text
-
 - ``webappMethodDelete`` - uses DELETE instead of GET
 
 
@@ -206,7 +190,7 @@ in templates:
 
 .. code-block:: html
 
-    <a class="webappAsyncAction webappMethodPut webappSendData"
+    <a class="webappMethodPut webappSendData"
        data-send='{one:123, two="hello!"}'
        href="<%=this.view.getRestBase() %>/<%=server.id %>/tasks/add">
         <img src="/images/plus.png" alt="Add two numbers" />
@@ -224,7 +208,7 @@ The above snippet would send {one: 123, two:'hello!'} to the server
 .. code-block:: html
 
     <a href="<%=this.view.getRestBase() %>"
-       class="webappAsyncAction webappMethodDelete webappConfirmDialog webappGoBack"
+       class="webappMethodDelete webappConfirmDialog webappGoBack"
        title="Do you really want to delete site <%=site.name %>?">Delete</a>
 
 - ``webappOnSuccess-<method_name>`` - invoke a specified method
@@ -235,7 +219,7 @@ The above snippet would send {one: 123, two:'hello!'} to the server
 .. code-block:: html
 
     <td> <!-- Delete Item -->
-        <a class="webappAsyncAction webappConfirmDialog webappMethodDelete webappOnSuccess-reload" href="#/clients/<%=client.id %>"
+        <a class="webappConfirmDialog webappMethodDelete webappOnSuccess-reload" href="#/clients/<%=client.id %>"
         title="Do you really want to delete this client?">X</a>
     </td>
 
