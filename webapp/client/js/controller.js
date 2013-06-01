@@ -232,6 +232,10 @@
 
         // a view can define a callback to be called after the view is shown
         if (view.options.after_view_shown) {
+            if (!view.timings) {
+                view.timings = {};
+            }
+
             view.timings.after_view_shown_start = new Date();
             view.options.after_view_shown.apply(view);
             view.timings.after_view_shown_end = new Date();
