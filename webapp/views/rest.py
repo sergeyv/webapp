@@ -188,7 +188,7 @@ def json_rest_incremental(context, request):
     # TODO: Do something meaningful
     return {'result': "HELLO! Nothing found!"}
 
-
+# NOT USED
 @view_config(
     context=crud.ICollection,
     permission="rest.access",
@@ -240,8 +240,6 @@ def json_rest_delete_item(context, request):
     format = context[name]
     data = format.delete(request)
 
-    # item_id = context.delete_item(request, soft=getattr(context, '__soft_delete__', False))
-    # data = {'id': item_id}
     data = _add_flash_messages(data, request)
     data = _add_last_changed(data, request)
 

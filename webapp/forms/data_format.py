@@ -144,7 +144,7 @@ class DataFormatDeletor(DataFormatBase):
         params = dottedish.api.unflatten(params.items())
 
         if hasattr(structure, "before_item_deleted"):
-            structure.before_item_deleted(self, request)
+            structure.before_item_deleted(request)
 
         if hasattr(resource, "before_item_deleted"):
             resource.before_item_deleted(request)
