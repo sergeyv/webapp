@@ -15,10 +15,13 @@ class Literal(sc.attr.LeafAttribute):
     """
     pass
 
+# added <br> and <p> to the list of allowed tags, removed <code>
+ALLOWED_TAGS = ['a', 'abbr', 'acronym', 'b', 'br', 'blockquote', 'em', 'i', 'li', 'ol', 'p', 'strong', 'ul']
+
 
 class SafeHTML(sc.String):
     """
-    A schemma attribute which is cleaned using lxml/clean_html on save
+    A schema attribute which is cleaned using lxml/clean_html on save
     """
 
     @staticmethod
@@ -26,7 +29,7 @@ class SafeHTML(sc.String):
         value = value.strip()
         if not value:
             return None
-        value = bleach.clean(value, strip=True)
+        value = bleach.clean(value, tags=ALLOWED_TAGS, strip=True)
         value = bleach.linkify(value)
         return value
 
