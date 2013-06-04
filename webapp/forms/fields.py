@@ -16,7 +16,7 @@ class Literal(sc.attr.LeafAttribute):
     pass
 
 # added <br> and <p> to the list of allowed tags, removed <code>
-ALLOWED_TAGS = ['a', 'abbr', 'acronym', 'b', 'br', 'blockquote', 'em', 'i', 'li', 'ol', 'p', 'strong', 'ul']
+ALLOWED_TAGS = ['a', 'abbr', 'acronym', 'b', 'br', 'blockquote', 'div', 'em', 'i', 'li', 'ol', 'p', 'strong', 'ul']
 
 
 class SafeHTML(sc.String):
@@ -30,6 +30,9 @@ class SafeHTML(sc.String):
         if not value:
             return None
         value = bleach.clean(value, tags=ALLOWED_TAGS, strip=True)
+        # Chromium insers <div> for plain text pasted into the contentEditable field
+        value = value.replace('<div>', '<p>').replace('</div>', '</p>')
+
         value = bleach.linkify(value)
         return value
 
