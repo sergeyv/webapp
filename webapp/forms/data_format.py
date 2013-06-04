@@ -203,12 +203,17 @@ class DataFormatCreator(DataFormatReader):
         Checks if the structure has a create method and calls the structuye's
         method if exists, otherwise calls do_create
         """
+        data = {}
         # Structure can completely override the default logic
         if hasattr(self.structure, "create"):
-            return self.structure.create(self, request)
+            data = self.structure.create(self, request)
+        else:
+            resource = self.do_create(request)
+            data = {'item_id': resource.model.id}
 
-        resource = self.do_create(request)
-        return {'item_id': resource.model.id}
+        if getattr(self.structure, '__return_updated_data__', False):
+            data.update(self.read(request))
+        return data
 
     def do_create(self, request):
         """
@@ -235,6 +240,16 @@ class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
     implements(IDataFormatReader, IDataFormatWriter)
 
     __allow_loadable__ = True
+
+    def update(self, request):
+        """
+        if __return_updated_data__ is set to True, we return the data back to the client
+        so the client can avoid doing extra request
+        """
+        data = super(DataFormatReadWrite, self).update(request)
+        if getattr(self.structure, '__return_updated_data__', False):
+            data.update(self.read(request))
+        return data
 
 
 def _add_filters_to_query(collection, query, filter_fields, request):
