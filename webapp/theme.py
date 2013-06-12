@@ -78,25 +78,22 @@ class AssetRegistry(object):
 
     )
 
-
     core_css_assets = (
-    "/crud_static/default.css",
-    "/webapp.client/css/jquery-ui-1.8.16.custom.css",
-    "/webapp.client/css/jquery.simplecolorpicker.css",
-    #"/formish.css/formish.css",
-    "/webapp.client/css/webapp.css",
+        # "/crud_static/default.css",
+        "/webapp.client/css/jquery-ui-1.8.16.custom.css",
+        # "/webapp.client/css/jquery.simplecolorpicker.css",
+        # #"/formish.css/formish.css",
+        # "/webapp.client/css/webapp.css",
     )
-    
+
     core_less_assets = ()
 
     def __init__(self, less_assets=None, css_assets=None, js_assets=None):
-
 
         self.js_assets = [r for r in self.core_js_assets]
         if js_assets is not None:
             for r in js_assets:
                 self.js_assets.append(r)
-
 
         self.css_assets = [r for r in self.core_css_assets]
         if css_assets is not None:
@@ -107,7 +104,6 @@ class AssetRegistry(object):
         if less_assets is not None:
             for r in less_assets:
                 self.less_assets.append(r)
-
 
     def render_javascript_assets(self):
         lines = ["<!-- JS assets -->"]

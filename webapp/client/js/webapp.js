@@ -156,7 +156,7 @@
                 $(this).hide();
             });
             /// Error message box
-            $("#ajax-error").ajaxError(function (event, xhr, ajaxOptions, thrownError) {
+            $(document).ajaxError(function (event, jqxhr, ajaxOptions, thrownError) {
 
                 var self = this,
                     response;
@@ -165,11 +165,19 @@
                 display any messages obviously. Also, responseText is null for
                 such responses and status = 0.
                 */
-                if (xhr.statusText == 'abort') {
+                if (jqxhr.statusText == 'abort') {
                     return;
                 }
 
-                response = xhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
+                /*
+                calling code can set `ignore_errors` attribute to signal
+                that errors are expected and are handled by the calling code
+                */
+                if (jqxhr.ignore_errors) {
+                    return;
+                }
+
+                response = jqxhr.responseText.replace(new RegExp("/_debug/media/", "g"), "/webapp.client/weberror/");
 
 
                 if (ajaxOptions.webapp_error_response_processed) {
@@ -178,7 +186,7 @@
 
                 if (!webapp.testmode) {
 
-                    $(self).html(response).dialog({
+                    $("#ajax-error").html(response).dialog({
                         modal: true,
                         title: "Server Error",
                         width: "80%",
