@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import cgi
 from datetime import datetime
 from decimal import Decimal

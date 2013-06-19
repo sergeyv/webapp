@@ -244,15 +244,48 @@ class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
 
     __allow_loadable__ = True
 
+    def _request_data_differs_from_item(self, request):
+
+        current_data = self.read(request)
+
+        new_data = request.json_body
+        new_data = dottedish.api.unflatten(new_data.items())
+
+        # TODO: NEED to be refactored to work both with None values and with
+        # extra data passed in request
+        # symmetric difference - returns items which are in one of the dicts but not in both
+        a = [(str(k), str(v)) for k, v in current_data.items()]
+        b = [(str(k), str(v)) for k, v in new_data.items()]
+        diff = set(a) ^ set(b)
+
+        # for (k, v) in current_data.items():
+        #     if str(new_data.get(k, '')).strip() != str(v).strip():
+        #         return True
+
+        return bool(len(diff))
+
     def update(self, request):
         """
         if __return_updated_data__ is set to True, we return the data back to the client
         so the client can avoid doing extra request
         """
-        data = super(DataFormatReadWrite, self).update(request)
+
+        response = {'item_id': self.__parent__.model.id}
+
+        # import pdb; pdb.set_trace()
+        if getattr(self.structure, '__no_update_if_no_change__', False):
+            if not self._request_data_differs_from_item(request):
+                if getattr(self.structure, '__return_updated_data__', False):
+                    return response.update(self.read(request))
+                else:
+                    return response
+
+        update_result = DataFormatWriter.update(self, request)
+        response.update(update_result)
+
         if getattr(self.structure, '__return_updated_data__', False):
-            data.update(self.read(request))
-        return data
+            response.update(self.read(request))
+        return response
 
 
 def _add_filters_to_query(collection, query, filter_fields, request):
