@@ -633,7 +633,7 @@ class VocabLister(object):
     def __call__(self):
         return self
 
-    def get_acl( self ):
+    def get_acl(self):
         return self.__acl__
 
     def get_items_listing(self, request):
