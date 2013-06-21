@@ -407,6 +407,9 @@ class DataFormatLister(DataFormatBase):
 
               then the client will be able to use this filter by specifying &meth=is_vip in the URL
 
+              If `meth` is not specified, we check if `filter_default` method is defined on the collection
+              and call it if it is present
+
             - sort_on
             - sort_order
             - batch_size
@@ -460,6 +463,8 @@ class DataFormatLister(DataFormatBase):
             # filter_param = request.get('param', None)
             meth = getattr(collection, 'filter_' + filter_meth_name)
             query = meth(query, request)
+        elif hasattr(collection, 'filter_default'):
+            query = collection.filter_default(query, request)
 
         # EAGERLOAD
         query = _add_eagerload_to_query(self, query)
@@ -660,6 +665,8 @@ class VocabLister(object):
         if filter_meth_name:
             meth = getattr(collection, 'filter_' + filter_meth_name)
             query = meth(query, request)
+        elif hasattr(collection, 'filter_default'):
+            query = collection.filter_default(query, request)
 
         # NO FILTERING - figure out where to get __filter_fields__ from in this case
         # query = _add_filters_to_query(self.__parent__, query, request)
