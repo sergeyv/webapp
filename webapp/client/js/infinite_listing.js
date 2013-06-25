@@ -87,7 +87,8 @@
         ).done(function (data) {
             blob = self.render_data_return_html(self.template, data);
             fragment = $(blob).find("table.listingTable tbody:last");
-            $(fragment).css("border-top", "4px solid red");
+            /* for debug purposes */
+            /*$(fragment).css("border-top", "4px solid red");*/
             self.view.find("table.listingTable").append(fragment);
 
             /* update data */
