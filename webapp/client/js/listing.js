@@ -360,6 +360,37 @@
         }
     };
 
+
+    /* MULTISELECT SUPPORT */
+    Listing.prototype.checked_items_ids = function () {
+        var v = this,
+            selected_cbs = $(v.view).find(".multiEdit:checked"),
+            ids = [];
+
+        $.each(selected_cbs, function (idx, cb) {
+            ids.push($(cb).data('item_id'));
+        });
+        return ids;
+    };
+
+    Listing.prototype.get_items_by_ids = function (ids) {
+        var items = [],
+            data = this.data;
+
+        $.each(data.items, function (idx, item) {
+            if (ids.indexOf(item.id) >= 0) {
+                items.push(item);
+            }
+        });
+        return items;
+    };
+
+    Listing.prototype.get_selected_items = function () {
+        return this.get_items_by_ids(this.checked_items_ids());
+    };
+    /* END MULTISELECT SUPPORT */
+
+
     webapp.Listing = Listing;
 
 }(jQuery, webapp));

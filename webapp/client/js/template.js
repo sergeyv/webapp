@@ -425,6 +425,12 @@
 
     };
 
+    /* MULTISELECT SUPPORT */
+    Template.prototype.get_selected_tasks = function () {
+        return [this.data];
+    };
+    /* END MULTISELECT SUPPORT */
+
     webapp.Template = Template;
 
 }(jQuery, webapp));
