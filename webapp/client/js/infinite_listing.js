@@ -147,6 +147,11 @@
         $(window).off('scroll.infinite resize.infinite');
     };
 
+    InfiniteListing.prototype.checked_items_ids = webapp.Listing.prototype.checked_items_ids;
+    InfiniteListing.prototype.get_items_by_ids = webapp.Listing.prototype.get_items_by_ids;
+    InfiniteListing.prototype.get_selected_items = webapp.Listing.prototype.get_selected_items;
+
+
     webapp.InfiniteListing = InfiniteListing;
 
 }(jQuery, webapp));

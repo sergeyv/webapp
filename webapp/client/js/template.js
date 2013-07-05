@@ -426,7 +426,7 @@
     };
 
     /* MULTISELECT SUPPORT */
-    Template.prototype.get_selected_tasks = function () {
+    Template.prototype.get_selected_items = function () {
         return [this.data];
     };
     /* END MULTISELECT SUPPORT */
