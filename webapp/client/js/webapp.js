@@ -67,16 +67,10 @@
             Displays a message - a nicer replacement for
             alert function
             */
-            $('<div></div>').html(msg).dialog({
-                modal: true,
-                title: title,
-                width: 400,
-                buttons: {
-                    Ok: function () {
-                        $(this).dialog('close');
-                    }
-                }
-            });
+            if (title) {
+                msg = '<h1>' + title + '</h1>' + msg;
+            }
+            bootbox.alert(msg);
         };
 
         /* The code above is executed before the DOM is loaded so we need to
@@ -186,7 +180,26 @@
 
                 if (!webapp.testmode) {
 
-                    $("#ajax-error").html(response).dialog({
+                    /* When debug mode is on the messages are very long,
+                     so we use it to crudely distinquish between when we want to
+                     show a generic message or a traceback */
+                    if (response.length < 400) {
+                        bootbox.alert("<h1>Server Error</h1>" + response);
+                    } else {
+                        switch (jqxhr.status) {
+                            case 500:
+                                bootbox.alert("<h1>Oops...</h1><p>There's been a server error. Our engineers have been notified.</p>");
+                                break;
+                            case 502:
+                                bootbox.alert("<h1>Oops...</h1><p>The site is down. Please try again later.</p>");
+                                break;
+                            default:
+                                bootbox.alert("<h1>Oops...</h1><p>Can't connect to the site. Please check your internet connection.</p>");
+                                break;
+
+                        }
+                    }
+                    /*$("#ajax-error").html(response).dialog({
                         modal: true,
                         title: "Server Error",
                         width: "80%",
@@ -196,7 +209,7 @@
                                 $(this).dialog('close');
                             }
                         }
-                    });
+                    });*/
 
                 } else {
                     //alert(response);
