@@ -183,7 +183,7 @@
                     /* When debug mode is on the messages are very long,
                      so we use it to crudely distinquish between when we want to
                      show a generic message or a traceback */
-                    if (response.length < 400) {
+                    if (response.length > 400) {
                         bootbox.alert("<h1>Server Error</h1>" + response);
                     } else {
                         switch (jqxhr.status) {
