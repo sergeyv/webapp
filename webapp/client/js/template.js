@@ -499,20 +499,6 @@
             /// we show a confirmation dialog and only invoke
             // the action if the user clicks OK
             if ($link.hasClass("webappConfirmDialog")) {
-                /*$('<div></div>').text($link.attr('title')).dialog({
-                    modal: true,
-                    title: "Confirm",
-                    buttons: {
-                        Cancel: function () {
-                            $(this).dialog('close');
-                        },
-                        OK: function () {
-                            webapp.invoke_async_action(view, $link);
-                            $(this).dialog('close');
-                        }
-                    }
-
-                });*/
                 bootbox.dialog($link.attr('title'), [{
                     "label" : "OK",
                     "class" : "btn-primary",
