@@ -198,7 +198,9 @@
                 self.options.after_view_shown.apply(self);
                 self.timings.after_view_shown_end = new Date();
             }
-            self.log_timings();
+            if (self.timings) {
+                self.log_timings();
+            }
         }
 
         /* if an expandable contains too little text we remove the
@@ -340,8 +342,15 @@
 
 
     Template.prototype.log_timings = function () {
-        var self = this,
-            msg = "TOO SLOW: " + self.options.identifier,
+
+        var self = this;
+
+        if (!self.timings) {
+            return;
+        }
+
+
+        var msg = "TOO SLOW: " + self.options.identifier,
             render_time = self.timings.render_end - self.timings.render_start,
             bws_time = (self.timings.before_view_shown_end || 0) - (self.timings.before_view_shown_start || 0),
             aws_time = (self.timings.after_view_shown_end || 0) - (self.timings.after_view_shown_start || 0),
