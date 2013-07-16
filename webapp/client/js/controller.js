@@ -167,22 +167,33 @@
 
         } else if (view.event.display_mode === "modal") {
 
-            var $modal =
-            $('<div class="modal hide" tabindex="-1" role="dialog" >' +
-            '  <div class="modal-header">' +
-            '    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
-            '  </div>' +
-            '  <div class="modal-body ' + (view.event.custom_class_body || "") +'"></div>' +
-            '  <!--div class="modal-footer"></div-->' +
-            '</div>');
+            var $modal = view.view.find('.rawModal');
 
-            view.view.detach().appendTo($modal.find(".modal-body"));
-            $modal.find('.modal-header').append(view.view.find('.primaryPageHeading'));
-            /* this would move the buttons to a separate footer section
-               although keeping them as is both makes them look more consistent
-               and they work without extra fuss
-            */
-            $modal.find('.modal-footer').append(view.view.find('.actions'));
+            if (!$modal.length) {
+                $modal =
+                    $('<div class="modal hide" tabindex="-1" role="dialog" >' +
+                    '  <div class="modal-header">' +
+                    '    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
+                    '  </div>' +
+                    '  <div class="modal-body ' + (view.event.custom_class_body || "") +'"></div>' +
+                    '  <!--div class="modal-footer"></div-->' +
+                    '</div>'),
+                title_text = view.view.find('.primaryPageHeading').detach().text(),
+                $title_el = $('<div></div>');
+
+                view.view.detach().appendTo($modal.find(".modal-body"));
+
+                $title_el.text(title_text);
+
+                $modal.find('.modal-header').append($title_el);
+                /* this would move the buttons to a separate footer section
+                   although keeping them as is both makes them look more consistent
+                   and they work without extra fuss
+                */
+                $modal.find('.modal-footer').append(view.view.find('.actions'));
+            }
+
+
             $modal.data('view_in_modal', view);
 
             $modal.on('hidden', function () {
