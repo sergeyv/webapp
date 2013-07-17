@@ -458,7 +458,7 @@
 *
 * - webappInvokeOnLoad - the URL will be pinged when the view is shown
 *
-* - webappConfirmDialog - shows a confirmation dialog, only pings the URL
+* - webappConfirm - shows a confirmation dialog, only pings the URL
 *   if the user chooses OK. The link's title tag is used for
 *   the dialog's message text
 *
@@ -504,11 +504,11 @@
             if ( $link.hasClass('disabled') )
                 return false;
 
-            /// if the link also has 'webappConfirmDialog' class,
+            /// if the link also has 'webappConfirm' class,
             /// we show a confirmation dialog and only invoke
             // the action if the user clicks OK
-            if ($link.hasClass("webappConfirmDialog")) {
-                bootbox.dialog($link.attr('title'), [{
+            if ($link.hasClass("webappConfirm")) {
+                bootbox.dialog($link.data('confirm'), [{
                     "label" : "OK",
                     "class" : "btn-primary",
                     "callback": function() {
@@ -520,7 +520,7 @@
                 }]);
 
             } else {
-                /// if there's no webappConfirmDialog class then
+                /// if there's no webappConfirm class then
                 /// we invoke the method directly
                 webapp.invoke_async_action(view, $link);
             }
