@@ -65,7 +65,11 @@
             self.view.dialog("close");
         } else if (dm === "modal") {
             console.log("dismissing modal...");
-            self.view.parents('.modal').require_one().modal("hide").remove();
+            if (self.view.find('.rawModal').length) {
+                self.view.find('.rawModal').require_one().modal("hide").remove();
+            } else {
+                self.view.parents('.modal').require_one().modal("hide").remove();
+            }
         } else if (dm === "popover") {
             /*console.log("dismissing modal...");
             self.view.parents('.modal').require_one().modal("hide").remove();*/

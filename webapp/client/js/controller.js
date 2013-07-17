@@ -167,7 +167,9 @@
 
         } else if (view.event.display_mode === "modal") {
 
-            var $modal = view.view.find('.rawModal');
+            var $modal = view.view.find('.rawModal'),
+                title_text,
+                $title_el;
 
             if (!$modal.length) {
                 $modal =
@@ -177,8 +179,8 @@
                     '  </div>' +
                     '  <div class="modal-body ' + (view.event.custom_class_body || "") +'"></div>' +
                     '  <!--div class="modal-footer"></div-->' +
-                    '</div>'),
-                title_text = view.view.find('.primaryPageHeading').detach().text(),
+                    '</div>');
+                title_text = view.view.find('.primaryPageHeading').detach().text();
                 $title_el = $('<div></div>');
 
                 view.view.detach().appendTo($modal.find(".modal-body"));
