@@ -272,7 +272,6 @@ class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
 
         response = {'item_id': self.__parent__.model.id}
 
-        # import pdb; pdb.set_trace()
         if getattr(self.structure, '__no_update_if_no_change__', False):
             if not self._request_data_differs_from_item(request):
                 if getattr(self.structure, '__return_updated_data__', False):
