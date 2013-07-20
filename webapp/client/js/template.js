@@ -413,8 +413,10 @@
 
 
         if(webapp.flash_messages.length > 0) {
+            console.log('have flash messages!');
 
             if(webapp.flash_messages[0].type == 'INFO') { // only clear and append if not using pre-rendered flash
+                console.log('rendering flash messages!');
                 msg_container.children().remove();
                 // msg_container.toggleClass('webappHideFlash'); // reset just in case
 

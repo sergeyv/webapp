@@ -126,6 +126,7 @@
                 if (data) {
                     /* flash messages */
                     if (data.__flash_messages__) {
+                        console.log('found flash messages in data!');
                         webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
                     }
                 }

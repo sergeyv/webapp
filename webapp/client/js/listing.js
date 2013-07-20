@@ -197,7 +197,6 @@
             blob,
             fragment;
 
-
         self.event.uri_args.batch_start = self.data.next_batch_start;
         url = self.getRestUrl('with-params');
 
@@ -212,14 +211,16 @@
                 cache: true
             }
         ).done(function (data) {
-            blob = self.render_data_return_html(self.template, data);
-            fragment = $(blob).find("table.listingTable tbody:last");
-            self.view.find("table.listingTable").append(fragment);
 
             /* update data */
             self.data.items = self.data.items.concat(data.items);
             self.data.next_batch_start = data.next_batch_start;
             self.data.has_more = data.has_more;
+
+
+            blob = self.render_data_return_html(self.template, data);
+            fragment = self.insert_loaded_data(blob);
+
 
             self.view.find('.infiniteScrollMore').hide();
 
@@ -230,6 +231,16 @@
 
             callback(fragment, data);
         });
+    };
+
+    Listing.prototype.insert_loaded_data = function (blob) {
+        /*
+        finds the fragment to be inserted in the rendered html blob and inserts it
+
+        */
+        var fragment = $(blob).find("table.listingTable tbody:last");
+        self.view.find("table.listingTable").append(fragment);
+        return fragment;
     };
 
     Listing.prototype.reload = function () {
