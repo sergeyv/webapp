@@ -154,7 +154,15 @@
             $(document).ajaxError(function (event, jqxhr, ajaxOptions, thrownError) {
 
                 var self = this,
-                    response;
+                    response,
+                    show_alert = function (msg) {
+                       if (!webapp.server_error_popup_is_active) {
+                            webapp.server_error_popup_is_active = true;
+                            bootbox.alert("<h1>Server Error</h1>" + response, function () {
+                                webapp.server_error_popup_is_active = false;
+                            });
+                        }
+                    };
 
                 /* aborted calls trigger ajaxError too - we don't want to
                 display any messages obviously. Also, responseText is null for
@@ -185,17 +193,17 @@
                      so we use it to crudely distinquish between when we want to
                      show a generic message or a traceback */
                     if (response.length > 400) {
-                        bootbox.alert("<h1>Server Error</h1>" + response);
+                        show_alert("<h1>Server Error</h1>" + response);
                     } else {
                         switch (jqxhr.status) {
                             case 500:
-                                bootbox.alert("<h1>Oops...</h1><p>There's been a server error. Our engineers have been notified.</p>");
+                                show_alert("<h1>Oops...</h1><p>There's been a server error. Our engineers have been notified.</p>");
                                 break;
                             case 502:
-                                bootbox.alert("<h1>Oops...</h1><p>The site is down. Please try again later.</p>");
+                                show_alert("<h1>Oops...</h1><p>The site is down. Please try again later.</p>");
                                 break;
                             default:
-                                bootbox.alert("<h1>Oops...</h1><p>Can't connect to the site. Please check your internet connection.</p>");
+                                show_alert("<h1>Oops...</h1><p>Can't connect to the site. Please check your internet connection.</p>");
                                 break;
 
                         }
