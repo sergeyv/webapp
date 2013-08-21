@@ -294,11 +294,12 @@
             };
 
         if (!data) { return; }
-        /* 
-        stats make pre-filling a form very slow 
+        /*
+        stats make pre-filling a form very slow
         TODOXXX: this is kinda a wrong place to deal with this
         */
         delete data.stats;
+        delete data.__recently_modified__;
 
         if (first_lvl) {
             // Fill out data provided by server with defaults provided in the URI
@@ -325,6 +326,7 @@
             };
             mergeobjs(data, self.event.uri_args);
         }
+
 
         $.each(data, function (name, value) {
             var id,
@@ -377,7 +379,7 @@
                         elem.change();
                     }
                 } else {
-                    console.log("NOT FOUND: " + id);
+                    console.log("FORM NOT FOUND: " + id);
                 }
             } else if (is_array(value)) {
 
@@ -392,17 +394,19 @@
                     elem = $(id + '--field');
                     link = $(elem.find('a.adderlink'));
 
-                    // remove existing fieldsets
-                    elem.find('.field').remove();
-                    // remove stuff which is not fields (i.e. separators etc.)
-                    elem.find('.nonField').remove();
+                    if (elem.length) {
+                        // remove existing fieldsets
+                        elem.find('.field').remove();
+                        // remove stuff which is not fields (i.e. separators etc.)
+                        elem.find('.nonField').remove();
 
-                    // should go before the === "object" section
-                    $.each(value, function (idx, subvalue) {
-                        self.view.formish('add_new_items', $(link));
-                        self.fill_form(id + '-' + idx, subvalue, false);
-                    });
-                    self.view.formish('add_new_items_header_row', $(link));
+                        // should go before the === "object" section
+                        $.each(value, function (idx, subvalue) {
+                            self.view.formish('add_new_items', $(link));
+                            self.fill_form(id + '-' + idx, subvalue, false);
+                        });
+                        self.view.formish('add_new_items_header_row', $(link));
+                    }
                 }
 
             } else if (typeof value === "object") {
