@@ -254,8 +254,8 @@ class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
         # TODO: NEED to be refactored to work both with None values and with
         # extra data passed in request
         # symmetric difference - returns items which are in one of the dicts but not in both
-        a = [(str(k), str(v)) for k, v in current_data.items()]
-        b = [(str(k), str(v)) for k, v in new_data.items()]
+        a = [(repr(k), repr(v)) for k, v in current_data.items()]
+        b = [(repr(k), repr(v)) for k, v in new_data.items()]
         diff = set(a) ^ set(b)
 
         # for (k, v) in current_data.items():
