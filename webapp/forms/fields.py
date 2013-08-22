@@ -16,6 +16,10 @@ class Literal(sc.attr.LeafAttribute):
     pass
 
 # added <br> and <p> to the list of allowed tags, removed <code>
+
+
+# TODOXXX: When we implement #1422 Use un-linkified contents in libra we'll need to remove 'a' from the list
+# of allowed tags
 ALLOWED_TAGS = ['a', 'abbr', 'acronym', 'b', 'br', 'blockquote', 'div', 'em', 'i', 'li', 'ol', 'p', 'strong', 'ul']
 
 
@@ -33,7 +37,8 @@ class SafeHTML(sc.String):
         # Chromium insers <div> for plain text pasted into the contentEditable field
         value = value.replace('<div>', '<p>').replace('</div>', '</p>')
 
-        value = bleach.linkify(value)
+        # server-side parsing does not work well with our editor
+        #value = bleach.linkify(value)
         return value
 
 
