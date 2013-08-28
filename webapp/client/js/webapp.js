@@ -477,8 +477,16 @@
         // Clear the location.
         loc = this.normalizeHash(loc);
 
-        // Change the location
-        window.location.hash = loc;
+        // If the new location is the same as the old one
+        if (window.location.hash == ('#' + loc)) {
+            // 'Change' it so that the address change handler gets called
+            window.location.hash = loc + '/';
+            // Go back to the right page so that the / don't keep stacking
+            window.location.hash = loc;
+        } else {
+            // Change the location
+            window.location.hash = loc;
+        }
 
 	};
 
