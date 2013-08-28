@@ -606,7 +606,7 @@
         } else {
             webapp.showMessage("POPUP VIEW NOT FOUND: " + hash);
         }
-        return false;
+        return event.mapping.view;
     };
 
     // uses webapp.visitedUrlsLog
