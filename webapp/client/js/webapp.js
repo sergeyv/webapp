@@ -5,7 +5,7 @@
 (function (con) {
     "use strict";
     // the dummy function
-    function dummy() {};
+    var dummy = function () {};
     // console methods that may exist
     for(var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(','), func; func = methods.pop();) {
         con[func] = con[func] || dummy;
@@ -123,14 +123,7 @@
                     // pass
                 }
 
-                if (data) {
-                    /* flash messages */
-                    if (data.__flash_messages__) {
-                        console.log('found flash messages in data!');
-                        webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
-                    }
-                }
-
+                webapp.processFlashMessages(data, jqx);
             });
 
 
@@ -287,6 +280,23 @@
 
 	}
 
+
+    WebApp.prototype.processFlashMessages = function (data, jqXHR) {
+        /// set a trigger on jqXHR to prevent rendering the same message twice
+        /// (in case we call webapp.processFlashMessages manually from an onsuccess callback
+        /// which is called earlier than the .ajaxSuccess which normally processes the flash messages)
+        if (jqXHR.__flash_messages_processed__) {
+            return;
+        }
+        if (data) {
+            /* flash messages */
+            if (data.__flash_messages__) {
+                console.log('found flash messages in data!');
+                webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
+            }
+            jqXHR.__flash_messages_processed__ = true;
+        }
+    };
 
 
 	WebApp.prototype.getController = function () {
@@ -605,7 +615,7 @@
                         parts[0] === "webappOnSuccess" &&
                         current_view[parts[1]]) {
                     fn = current_view[parts[1]];
-                    fn.apply(current_view, [initiating_element]);
+                    fn.apply(current_view, [initiating_element, server_response]);
                 }
             });
         };
@@ -741,14 +751,14 @@
     WebApp.prototype.invoke_async_action = function (view, $link) {
         var webapp = this,
             meth = webapp.Read,
-            callback = function () {
+            callback = function (data, textStatus, jqXHR) {
 
                 /* The new method of specifying the callback using data-attributes*/
                 var view_fn_name = $link.data('onsuccess'),
                     view_fn;
                 if (view_fn_name) {
                     view_fn = view[view_fn_name];
-                    view_fn.apply(view, [$link]);
+                    view_fn.apply(view, [$link, data, textStatus, jqXHR]);
                 }
 
                 /// LEGACY METHOD USING CLASSES - DO NOT USE
@@ -760,7 +770,7 @@
                     if (parts.length === 2 &&
                             parts[0] === "webappOnSuccess" &&
                             view[parts[1]]) {
-                        view[parts[1]].apply(view, [$link]);
+                        view[parts[1]].apply(view, [$link, data, textStatus, jqXHR]);
                     }
                 });
 
