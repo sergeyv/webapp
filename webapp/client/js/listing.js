@@ -98,10 +98,10 @@
             if (need_pages) {
                 for (i = 0; i < pages; i += 1) {
                     if (i === current) {
-                        output.push('<li><span class="current">' + (i + 1) + '</span></li>');
+                        output.push('<li><span class="current discreetColour bold">' + (i + 1) + '</span></li>');
                     } else {
                         bs = i * batch_size;
-                        output.push('<li><a href="#' + self.new_filter_url({batch_start: bs}) + '">' + (i + 1) + '</a></li>');
+                        output.push('<li><a class="bold" href="#' + self.new_filter_url({batch_start: bs}) + '">' + (i + 1) + '</a></li>');
                     }
                 }
             }
@@ -111,7 +111,7 @@
                 bs = (current + 1) * batch_size;
                 output.push('<li><a href="#' + self.new_filter_url({batch_start: bs}) + '"> &raquo; </a></li>');
             } else {
-                output.push('<li><span class="current"> &raquo; </span></li>');
+                output.push('<li><span class="current discreetColour"> &raquo; </span></li>');
             }
             output.push('</ul>');
         } else {
