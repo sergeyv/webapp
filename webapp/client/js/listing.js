@@ -115,7 +115,7 @@
             }
             output.push('</ul>');
         } else {
-            output.push('<span class="discreet">all ' + total + ' items shown</span>');
+            output.push('<span class="discreet">All ' + total + ' items shown</span>');
         }
 
         /// the current batch size
@@ -164,10 +164,10 @@
                 bs = (current + 1) * batch_size;
                 output.push('<li><a class="loadMoreLink" href="#' + self.new_filter_url({batch_start: bs}) + '"> show more </a></li>');
             } else {
-                output.push('<li><span class="discreet">all items shown</span></li>');
+                output.push('<li><span class="discreet">All items shown</span></li>');
             }
         } else {
-            output.push('<li><span class="discreet">all ' + total + ' items shown</span></li>');
+            output.push('<li><span class="discreet">All ' + total + ' items shown</span></li>');
         }
 
         output.push("</ul></div>");
