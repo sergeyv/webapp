@@ -605,7 +605,7 @@
                         parts[0] === "webappOnSuccess" &&
                         current_view[parts[1]]) {
                     fn = current_view[parts[1]];
-                    fn.apply(current_view);
+                    fn.apply(current_view, [initiating_element]);
                 }
             });
         };
@@ -743,6 +743,15 @@
             meth = webapp.Read,
             callback = function () {
 
+                /* The new method of specifying the callback using data-attributes*/
+                var view_fn_name = $link.data('onsuccess'),
+                    view_fn;
+                if (view_fn_name) {
+                    view_fn = view[view_fn_name];
+                    view_fn.apply(view, [$link]);
+                }
+
+                /// LEGACY METHOD USING CLASSES - DO NOT USE
                 /// find all classes which start with webappOnSuccess
                 /// if found, it expects it to be in a form webappOnSuccess-methodName.
                 /// If the view has such method, it is invoked when the call succeeds
@@ -751,11 +760,22 @@
                     if (parts.length === 2 &&
                             parts[0] === "webappOnSuccess" &&
                             view[parts[1]]) {
-                        view[parts[1]].apply(view);
+                        view[parts[1]].apply(view, [$link]);
                     }
                 });
+
+
             },
-            data = {};
+            data = {},
+            optimistic_update = function () {
+                var view_fn_name = $link.data('optimistic'),
+                    view_fn;
+                if (view_fn_name) {
+                    view_fn = view[view_fn_name];
+                    view_fn.apply(view, [$link]);
+                }
+            },
+            link_uri = $link.attr('href'); // remember the link in case optimistic update changes it
 
         if ($link.hasClass("webappMethodDelete")) {
             meth = webapp.Delete;
@@ -790,10 +810,12 @@
 
         }
 
+        optimistic_update();
+
         if (meth === webapp.Read) {
-            meth($link.attr('href'), $link.data('invalidated_by')).done(callback);
+            meth(link_uri, $link.data('invalidated_by')).done(callback);
         } else {
-            meth($link.attr('href'), data).done(callback);
+            meth(link_uri, data).done(callback);
         }
 
         if ($link.hasClass("webappGoBack")) {
