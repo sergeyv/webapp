@@ -112,7 +112,10 @@
 
         title = self.get_title();
         if (title) {
-            self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
+            // raw modals do not need a title prepended
+            if (!self.view.find('.rawModal').length) {
+                self.view.prepend($('<h1 class="primaryPageHeading">' + title + '</h1>'));
+            }
         }
 
         /*self.cancelLink.on('click', function () {
