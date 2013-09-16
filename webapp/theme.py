@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # -*- coding: utf-8 -*-
 ##########################################
 #     This file forms part of WEBAPP
@@ -22,9 +25,10 @@ class AssetRegistry(object):
     core_js_assets = (
     "/webapp.client/core_js/jquery-1.7.js",
 
+    # REMOVED: Not needed now, JSON object was missing in IE7 and below
     # REST support
     # from http://plugins.jquery.com/project/Rest
-    "/webapp.client/core_js/json2.js",
+    # "/webapp.client/core_js/json2.js",
     #"/webapp.client/core_js/jquery.rest.js",
 
     # Client-side templates
@@ -34,14 +38,12 @@ class AssetRegistry(object):
     # Formish
     #"/formish.js/formish.js",
 
-    # from http://flowplayer.org/tools/
-
     # Address plugin which deals with the hash part of the url
     # from http://www.asual.com/jquery/address/
     "/webapp.client/core_js/jquery.address.js",
 
     # Full JQuery UI from http://jqueryui.com/download
-    "/webapp.client/core_js/jquery-ui-1.8.16.custom.min.js",
+    # "/webapp.client/core_js/jquery-ui-1.8.16.custom.min.js",
     # Time picker from http://bililite.com/blog/2009/07/09/updating-timepickr/
     "/webapp.client/core_js/jquery.timepickr.js",
 
@@ -80,7 +82,7 @@ class AssetRegistry(object):
 
     core_css_assets = (
         # "/crud_static/default.css",
-        "/webapp.client/css/jquery-ui-1.8.16.custom.css",
+        # "/webapp.client/css/jquery-ui-1.8.16.custom.css",
         # "/webapp.client/css/jquery.simplecolorpicker.css",
         # #"/formish.css/formish.css",
         # "/webapp.client/css/webapp.css",
