@@ -64,7 +64,7 @@ class AssetRegistry(object):
 
 
     # Formish
-    "/webapp.client/js/formish_support.js",
+    # "/webapp.client/js/formish_support.js",
 
 
     # Our framework stuff

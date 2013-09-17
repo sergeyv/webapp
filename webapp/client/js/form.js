@@ -228,7 +228,7 @@
         self.bindFormControls();
 
         // Init formish form
-        self.view.formish();
+        // self.view.formish();
 
         //if (this.options.uses_custom_template) { // sets up elements we dont need with a custom template
         self.genericAugmentView();
