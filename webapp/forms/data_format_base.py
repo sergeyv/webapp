@@ -207,7 +207,7 @@ class DataFormatBase(object):
 
         flattened = getattr(schema, "__flatten_subforms__", [])
 
-        ignore_attrs = getattr(schema, '__ignore_attributes__', [])
+        ignore_attrs = getattr(schema, '__readonly_attributes__', [])
 
         for (name, attr) in attrs:
             value = data.get(name, _marker)
