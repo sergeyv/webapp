@@ -1,20 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# -*- coding: utf-8 -*-
 ##########################################
 #     This file forms part of WEBAPP
 #     Copyright: refer to COPYRIGHT.txt
 #     License: refer to LICENSE.txt
 ##########################################
-
-#_theme_registry = {}
-#
-#def set_theme(name, theme):
-#    _theme_registry[name] = theme
-#
-#def get_theme(name):
-#    return _theme_registry[name]
 
 
 class AssetRegistry(object):
@@ -56,7 +47,7 @@ class AssetRegistry(object):
     #"/webapp.client/core_js/jquery-ui-timepicker-addon.js",
 
     # Simple jquery color picker https://github.com/tkrotoff/jquery-simplecolorpicker
-    "/webapp.client/core_js/jquery.simplecolorpicker.js",
+    # "/webapp.client/core_js/jquery.simplecolorpicker.js",
 
     # from http://plugins.jquery.com/node/1386/release
     # we're using this for caching
