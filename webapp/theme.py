@@ -45,7 +45,7 @@ class AssetRegistry(object):
     # Full JQuery UI from http://jqueryui.com/download
     # "/webapp.client/core_js/jquery-ui-1.8.16.custom.min.js",
     # Time picker from http://bililite.com/blog/2009/07/09/updating-timepickr/
-    "/webapp.client/core_js/jquery.timepickr.js",
+    # "/webapp.client/core_js/jquery.timepickr.js",
 
     # http://bassistance.de/jquery-plugins/jquery-plugin-validation/
     "/webapp.client/core_js/jquery.validate.js",
