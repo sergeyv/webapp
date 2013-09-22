@@ -382,7 +382,7 @@
                         elem.change();
                     }
                 } else {
-                    console.log("FORM NOT FOUND: " + id);
+                    console.log("FORM ELEMENT NOT FOUND: ", id, self.options.identifier);
                 }
             } else if (is_array(value)) {
 
