@@ -62,6 +62,8 @@
         this.served_cached_requests = 0;
         this.served_total_requests = 0;
 
+        this.compiled_templates = {};
+
         this.showMessage = function (msg, title) {
             /*
             Displays a message - a nicer replacement for

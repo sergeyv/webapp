@@ -188,29 +188,29 @@
     };
 
 
-    Form.prototype.render_data_return_html = function (template, data) {
-        /*
-        renders data using the passed template, return a html blob
-        */
-        var self = this,
-            txt;
+    // Form.prototype.render_data_return_html = function (template, data) {
+    //     /*
+    //     renders data using the passed template, return a html blob
+    //     */
+    //     var self = this,
+    //         txt;
 
-        if (!template) {
-            return "ERROR: Template not found!";
-        }
+    //     if (!template) {
+    //         return "ERROR: Template not found!";
+    //     }
 
-        try {
-            return $.jqote(template, {data: data, view: self});
-        } catch (err) {
-            alert(err.message);
-            if (!webapp.testmode) {
-                txt = "There was an error on this page.<br />"
-                    + "Error description: <strong>"
-                    + err.message + "</strong>";
-                webapp.showMessage(txt, "Template error: " + err.name);
-            }
-        }
-    };
+    //     try {
+    //         return $.jqote(template, {data: data, view: self});
+    //     } catch (err) {
+    //         alert(err.message);
+    //         if (!webapp.testmode) {
+    //             txt = "There was an error on this page.<br />"
+    //                 + "Error description: <strong>"
+    //                 + err.message + "</strong>";
+    //             webapp.showMessage(txt, "Template error: " + err.name);
+    //         }
+    //     }
+    // };
 
 
     Form.prototype.render = function () {

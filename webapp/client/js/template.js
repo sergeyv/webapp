@@ -81,15 +81,18 @@
         var self = this,
             calls = [];
 
-
-        if (!self.template) {
-            calls.push($.ajax({
-                url: self._get_template_load_url(),
-                cache: false /* do not cache templates */
-            }));
-
-        } else {
+        if (webapp.compiled_templates[self.options.identifier]) {
             calls.push(null);
+        } else {
+            if (!self.template) {
+                calls.push($.ajax({
+                    url: self._get_template_load_url(),
+                    cache: false /* do not cache templates */
+                }));
+
+            } else {
+                calls.push(null);
+            }
         }
 
         if (self.options.need_load_data) {
@@ -292,7 +295,13 @@
         renders data using the passed template, return a html blob
         */
         var self = this,
-            txt;
+            txt,
+            compiled_template_fn = webapp.compiled_templates[self.options.identifier],
+            template_data = {data: data, view: self};
+
+        if (compiled_template_fn) {
+            return compiled_template_fn.call(template_data, 0, 0, template_data);
+        }
 
         if (!template) {
             return "ERROR: Template not found!";
