@@ -662,7 +662,6 @@
     };
 
     WebApp.prototype.Read = function (url, invalidated_by) {
-
         return webapp.get_cached_ajax(
             true,
             invalidated_by,
@@ -963,6 +962,13 @@
         }
         return s;
     };
+
+
+    WebApp.prototype.log_stack_trace = function () {
+        var e = new Error('dummy'),
+            stack = e.stack.replace(/\s+/g, '\n');
+        return stack;
+      };
 
     // ----------------------------------------------------------------------- //
     // ----------------------------------------------------------------------- //
