@@ -445,6 +445,9 @@ class DataFormatLister(DataFormatBase):
 
         data = {}
 
+        if hasattr(structure, "pre_process_data"):
+            data = structure.pre_process_data(self, data, request)
+
         # a structure can override get_items_query method
         if hasattr(structure, "get_items_query"):
             query = structure.get_items_query(self, request)
