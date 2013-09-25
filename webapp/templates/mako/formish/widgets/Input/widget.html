@@ -1,8 +1,0 @@
-<%page args="field" />
-<%!
-from webapp.forms import get_field_class_with_validators
-%>
-<input id="${field.cssname}" type="text" name="${field.name}" value="${field.attr.default or ''}"
-${get_field_class_with_validators(field, classes)|n}
-placeholder="${field.attr.description or ''}"
-/>
