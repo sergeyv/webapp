@@ -120,7 +120,14 @@
                 // able to find how to get json data from ajaxSuccess
                 var data;
                 try {
-                    data = $.parseJSON(jqx.responseText);
+                    /*
+                        Arrgh, Firebug sometimes breaks here regardless of the try/except block
+                        Let's really crudely check if the response looks like JSON and bail out
+                        if it doesn't
+                    */
+                    if (data && data[0] === '{') {
+                        data = $.parseJSON(jqx.responseText);
+                    }
                 } catch (exc) {
                     // pass
                 }
