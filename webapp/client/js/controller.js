@@ -203,6 +203,10 @@
                    because the modal can be dismissed by a variety of ways
                 */
                 self.currentView = $modal.data('view_in_modal').event.parentView;
+                /* remove the activeContentView class from the modal when it closes */
+                /* not doing this causes problems with webapp.adjustMultiEditActionsVisibility (it sees two .activeContentView instances and chokes) */
+                console.log('closing modal');
+                $modal.find('.contentView').removeClass('activeContentView');
             });
 
             $modal.modal({
