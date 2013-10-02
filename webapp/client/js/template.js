@@ -238,8 +238,9 @@
         }
 
         /// find or create the view container
-        node_id = self.options.identifier + '-view',
+        node_id = self.options.identifier + '-view';
         self.view = $("#" + node_id);
+
         if (!self.view.length) {
             /// Create and append a node if not found
             $node = $('<div id="' + node_id + '" class="contentView"> </div>');
