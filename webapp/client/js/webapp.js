@@ -125,7 +125,7 @@
                         Let's really crudely check if the response looks like JSON and bail out
                         if it doesn't
                     */
-                    if (data && data[0] === '{') {
+                    if (jqx.responseText && jqx.responseText[0] === '{') {
                         data = $.parseJSON(jqx.responseText);
                     }
                 } catch (exc) {
