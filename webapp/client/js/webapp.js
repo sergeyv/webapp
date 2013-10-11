@@ -459,6 +459,28 @@
         var self = webapp,
             context = self.getEventContextForRoute(address_change_event.value);
 
+        if (self.ignore_next_address_change) {
+            self.ignore_next_address_change = false;
+            return;
+        }
+
+        // if the can_leave_page callback exists
+        if(self.getController().currentView && self.getController().currentView.options.can_leave_page) {
+            // if the user can't leave the page
+            if(!self.getController().currentView.options.can_leave_page()) {
+
+                var stay = self.getController().currentView.options.confirm_navigation();
+
+                if(!stay) {
+                    // the next call to here should be ignored
+                    self.ignore_next_address_change = true;
+                    // set the next page to be the old page
+                    $.address.value(self.getController().currentView.event.hash);
+                    return;
+                }
+            }
+        }
+
         webapp.abortAllRequests();
         webapp.clearStats();
 
