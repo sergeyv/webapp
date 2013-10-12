@@ -465,7 +465,7 @@
         }
 
         // if the can_leave_page callback exists
-        if(self.getController().currentView && self.getController().currentView.options.can_leave_page) {
+        if (self.getController().currentView && (self.getController().currentView.options || {}).can_leave_page) {
             // if the user can't leave the page
             if(!self.getController().currentView.options.can_leave_page()) {
 
