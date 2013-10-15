@@ -431,10 +431,8 @@
                 // msg_container.toggleClass('webappHideFlash'); // reset just in case
 
                 $.each(webapp.flash_messages, function (idx, msg) {
-                    msg_container.append('<div class="alert">' +
-                        msg.msg +
-                        '</div>'
-                        );
+                    msg_container.append('<div class="flash-message">' + msg.msg + '</div>');
+                    msg_container.contents().delay(5000).fadeOut(1000, function() { $(this).remove() } );
                 });
             } else if (webapp.flash_messages[0].type == 'SHOW') { // display pre-rendered flash message for certain templates
                    msg_container.toggleClass('webappHideFlash'); // status message should be set to display: none before

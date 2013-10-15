@@ -302,6 +302,11 @@
             if (data.__flash_messages__) {
                 console.log('found flash messages in data!');
                 webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
+
+                // process the messages right away
+                if (webapp.getController().currentView.renderFlashMessages) {
+                    webapp.getController().currentView.renderFlashMessages();
+                }
             }
             jqXHR.__flash_messages_processed__ = true;
         }

@@ -262,10 +262,6 @@
         if (webapp.after_view_fully_loaded) {
             webapp.after_view_fully_loaded(view);
         }
-
-        if (view.renderFlashMessages) {
-            view.renderFlashMessages();
-        }
     };
 
     webapp.controller = new Controller();
