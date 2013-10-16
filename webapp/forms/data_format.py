@@ -502,7 +502,8 @@ class DataFormatLister(DataFormatBase):
 
         # BATCH
         # query = self._add_batch(query, request)
-        batch_size = request.GET.get('batch_size', collection.DEFAULT_RECORDS_PER_BATCH)
+        default_batch_size = structure.__batch_size__ if hasattr(structure, '__batch_size__') else collection.DEFAULT_RECORDS_PER_BATCH
+        batch_size = request.GET.get('batch_size', default_batch_size)
         batch_size = int(batch_size)
         batch_size = max(batch_size, collection.MIN_RECORDS_PER_BATCH)
         batch_size = min(batch_size, collection.MAX_RECORDS_PER_BATCH)
