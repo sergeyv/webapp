@@ -486,7 +486,7 @@
             }
         }
 
-        webapp.abortAllRequests();
+        //webapp.abortAllRequests();
         webapp.clearStats();
 
         if (context.mapping) {

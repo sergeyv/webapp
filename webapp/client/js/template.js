@@ -316,6 +316,7 @@
                       "Error description: <strong>" +
                       err.message + "</strong>";
                 /// webapp.showMessage(txt, "Template error: " + err.name);
+                console.log(err);
                 return txt;
             }
         }
