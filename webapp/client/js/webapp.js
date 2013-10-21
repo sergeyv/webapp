@@ -160,7 +160,7 @@
                     show_alert = function (msg) {
                        if (!webapp.server_error_popup_is_active) {
                             webapp.server_error_popup_is_active = true;
-                            bootbox.alert("<h1>Server Error</h1>" + response, function () {
+                            bootbox.alert(msg, function () {
                                 webapp.server_error_popup_is_active = false;
                             });
                         }
@@ -191,13 +191,22 @@
 
                 if (!webapp.testmode) {
 
+                    console.log(response.length);
+
                     /* When debug mode is on the messages are very long,
                      so we use it to crudely distinquish between when we want to
                      show a generic message or a traceback */
                     if (response.length > 400) {
-                        show_alert("<h1>Server Error</h1>" + response);
+                        show_alert(response);
                     } else {
                         switch (jqxhr.status) {
+                            case 410:
+                                /*
+                                When a resource is soft-deleted the server sends 410 Gone
+                                with a small JSON dict with a `message` attribute
+                                */
+                                show_alert("<p>"  + JSON.parse(response).message + "</p>");
+                                break;
                             case 500:
                                 show_alert("<h1>Oops...</h1><p>There's been a server error. Our engineers have been notified.</p>");
                                 break;

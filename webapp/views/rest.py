@@ -17,7 +17,7 @@ from datetime import datetime
 # import schemaish as sc
 import dottedish
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPGone
 
 import crud
 
@@ -45,6 +45,22 @@ class bcolors:
     FAIL = '\033[91m'
     ENDC = '\033[0m'
 
+
+
+@view_config(context=HTTPGone, renderer='json')
+def resource_deleted(exc, request):
+    """
+    When a resource is soft-deleted we return HTTP 410 Gone
+    by raising HTTPGone exception. Here we register a custom view
+    which returns a small bit of json to notify the client that the resource
+    has been deleted
+    """
+
+    request.response.status = 410
+    return {
+        'is_deleted': True,
+        'message': exc.detail
+    }
 
 def _add_flash_messages(data, request):
     """
