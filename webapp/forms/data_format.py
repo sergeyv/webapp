@@ -159,6 +159,12 @@ class DataFormatDeletor(DataFormatBase):
         # before we call the after context hook
         sa.orm.object_session(resource.model).flush()
 
+        if hasattr(structure, "after_item_deleted"):
+            structure.after_item_deleted(self, request)
+
+        if hasattr(resource, "after_item_deleted"):
+            resource.after_item_deleted(self, request)
+
         return {'item_id': item_id}
 
 
