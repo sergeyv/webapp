@@ -191,8 +191,6 @@
 
                 if (!webapp.testmode) {
 
-                    console.log(response.length);
-
                     /* When debug mode is on the messages are very long,
                      so we use it to crudely distinquish between when we want to
                      show a generic message or a traceback */
@@ -219,23 +217,13 @@
 
                         }
                     }
-                    /*$("#ajax-error").html(response).dialog({
-                        modal: true,
-                        title: "Server Error",
-                        width: "80%",
-                        height: 600,
-                        buttons: {
-                            Ok: function () {
-                                $(this).dialog('close');
-                            }
-                        }
-                    });*/
 
                 } else {
                     //alert(response);
                     webapp.getController().showMainView(webapp.serverErrorView, webapp.getController().currentView.event);
                     $("div.activeContentView").html(response);
                 }
+                webapp.relocateTo(webapp.previousPageUrl());
             });
 
         });
