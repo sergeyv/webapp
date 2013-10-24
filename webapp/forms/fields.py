@@ -36,6 +36,7 @@ ALLOWED_ATTRIBUTES = {
     'acronym': ['title'],
     'abbr': ['title'],
     'img': ['src', 'width', 'height'],
+    'td': ['colspan', 'rowspan'],
 }
 ALLOWED_STYLES = [
     'color',
@@ -61,7 +62,7 @@ class SafeHTML(sc.String):
             styles=ALLOWED_STYLES,
             strip=True)
         # Chromium insers <div> for plain text pasted into the contentEditable field
-        value = value.replace('<div>', '<p>').replace('</div>', '</p>')
+        # value = value.replace('<div>', '<p>').replace('</div>', '</p>')
 
         # server-side parsing does not work well with our editor
         #value = bleach.linkify(value)
