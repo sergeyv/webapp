@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 
 import bleach
 import schemaish as sc
@@ -20,8 +23,27 @@ class Literal(sc.attr.LeafAttribute):
 
 # TODOXXX: When we implement #1422 Use un-linkified contents in libra we'll need to remove 'a' from the list
 # of allowed tags
-ALLOWED_TAGS = ['a', 'abbr', 'acronym', 'b', 'br', 'blockquote', 'div', 'em', 'i', 'li', 'ol', 'p', 'strong', 'ul']
-
+ALLOWED_TAGS = [
+    'a', 'abbr', 'acronym', 'b', 'br', 'blockquote', 'code',
+    'div', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'i', 'img', 'li', 'ol', 'p', 'pre', 'span', 'strong',
+    'table', 'th', 'tr', 'td',
+    'ul'
+]
+ALLOWED_ATTRIBUTES = {
+    '*': ['style', 'color'],
+    'a': ['href', 'title'],
+    'acronym': ['title'],
+    'abbr': ['title'],
+    'img': ['src', 'width', 'height'],
+}
+ALLOWED_STYLES = [
+    'color',
+    'font-weight',
+    'overflow',
+    'margin',
+    'text-align'
+]
 
 class SafeHTML(sc.String):
     """
@@ -33,7 +55,11 @@ class SafeHTML(sc.String):
         value = value.strip()
         if not value:
             return None
-        value = bleach.clean(value, tags=ALLOWED_TAGS, strip=True)
+        value = bleach.clean(value,
+            tags=ALLOWED_TAGS,
+            attributes=ALLOWED_ATTRIBUTES,
+            styles=ALLOWED_STYLES,
+            strip=True)
         # Chromium insers <div> for plain text pasted into the contentEditable field
         value = value.replace('<div>', '<p>').replace('</div>', '</p>')
 
