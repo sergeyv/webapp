@@ -257,11 +257,29 @@ class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
         new_data = request.json_body
         new_data = dottedish.api.unflatten(new_data.items())
 
-        # TODO: NEED to be refactored to work both with None values and with
-        # extra data passed in request
+
+        def possibly_number(value):
+            try:
+                return int(value)
+            except ValueError:
+                try:
+                    return float(value)
+                except ValueError:
+                    return value
+
         # symmetric difference - returns items which are in one of the dicts but not in both
-        a = [(repr(k), repr(v)) for k, v in current_data.items()]
-        b = [(repr(k), repr(v)) for k, v in new_data.items()]
+        # a = [(repr(k), repr(v)) for k, v in current_data.items()]
+        # b = [(repr(k), repr(v)) for k, v in new_data.items()]
+
+        # ARRGH! repr() was nice but was not properly comparing plain and unicode strings
+        # previously str() was failing on unicode strings
+        # plainly comparing the dicts ,again, has its issues
+        # when comparing numbers to their string representation: 1 != '1'
+        # so we whipped up a custom function to convert values to a number if we can
+        # otherwise falling back to the default comparison logic
+        a = [(possibly_number(k), possibly_number(v)) for k, v in current_data.items()]
+        b = [(possibly_number(k), possibly_number(v)) for k, v in new_data.items()]
+
         diff = set(a) ^ set(b)
 
         # for (k, v) in current_data.items():
