@@ -266,6 +266,10 @@ class DataFormatReadWrite(DataFormatReader, DataFormatWriter):
                     return float(value)
                 except ValueError:
                     return value
+            # if it's an array or something
+            except TypeError:
+                # turn it into a tuple to make it immutable
+                return tuple(value)
 
         # symmetric difference - returns items which are in one of the dicts but not in both
         # a = [(repr(k), repr(v)) for k, v in current_data.items()]
