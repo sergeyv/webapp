@@ -191,6 +191,12 @@
 
                 if (!webapp.testmode) {
 
+                    /* this one should work in debug mode too */
+                    if (jqxhr.status === 422) {
+                        window.location.reload(true);
+                        return;
+                    }
+
                     /* When debug mode is on the messages are very long,
                      so we use it to crudely distinquish between when we want to
                      show a generic message or a traceback */
@@ -204,6 +210,9 @@
                                 with a small JSON dict with a `message` attribute
                                 */
                                 show_alert("<p>"  + JSON.parse(response).message + "</p>");
+                                break;
+                            case 422:
+                                /* otherwise it shows a default message momentarily */
                                 break;
                             case 500:
                                 show_alert("<h1>Oops...</h1><p>There's been a server error. Our engineers have been notified.</p>");
