@@ -173,7 +173,7 @@ def json_rest_empty(context, request):
 def json_rest_filters(context, request):
     """
     Returns a list of possible filters for the current DataFormat:
-    /rest/servers/@listing/filters
+    /servers/@listing/filters
     """
 
     # time.sleep(10);
@@ -374,7 +374,7 @@ def json_rest_list_f(context, request, permission=""):
 
 def _do_validate(context, request):
     """
-    The client invokes an url like /rest/users/123/@view/v/name?name=john;
+    The client invokes an url like /users/123/@view/v/name?name=john;
     this function checks if there's a validation hook named "validate_name"
     either on the structure or on the resource and calls them.
 

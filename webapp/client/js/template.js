@@ -502,7 +502,7 @@
 *
 * - webappPopup - display the target link in the popup. It is possible to
 *   invoke an async action and show the view in a popup at the same time
-*   by specifying both urls separated by a hash: /rest/some/url#/some/view
+*   by specifying both urls separated by a hash: /some/url#/some/view
 *
 */
 

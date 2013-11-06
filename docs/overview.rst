@@ -116,7 +116,7 @@ Define some forms::
     class SchoolEdit(sc.Structure):
         ...
 
-As you can see, SchoolResource does not define ``view`` data format. However, if we request ``/rest/schools/123/@view``, the framework will detect that SchoolResource is a resource for the School model, and School model is a subclass of Institution, and the resource registered for Institution (InstitutionResource) does indeed define that format, so it will be used to serialize the data.
+As you can see, SchoolResource does not define ``view`` data format. However, if we request ``/schools/123/@view``, the framework will detect that SchoolResource is a resource for the School model, and School model is a subclass of Institution, and the resource registered for Institution (InstitutionResource) does indeed define that format, so it will be used to serialize the data.
 
 
 Client

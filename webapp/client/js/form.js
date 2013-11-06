@@ -609,7 +609,7 @@
         * If self.event.parameters.item_id is present, the method
         * PUTs json-serialized form data to the rest url of that item.
         * Otherwise it uses a 'virtual' item called 'new', i.e.
-        * /rest/clients/new.
+        * /clients/new.
         */
         var self = this,
             form_data = self.form.serializeObject(),

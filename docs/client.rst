@@ -28,26 +28,26 @@ Basically, the only JS file in your application will be ``routes.js``:
         /* PROVIDERS */
         c.route("/providers/", new webapp.Listing({
             identifier: "providers-listing",
-            rest_service_root: "/rest/providers/"
+            rest_service_root: "/providers/"
         }));
 
 
         c.route("/providers/add", new webapp.Form({
             add_button_title: "Add Provider",
             identifier: "ProviderAddForm",
-            rest_service_root: "/rest/providers/:item_id"
+            rest_service_root: "/providers/:item_id"
         }));
 
         c.route("/providers/:item_id", new webapp.Template({
             identifier: "provider-view",
-            rest_service_root: "/rest/providers/:item_id",
+            rest_service_root: "/providers/:item_id",
             ann: true
         }));
 
         c.route("/providers/:item_id/edit", new webapp.Form({
             edit_form_title: "Edit Provider",
             identifier: "ProviderEditForm",
-            rest_service_root: "/rest/providers/:item_id"
+            rest_service_root: "/providers/:item_id"
         }));
 
         /// we need to run this after the DOM is loaded
@@ -120,12 +120,12 @@ Then we can use it by attaching a webapp.Form to some route:
     this.route( "/users/:item_id/edit", new webapp.Form({
             add_button_title: "Add User",
             identifier: "UserEditForm", // the same as the name of the class in Python
-            rest_service_root: "/rest/users/:item_id", // we set up a Rest API at this address by registering an SA model (supposedly called User) with crud
+            rest_service_root: "/users/:item_id", // we set up a Rest API at this address by registering an SA model (supposedly called User) with crud
             next_view: "/users/:item_id"
         }));
 
 Now, if we open ``#/users/123/edit``, the form will request json data from
-``/rest/users/123``, display the data in the form, and after we click Save
+``/users/123``, display the data in the form, and after we click Save
 the data will be converted into a JSON structure and POSTed to the same url.
 
 Add form vs. Edit form
@@ -140,7 +140,7 @@ create a new item or update an existing one.
 
     this.route( "/users/:item_id/edit", new webapp.Form({
             identifier: "UserEditForm",
-            rest_service_root: "/rest/users/:item_id"
+            rest_service_root: "/users/:item_id"
         }));
 
 
@@ -148,10 +148,10 @@ create a new item or update an existing one.
 
     this.route( "/users/add", new webapp.Form({
             identifier: "UserAddForm",
-            rest_service_root: "/rest/users/new"
+            rest_service_root: "/users/new"
         }));
 
-The form above will GET its initial values from ``/rest/users/new`` and when submitted will PUT the data to the same URL.
+The form above will GET its initial values from ``/users/new`` and when submitted will PUT the data to the same URL.
 
 On the server side, ``new`` maps to a couple of view functions registered on IRestCollection interface, one function handles GET and another PUT method
 
@@ -240,7 +240,7 @@ but webapp.Listing allows the tables to be sorted/batched/filtered).
 
     this.route( "/servers/", new webapp.Listing({
         identifier: "servers-listing",
-        rest_service_root: "/rest/servers/",
+        rest_service_root: "/servers/",
         data_format: 'listing', // optional, if missing 'listing' will be used
         batch_size: 42, //optional, if missing a default value will be used
     }));

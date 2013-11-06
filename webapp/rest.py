@@ -53,7 +53,7 @@ class RestSubobject(crud.Traversable):
                 'autoresponder': AutoresponderResource,
             }
 
-    And finally, we can have a REST API endpoint at /rest/emails/123/autoresponder -
+    And finally, we can have a REST API endpoint at /emails/123/autoresponder -
     a GET request would return autoresponder status, a PUT request would set autoresponder
 
     We can directly see and manipulate the data in a form::
@@ -61,7 +61,7 @@ class RestSubobject(crud.Traversable):
         c.route("/emails/:item_id/set-autoresponder", new webapp.Form({
             title: "Set Automatic Reply",
             identifier: "EmailAddressSetAutoresponder",
-            rest_service_root: "/rest/emails/:item_id/autoresponder"
+            rest_service_root: "/emails/:item_id/autoresponder"
         }));
 
     NOTE: Now you can achieve virtually the same results with standard
@@ -197,7 +197,7 @@ class FormAwareMixin(object):
                 @ContactResource.readonly_format
                 class ContactResourceView(sc.Structure):
 
-        in which case the format will be available as `/rest/contacts/123`
+        in which case the format will be available as `/contacts/123`
 
         Alternatively, we can pass a name to the decorator::
 

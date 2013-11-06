@@ -487,7 +487,7 @@ class DataFormatLister(DataFormatBase):
         # CUSTOM QUERY MODIFIER
         ### An initial approach to be able to specify some hooks in the collection
         ### so the client can invoke a filtering method by querying a special url:
-        ### /rest/collection/@aaa&filter=min_clients&filter_params=5
+        ### /collection/@aaa&filter=min_clients&filter_params=5
         ### would look for a method named 'filter_min_client' which is supposed
         ### to return an SA clause element suitable for passing to .filter()
         filter_meth_name = request.GET.get('meth', None)
@@ -691,7 +691,7 @@ class VocabLister(object):
         # CUSTOM QUERY MODIFIER
         ### An initial approach to be able to specify some hooks in the subclass
         ### so the client can invoke a filtering method by querying a special url:
-        ### /rest/collection/@aaa&filter=min_clients&filter_params=5
+        ### /collection/@aaa&filter=min_clients&filter_params=5
         ### would look for a method named 'filter_min_client' which is supposed
         ### to return an SA clause element suitable for passing to .filter()
         filter_meth_name = request.GET.get('meth', None)
