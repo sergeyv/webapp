@@ -183,7 +183,7 @@
             case 'pager': return self._render_pager(true);
             case 'next-prev': return self._render_pager(false);
             case 'click-for-more': return self._render_load_more_link();
-            case 'infinite': return '<div class="infiniteScrollMore"><span> </span> Loading...</div><div class="pagination"></div>';
+            case 'infinite': return '<div class="infiniteScrollMore"><span> </span></div><div class="pagination"></div>';
         }
 
     };

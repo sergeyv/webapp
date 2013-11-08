@@ -46,7 +46,7 @@
     };
 
     InfiniteListing.prototype.pager = function () {
-        return '<div class="infiniteScrollMore"><span> </span> Loading...</div><div class="pagination"></div>';
+        return '<div class="infiniteScrollMore"><span> </span></div><div class="pagination"></div>';
     };
 
     InfiniteListing.prototype.reload = function () {
