@@ -90,7 +90,7 @@
                 }
             });
             /// Ajax spinner
-            $("body").append($('<div id="ajax-spinner">&nbsp;</div>'));
+            $("body").append($('<div id="ajax-spinner">Loading...</div>'));
 
             $("body").append($('<div id="ajax-error"> </div>'));
 
@@ -141,16 +141,16 @@
             });*/
 
             $('#ajax-spinner').ajaxStart(function () {
-                $(this).show();
+                $(this).fadeIn();
             });
             $('#ajax-spinner').ajaxStop(function () {
-                $(this).hide();
+                $(this).fadeOut();
             });
             $('#ajax-spinner').ajaxError(function () {
-                $(this).hide();
+                $(this).fadeOut();
             });
             $('#ajax-spinner').ajaxComplete(function () {
-                $(this).hide();
+                $(this).fadeOut();
             });
             /// Error message box
             $(document).ajaxError(function (event, jqxhr, ajaxOptions, thrownError) {
