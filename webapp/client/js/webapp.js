@@ -90,7 +90,7 @@
                 }
             });
             /// Ajax spinner
-            $("body").append($('<div id="ajax-spinner">Loading...</div>'));
+            $("body").append($('<div id="ajax-spinner" class="flash-message flash-message-normal">Loading...</div>'));
 
             $("body").append($('<div id="ajax-error"> </div>'));
 
