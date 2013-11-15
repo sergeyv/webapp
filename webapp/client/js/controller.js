@@ -206,6 +206,8 @@
                 /* remove the activeContentView class from the modal when it closes */
                 /* not doing this causes problems with webapp.adjustMultiEditActionsVisibility (it sees two .activeContentView instances and chokes) */
                 $modal.find('.contentView').removeClass('activeContentView');
+                /* TODO: something more than below robust? is below as good as it gets? does below cause other problems? */
+                /* $modal.parent().removeClass('activeContentView'); */
             });
 
             $modal.modal({
