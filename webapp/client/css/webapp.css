@@ -78,8 +78,3 @@ a.iconAdd:hover {
     background: transparent url("images/ajax-spinner-small.gif") left center no-repeat;
     padding-left: 24px;
 }
-
-/* set for pre-rendered flash messages and use type: 'SHOW' */
-.webappHideFlash {
-	display: none;
-}

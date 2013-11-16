@@ -422,32 +422,25 @@
         var self = this,
             msg_container = $(self.options.flash_messages_container_id);
 
+        if (webapp.flash_messages.length > 0) {
 
-        if(webapp.flash_messages.length > 0) {
+            console.log('rendering flash messages!');
+            msg_container.children().remove();
 
-            /* the SHOW type doesn't seem to be used anymore, which is good */
-            if (webapp.flash_messages[0].type == 'SHOW') { // display pre-rendered flash message for certain templates
-                   msg_container.toggleClass('webappHideFlash'); // status message should be set to display: none before
-            } else { // only clear and append if not using pre-rendered flash
-                console.log('rendering flash messages!');
-                msg_container.children().remove();
+            $.each(webapp.flash_messages, function (idx, msg) {
+                var out = '';
 
-                $.each(webapp.flash_messages, function (idx, msg) {
-                    var out = '';
+                out += '<div class="flash-message';
+                out += msg.css_class ? ' ' + msg.css_class : ' flash-message-normal';
+                out += '">' + msg.msg + '</div>';
 
-                    out += '<div class="flash-message';
-                    out += msg.css_class ? ' ' + msg.css_class : ' flash-message-normal';
-                    out += '">' + msg.msg + '</div>';
-
-                    msg_container.append(out);
-                    msg_container.contents()
-                        .delay(5000)
-                        .fadeOut(1000, function () {
-                            $(this).remove();
-                        });
-                });
-            }
-
+                msg_container.append(out);
+                msg_container.contents()
+                    .delay(5000)
+                    .fadeOut(1000, function () {
+                        $(this).remove();
+                    });
+            });
         }
 
         webapp.flash_messages = [];
