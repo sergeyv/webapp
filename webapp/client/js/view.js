@@ -26,7 +26,7 @@
         if (!self.view.length) {
             /// Create and append a node if not found
 
-            $node = $('<div id="' + nodeId + '" class="contentView">');
+            $node = $('<div id="' + nodeId + '">');
 
             console.log("Init: " + nodeId);
             $("#content-views").append($node);
@@ -71,8 +71,7 @@
                 self.view.parents('.modal').require_one().modal("hide").remove();
             }
         } else if (dm === "popover") {
-            /*console.log("dismissing modal...");
-            self.view.parents('.modal').require_one().modal("hide").remove();*/
+            /*console.log("dismissing modal...");*/
             $('[data-instant_popover-open=1]').each(function () {
               if ($(this).data('instant_popover')) $(this).data('instant_popover').do_dismiss();
             });

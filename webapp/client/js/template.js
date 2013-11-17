@@ -243,7 +243,7 @@
 
         if (!self.view.length) {
             /// Create and append a node if not found
-            $node = $('<div id="' + node_id + '" class="contentView"> </div>');
+            $node = $('<div id="' + node_id + '"> </div>');
 
             $("#content-views").append($node);
             self.view = $("#" + node_id);
@@ -363,20 +363,20 @@
 
         var msg = "TOO SLOW: " + self.options.identifier,
             render_time = self.timings.render_end - self.timings.render_start,
-            bws_time = (self.timings.before_view_shown_end || 0) - (self.timings.before_view_shown_start || 0),
-            aws_time = (self.timings.after_view_shown_end || 0) - (self.timings.after_view_shown_start || 0),
+            bvs_time = (self.timings.before_view_shown_end || 0) - (self.timings.before_view_shown_start || 0),
+            avs_time = (self.timings.after_view_shown_end || 0) - (self.timings.after_view_shown_start || 0),
             TOO_SLOW = 20,
-            total_time = render_time + bws_time + aws_time;
+            total_time = render_time + bvs_time + avs_time;
 
         if (total_time > TOO_SLOW) {
             msg += " shown in " + total_time + "ms: " +
                 "(render: " + render_time + "ms; ";
-            if (bws_time) {
-                msg += "before_view_shown: " + bws_time + "ms; ";
+            if (bvs_time) {
+                msg += "before_view_shown: " + bvs_time + "ms; ";
             }
 
-            if (aws_time) {
-                msg += "after_view_shown: " + aws_time + "ms; ";
+            if (avs_time) {
+                msg += "after_view_shown: " + avs_time + "ms; ";
             }
 
             console.warn(msg);

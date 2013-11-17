@@ -9,16 +9,6 @@ div.field {
     margin-bottom:10px;
 }
 
-
-.contentView {
-    display:none;
-}
-
-.activeContentView {
-    display:block;
-}
-
-
 /* FORM VALIDATION */
 
 label.error {

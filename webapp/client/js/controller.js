@@ -91,6 +91,21 @@
         }
 
         view.event = event;
+
+        // remove the dom node of the previous view
+        if (this.currentView) {
+            this.previousViewToBeZapped = this.currentView;
+        } else {
+            /* return a stub object to allow the initial view
+               with the ajax spinner to be removed
+            */
+            this.previousViewToBeZapped = {
+                view: $('#initial-view'),
+                options: {
+                    identifier: 'initial view'
+                }
+            };
+        }
         // Store the given view as the current view.
         this.currentView = view;
 
@@ -148,24 +163,7 @@
 
         /// if the view is shown in a popup, we don't need
         /// to hide the previous view etc.
-        if (view.event.display_mode === "popup") {
-            view.view.dialog({
-                modal: true,
-                width: "80%",
-                /* find the title directly on the page, remove it from there*/
-                title: view.view.find('.primaryPageHeading').detach().text(),
-                close: function () {
-                    /* Restore the parent view as the currentView */
-                    if ( view.event.parentView )
-                        self.currentView = view.event.parentView;
-                }
-
-            });
-
-            // view.event.parentView = self.currentView;
-            // self.currentView = view;
-
-        } else if (view.event.display_mode === "modal") {
+        if (view.event.display_mode === "modal") {
 
             var $modal = view.view.find('.rawModal'),
                 title_text,
@@ -195,19 +193,12 @@
                 $modal.find('.modal-footer').append(view.view.find('.actions'));
             }
 
-
-            $modal.data('view_in_modal', view);
-
-            $modal.on('hidden', function () {
+            $modal.on('hidden.bs.modal', function (e) {
                 /* revert controller.currentView to the previous view. This is the right place to do this
                    because the modal can be dismissed by a variety of ways
                 */
-                self.currentView = $modal.data('view_in_modal').event.parentView;
-                /* remove the activeContentView class from the modal when it closes */
-                /* not doing this causes problems with webapp.adjustMultiEditActionsVisibility (it sees two .activeContentView instances and chokes) */
-                $modal.find('.contentView').removeClass('activeContentView');
-                /* TODO: something more than below robust? is below as good as it gets? does below cause other problems? */
-                /* $modal.parent().removeClass('activeContentView'); */
+                view.view.remove();
+                self.currentView = view.event.parentView;
             });
 
             $modal.modal({
@@ -215,9 +206,6 @@
                 backdrop: 'static',
                 keyboard: false
             });
-
-            // view.event.parentView = self.currentView;
-            // self.currentView = view;
 
         } else if (view.event.display_mode === "popover") {
             var args = {
@@ -232,21 +220,17 @@
         } else if (view.event.display_mode === "inline") {
             $(view.event.inline_container_selector).require_one().html(view.view);
         } else {
-            /* show as main view */
-            old_views = $(".activeContentView");
-            $.each(old_views, function (idx, elem) {
-                var $elem = $(elem);
-                if ($elem.attr('id') !== view.view.attr('id')) {
-                    if ($elem.hasClass('preserve')) {
-                        $elem.removeClass("activeContentView");
-                    } else {
-                        $elem.remove();
-                    }
-                }
-            });
+
+            if (self.previousViewToBeZapped &&
+                self.currentView.options.identifier !== self.previousViewToBeZapped.options.identifier) {
+                console.log("ZAPPING!");
+                console.log(self.previousViewToBeZapped);
+                self.previousViewToBeZapped.view.remove();
+                delete self.previousViewToBeZapped;
+            }
         }
 
-        view.view.addClass("activeContentView");
+        //view.view.addClass("activeContentView");
 
         // a view can define a callback to be called after the view is shown
         if (view.options.after_view_shown) {
