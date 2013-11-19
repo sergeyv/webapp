@@ -220,6 +220,7 @@
     "use strict";
 
     function RedirectView(target_url) {
+        this.options = {}; /* to make it consistent with other views */
         this.target_url = target_url;
         return this;
     }

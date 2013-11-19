@@ -100,7 +100,7 @@
                with the ajax spinner to be removed
             */
             this.previousViewToBeZapped = {
-                view: $('#initial-view'),
+                view: null,
                 options: {
                     identifier: 'initial view'
                 }
@@ -225,8 +225,15 @@
                 self.currentView.options.identifier !== self.previousViewToBeZapped.options.identifier) {
                 console.log("ZAPPING!");
                 console.log(self.previousViewToBeZapped);
-                self.previousViewToBeZapped.view.remove();
+                /* RedirectView does not have .view attribute */
+                if (self.previousViewToBeZapped.view) {
+                    self.previousViewToBeZapped.view.remove();
+                }
                 delete self.previousViewToBeZapped;
+
+                /* Try to remove the initial spinner every time
+                because of the funny interplay with RedirectView*/
+                $('#initial-view').remove();
             }
         }
 
