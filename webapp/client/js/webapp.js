@@ -158,7 +158,7 @@
                 var self = this,
                     response,
                     show_alert = function (msg) {
-                        alert(msg);
+                        // alert(msg);
                        /*if (!webapp.server_error_popup_count) {
                             webapp.server_error_popup_count = webapp.server_error_popup_count ?
                                 webapp.server_error_popup_count + 1 : 1;
@@ -166,6 +166,15 @@
                                 webapp.server_error_popup_count -= 1;
                             });
                         }*/
+                        webapp.flash_messages.push({
+                            css_class: 'flash-message-error',
+                            msg: msg
+                        });
+
+                        // process the messages right away
+                        if (webapp.getController().currentView.renderFlashMessages) {
+                            webapp.getController().currentView.renderFlashMessages();
+                        }
                     };
 
                 /* aborted calls trigger ajaxError too - we don't want to
@@ -211,19 +220,20 @@
                                 When a resource is soft-deleted the server sends 410 Gone
                                 with a small JSON dict with a `message` attribute
                                 */
-                                show_alert("<p>"  + JSON.parse(response).message + "</p>");
+                                webapp.showMessage("<p>"  + JSON.parse(response).message + "</p>");
+                                webapp.relocateTo(webapp.previousPageUrl());
                                 break;
                             case 422:
                                 /* otherwise it shows a default message momentarily */
                                 break;
                             case 500:
-                                show_alert("<h1>Oops...</h1><p>There's been a server error. Our engineers have been notified.</p>");
+                                show_alert("There's been a server error. Our engineers have been notified.");
                                 break;
                             case 502:
-                                show_alert("<h1>Oops...</h1><p>The site is down. Please try again later.</p>");
+                                show_alert("The site is down. Please try again later.");
                                 break;
                             default:
-                                show_alert("<h1>Oops...</h1><p>Can't connect to the site. Please check your internet connection.</p>");
+                                show_alert("Can't connect to the site. Please check your internet connection.");
                                 break;
 
                         }
@@ -234,7 +244,9 @@
                     webapp.getController().showMainView(webapp.serverErrorView, webapp.getController().currentView.event);
                     $("div.activeContentView").html(response);
                 }
-                webapp.relocateTo(webapp.previousPageUrl());
+                // This was here to deal with deleted tasks,
+                // but it produces undesirable effects in other places
+                // webapp.relocateTo(webapp.previousPageUrl());
             });
 
         });
@@ -580,9 +592,9 @@
             out = [];
 
         /* TODOXXX: this is a dependency on helpers.js which is not included in webapp */
-        out.push('<dt><strong>' + jqx._url + '</strong> - '
-            + webapp.helpers.readable_bytes(jqx.responseText.length)
-            + ' in ' + millis + 'ms.</dt>');
+        out.push('<dt><strong>' + jqx._url + '</strong> - ' +
+            webapp.helpers.readable_bytes(jqx.responseText.length) +
+            ' in ' + millis + 'ms.</dt>');
 
         if (data && data.stats) {
             // this is how to concatenate two arrays in JS
