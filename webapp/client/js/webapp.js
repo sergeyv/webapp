@@ -158,12 +158,14 @@
                 var self = this,
                     response,
                     show_alert = function (msg) {
-                       if (!webapp.server_error_popup_is_active) {
-                            webapp.server_error_popup_is_active = true;
+                        alert(msg);
+                       /*if (!webapp.server_error_popup_count) {
+                            webapp.server_error_popup_count = webapp.server_error_popup_count ?
+                                webapp.server_error_popup_count + 1 : 1;
                             bootbox.alert(msg, function () {
-                                webapp.server_error_popup_is_active = false;
+                                webapp.server_error_popup_count -= 1;
                             });
-                        }
+                        }*/
                     };
 
                 /* aborted calls trigger ajaxError too - we don't want to
