@@ -323,7 +323,7 @@
             var $cell = $(this),
                 title = $cell.html(),
                 id = get_column_id($cell);
-            $cell.html('<a href="#' + self.new_sort_url(id) + '" class="' + get_sort_class(id) + '">' + title + '</a>');
+            $cell.html('<a href="#' + self.new_sort_url(id) + '" class="table-heading-item ' + get_sort_class(id) + '">' + title + '</a>');
         });
 
 
