@@ -510,8 +510,10 @@
         webapp.clearStats();
 
         if (context.mapping) {
-            // remember the url
-            webapp.visitedUrlsLog.push(context.hash);
+            // remember the url, as as it wasn't the last visited url
+            if (context.hash !== webapp.visitedUrlsLog[webapp.visitedUrlsLog.length - 1]) {
+                webapp.visitedUrlsLog.push(context.hash);
+            }
             context.mapping.controller.showMainView(context.mapping.view, context);
 
 
