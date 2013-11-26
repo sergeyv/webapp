@@ -158,8 +158,7 @@
 
     Controller.prototype.setActiveView = function (view) {
 
-        var old_views,
-            self = this;
+        var self = this;
 
         /// if the view is shown in a popup, we don't need
         /// to hide the previous view etc.
@@ -220,19 +219,21 @@
         } else if (view.event.display_mode === "inline") {
             $(view.event.inline_container_selector).require_one().html(view.view);
         } else {
+            /* Show as main view */
+            $('#content-views').require_one().children('[id!="' + self.currentView.options.identifier + '-view"]').remove();
 
-            if (self.previousViewToBeZapped &&
-                self.currentView.options.identifier !== self.previousViewToBeZapped.options.identifier) {
-                /* RedirectView does not have .view attribute */
-                if (self.previousViewToBeZapped.view) {
-                    self.previousViewToBeZapped.view.remove();
-                }
-                delete self.previousViewToBeZapped;
+            // if (self.previousViewToBeZapped &&
+            //     self.currentView.options.identifier !== self.previousViewToBeZapped.options.identifier) {
+            //     /* RedirectView does not have .view attribute */
+            //     if (self.previousViewToBeZapped.view) {
+            //         self.previousViewToBeZapped.view.remove();
+            //     }
+            //     delete self.previousViewToBeZapped;
 
-                /* Try to remove the initial spinner every time
-                because of the funny interplay with RedirectView*/
-                $('#initial-view').remove();
-            }
+            //     /* Try to remove the initial spinner every time
+            //     because of the funny interplay with RedirectView*/
+            //     $('#initial-view').remove();
+            // }
         }
 
         //view.view.addClass("activeContentView");
