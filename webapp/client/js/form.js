@@ -622,8 +622,6 @@
 
         meth(self.getRestUrl("", {item_id: item_id}), form_data)
             .done(function (data) {
-                console.log("FORM AJAX CALLBACK!!!");
-
                 /*
                     The server is supposed to return {item_id: 123} when
                     an item is created or updated. We update our event parameters

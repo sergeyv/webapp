@@ -223,8 +223,6 @@
 
             if (self.previousViewToBeZapped &&
                 self.currentView.options.identifier !== self.previousViewToBeZapped.options.identifier) {
-                console.log("ZAPPING!");
-                console.log(self.previousViewToBeZapped);
                 /* RedirectView does not have .view attribute */
                 if (self.previousViewToBeZapped.view) {
                     self.previousViewToBeZapped.view.remove();

@@ -321,7 +321,6 @@
         if (data) {
             /* flash messages */
             if (data.__flash_messages__) {
-                console.log('found flash messages in data!');
                 webapp.flash_messages = webapp.flash_messages.concat(data.__flash_messages__);
 
                 // process the messages right away
@@ -913,28 +912,15 @@
         self.served_total_requests += 1;
 
         if (use_cache && cached) {
-            console.log("HIT", options.url);
             cached.used += 1;
-            /*if (cached.ajax.isResolved()) {
-                console.log("mocking deferred");
-                return {
-                    done: function (callback) {
-                        console.log("mocking deferred");
-                        callback(cached.data);
-                        return this;
-                    }
-                };
-            }*/
             self.served_cached_requests += 1;
             update_stats();
             return cached.ajax; // make sure we don't do cache invalidation
         }
 
         if (!use_cache) {
-            console.log("NO CACHE: ", options.url);
             ajax = $.ajax(options);
         } else {
-            console.log("MISS", options.url);
             ajax = $.ajax(options);
             self.request_cache[options.url] = {
                 ajax: ajax,
@@ -958,9 +944,7 @@
             something which is not a dict
             */
             // self.request_cache[options.url].data = data;
-            // console.log("AJAX FINISHED:", options.url);
             if (data && (typeof data === "object") && data.__recently_modified__) {
-                console.log("INVALIDATING", data.__recently_modified__);
                 webapp.purge_cache(data.__recently_modified__, data.__recently_modified_timestamp__);
             } else if (typeof data !== "object") {
                 console.log("data is not a json dict", data);
@@ -977,7 +961,6 @@
             invalidated_by.push('*'); // '*' entries are purged always
         }
         $.each(invalidated_by, function (idx, type) {
-            console.log("PURGING: ", type);
             if (self.request_cache_by_type[type]) {
 
                 $.each(self.request_cache_by_type[type], function (idx, url) {
@@ -994,7 +977,6 @@
         if (timestamp) {
             $.removeCookie('last_changed', {path: '/'});
             $.cookie('last_changed', timestamp, {path: '/'});
-            console.log($.cookie('last_changed'));
         }
 
     };
@@ -1014,8 +996,6 @@
         self.precog_cache[type] = self.precog_cache[type] || {};
         self.precog_cache[type][item_id] = self.precog_cache[type][item_id] || {};
         self.precog_cache[type][item_id][attr_name] = value;
-
-        console.log("PRECOG CACHE", self.precog_cache);
     };
 
     WebApp.prototype.get_precog_data = function (type, item_id, item) {
@@ -1028,8 +1008,6 @@
         }
 
         data = $.extend({}, item, self.precog_cache[type][item_id]);
-
-        console.log("PRECOG ITEM DATA", data);
 
         return data;
     };
