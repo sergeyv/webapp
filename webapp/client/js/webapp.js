@@ -61,6 +61,7 @@
         this.request_cache_by_type = {};
         this.served_cached_requests = 0;
         this.served_total_requests = 0;
+        this.precog_cache = {};
 
         this.compiled_templates = {};
 
@@ -983,6 +984,9 @@
 
                 delete self.request_cache_by_type[type];
             }
+
+            /// remove all precog data for this type
+            delete self.precog_cache[type];
         });
 
         if (timestamp) {
@@ -1000,6 +1004,34 @@
         var self = this;
         delete self.request_cache[url];
     };
+
+    WebApp.prototype.set_precog_attr = function (type, item_id, attr_name, value) {
+        var self = this;
+
+        self.precog_cache = self.precog_cache || {};
+        self.precog_cache[type] = self.precog_cache[type] || {};
+        self.precog_cache[type][item_id] = self.precog_cache[type][item_id] || {};
+        self.precog_cache[type][item_id][attr_name] = value;
+
+        console.log("PRECOG CACHE", self.precog_cache);
+    };
+
+    WebApp.prototype.get_precog_data = function (type, item_id, item) {
+        var self = this,
+            cache = self.precog_cache,
+            data;
+
+        if (!(self.precog_cache && self.precog_cache[type] && self.precog_cache[type][item_id])) {
+            return item;
+        }
+
+        data = $.extend({}, item, self.precog_cache[type][item_id]);
+
+        console.log("PRECOG ITEM DATA", data);
+
+        return data;
+    };
+
 
     /* END CACHING */
 
