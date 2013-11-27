@@ -219,7 +219,7 @@
         } else if (view.event.display_mode === "inline") {
             $(view.event.inline_container_selector).require_one().html(view.view);
         } else {
-            /* Show as main view */
+            /* Show as main view - to do that we remove all other views */
             $('#content-views').require_one().children('[id!="' + self.currentView.options.identifier + '-view"]').remove();
 
             // if (self.previousViewToBeZapped &&
