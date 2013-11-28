@@ -730,10 +730,20 @@
         );
     };
 
-    WebApp.prototype._send_request_with_body = function (url, data, method) {
+    WebApp.prototype._send_request_with_body = function (url, data, method, param_overrides) {
+        var params;
+
         if (typeof data !== "string") {
             data = JSON.stringify(data || {});
         }
+
+        params = $.extend({}, {
+            type: method,
+            url: url,
+            contentType: "application/json",
+            processData: false, // tell jQuery not to process
+            data: data
+        }, param_overrides || {});
 
         /*
         we need to use .get_cached_ajax() here because it also
@@ -743,24 +753,18 @@
         return webapp.get_cached_ajax(
             false,
             [],
-            {
-                type: method,
-                url: url,
-                contentType: "application/json",
-                processData: false, // tell jQuery not to process
-                data: data
-            }
+            params
         );
     };
 
-    WebApp.prototype.Create =  function (url, data) {
+    WebApp.prototype.Create =  function (url, data, param_overrides) {
         /*
         Sends `data` to the `url` in a PUT request
         */
-        return webapp._send_request_with_body(url, data, 'POST');
+        return webapp._send_request_with_body(url, data, 'POST', param_overrides);
     };
 
-    WebApp.prototype.Delete =  function (url, data) {
+    WebApp.prototype.Delete =  function (url, data, param_overrides) {
         /*
         Sends `data` to the `url` in a DELETE request
 
@@ -768,14 +772,14 @@
         http://stackoverflow.com/questions/299628/is-an-entity-body-allowed-for-an-http-delete-request
         so it's no different from POST or PUT
         */
-        return webapp._send_request_with_body(url, data, 'DELETE');
+        return webapp._send_request_with_body(url, data, 'DELETE', param_overrides);
     };
 
-    WebApp.prototype.Update =  function (url, data) {
+    WebApp.prototype.Update =  function (url, data, param_overrides) {
         /*
         Sends `data` to the `url` in a PUT request
         */
-        return webapp._send_request_with_body(url, data, 'PUT');
+        return webapp._send_request_with_body(url, data, 'PUT', param_overrides);
     };
 
 
