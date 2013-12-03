@@ -198,6 +198,8 @@
                 */
                 view.view.remove();
                 self.currentView = view.event.parentView;
+            }).on('shown', function (e) {
+                view.view.find('[autofocus]').focus();
             });
 
             $modal.modal({
