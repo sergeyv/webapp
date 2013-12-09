@@ -61,6 +61,12 @@
         this.request_cache_by_type = {};
         this.served_cached_requests = 0;
         this.served_total_requests = 0;
+
+        /*
+        Stores "precognition" data - the info about the server state
+        the client knows without actually loading the data from the server.
+        See 'Minority Report' for details
+        */
         this.precog_cache = {};
 
         this.compiled_templates = {};
