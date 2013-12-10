@@ -980,6 +980,7 @@
                 delete self.request_cache_by_type[type];
             }
 
+            console.log("PURGING PRECOG CACHE", type);
             /// remove all precog data for this type
             delete self.precog_cache[type];
         });
