@@ -911,7 +911,7 @@
             cached = self.request_cache[options.url],
             ajax,
             update_stats = function () {
-                $("#inconspicuous-caching-stats").text(
+                $("#caching-stats").text(
                     self.served_cached_requests + '/' + self.served_total_requests +
                     ' (' +
                     (self.served_cached_requests / self.served_total_requests * 100).toFixed(1) +
