@@ -165,14 +165,6 @@
                 var self = this,
                     response,
                     show_alert = function (msg) {
-                        // alert(msg);
-                       /*if (!webapp.server_error_popup_count) {
-                            webapp.server_error_popup_count = webapp.server_error_popup_count ?
-                                webapp.server_error_popup_count + 1 : 1;
-                            bootbox.alert(msg, function () {
-                                webapp.server_error_popup_count -= 1;
-                            });
-                        }*/
                         webapp.flash_messages.push({
                             css_class: 'flash-message-error',
                             msg: msg
@@ -227,7 +219,7 @@
                                 When a resource is soft-deleted the server sends 410 Gone
                                 with a small JSON dict with a `message` attribute
                                 */
-                                webapp.showMessage("<p>"  + JSON.parse(response).message + "</p>");
+                                show_alert(JSON.parse(response).message);
                                 webapp.relocateTo(webapp.previousPageUrl());
                                 break;
                             case 422:
